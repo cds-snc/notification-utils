@@ -1,5 +1,5 @@
-# GOV.UK Notify - notifications-utils [BETA]
-Shared python code for GOV.UK Notify
+# Notification - notifications-utils [BETA]
+Shared python code for Notification
 
 Provides logging utils etc.
 
