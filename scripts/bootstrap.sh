@@ -20,10 +20,5 @@ function display_result {
   fi
 }
 
-if [ ! $VIRTUAL_ENV ]; then
-  virtualenv ./venv
-  . ./venv/bin/activate
-fi
-
 # Install Python development dependencies
 pip3 install -r requirements_for_test.txt
