@@ -12,5 +12,5 @@ action "docker://cdssnc/seekret-github-action" {
 
 action "docker://python:3.6-slim-stretch" {
   uses = "docker://python:3.6-slim-stretch"
-  runs = ["/bin/sh", "-c", "sh /github/workspace/scripts/bootstrap.sh && sh /github/workspace/scripts/run_tests.sh"]
+  runs = ["/bin/bash", "-c", "./github/workspace/scripts/bootstrap.sh && ./github/workspace/scripts/run_tests.sh"]
 }
