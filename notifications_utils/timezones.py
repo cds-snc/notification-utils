@@ -2,7 +2,7 @@ import dateutil
 import pytz
 
 
-local_timezone = pytz.timezone("Europe/London")
+local_timezone = pytz.timezone("America/Toronto")
 
 
 def utc_string_to_aware_gmt_datetime(date):
