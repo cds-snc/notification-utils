@@ -53,8 +53,8 @@ def test_matches_keys_to_placeholder_names():
     template.values = {'NAME': 'Chris'}
     assert template.values == {'name': 'Chris'}
 
-    template.values = {'NAME': 'Chris', 'Town': 'London'}
-    assert template.values == {'name': 'Chris', 'Town': 'London'}
+    template.values = {'NAME': 'Chris', 'Town': 'Toronto'}
+    assert template.values == {'name': 'Chris', 'Town': 'Toronto'}
     assert template.additional_data == {'Town'}
 
     template.values = None

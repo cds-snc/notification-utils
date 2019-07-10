@@ -13,7 +13,7 @@ CANCELLABLE_JOB_LETTER_STATUSES = [
 
 
 def set_gmt_hour(day, hour):
-    return day.astimezone(pytz.timezone('Europe/London')).replace(hour=hour, minute=0).astimezone(pytz.utc)
+    return day.astimezone(pytz.timezone('America/Toronto')).replace(hour=hour, minute=0).astimezone(pytz.utc)
 
 
 def get_letter_timings(upload_time, postage='second'):
@@ -66,7 +66,7 @@ def get_letter_timings(upload_time, postage='second'):
 
     # print deadline is 3pm EST
     printed_by = set_gmt_hour(print_day, hour=15)
-    now = datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('Europe/London'))
+    now = datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('America/Toronto'))
 
     return LetterTimings(
         printed_by=printed_by,

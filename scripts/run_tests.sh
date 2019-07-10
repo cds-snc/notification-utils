@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Run project tests
 #
@@ -21,10 +21,6 @@ function display_result {
     echo -e "\033[32m$TEST passed\033[0m"
   fi
 }
-
-if [ -d venv ]; then
-  source ./venv/bin/activate
-fi
 
 flake8 .
 display_result $? 1 "Code style check"

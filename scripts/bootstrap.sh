@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Bootstrap virtualenv environment and postgres databases locally.
 #
@@ -19,11 +19,6 @@ function display_result {
     echo -e "\033[32m$TEST passed\033[0m"
   fi
 }
-
-if [ ! $VIRTUAL_ENV ]; then
-  virtualenv ./venv
-  . ./venv/bin/activate
-fi
 
 # Install Python development dependencies
 pip3 install -r requirements_for_test.txt
