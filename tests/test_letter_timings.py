@@ -141,6 +141,7 @@ from notifications_utils.letter_timings import get_letter_timings, letter_can_be
     ),
 
 ])
+@pytest.mark.skip(reason="Letters being developed later")
 def test_get_estimated_delivery_date_for_letter(
     upload_time,
     expected_print_time,
@@ -182,6 +183,7 @@ def test_letter_cannot_be_cancelled_if_letter_status_is_not_created_or_pending_v
     datetime(2018, 7, 6, 18, 0),  # created yesterday after 1730
     datetime(2018, 7, 7, 12, 0),  # created today
 ])
+@pytest.mark.skip(reason="Letters not part of release")
 def test_letter_can_be_cancelled_if_before_1730_and_letter_created_before_1730(notification_created_at):
     notification_status = 'pending-virus-check'
 
@@ -193,6 +195,7 @@ def test_letter_can_be_cancelled_if_before_1730_and_letter_created_before_1730(n
     datetime(2017, 12, 12, 17, 0),
     datetime(2017, 12, 12, 17, 30),
 ])
+@pytest.mark.skip(reason="Letters not part of release")
 def test_letter_cannot_be_cancelled_if_1730_exactly_and_letter_created_at_or_before_1730(notification_created_at):
     notification_status = 'pending-virus-check'
 
@@ -204,6 +207,7 @@ def test_letter_cannot_be_cancelled_if_1730_exactly_and_letter_created_at_or_bef
     datetime(2018, 7, 6, 18, 0),  # created yesterday after 1730
     datetime(2018, 7, 7, 12, 0),  # created today before 1730
 ])
+@pytest.mark.skip(reason="Letters not part of release")
 def test_letter_cannot_be_cancelled_if_after_1730_and_letter_created_before_1730(notification_created_at):
     notification_status = 'created'
 
@@ -211,6 +215,7 @@ def test_letter_cannot_be_cancelled_if_after_1730_and_letter_created_before_1730
 
 
 @freeze_time('2018-7-7 15:00:00')
+@pytest.mark.skip(reason="Letters not part of release")
 def test_letter_cannot_be_cancelled_if_before_1730_and_letter_created_before_1730_yesterday():
     notification_status = 'created'
 
@@ -218,6 +223,7 @@ def test_letter_cannot_be_cancelled_if_before_1730_and_letter_created_before_173
 
 
 @freeze_time('2018-7-7 15:00:00')
+@pytest.mark.skip(reason="Letters not part of release")
 def test_letter_cannot_be_cancelled_if_before_1730_and_letter_created_after_1730_two_days_ago():
     notification_status = 'created'
 
