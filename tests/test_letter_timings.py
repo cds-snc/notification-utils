@@ -7,10 +7,10 @@ from freezegun import freeze_time
 from notifications_utils.letter_timings import get_letter_timings, letter_can_be_cancelled
 
 
-@freeze_time('2017-07-14 13:59:59')  # Friday, before print deadline (3PM BST)
+@freeze_time('2017-07-14 13:59:59')  # Friday, before print deadline (3PM EST)
 @pytest.mark.parametrize('upload_time, expected_print_time, is_printed, first_class, expected_earliest, expected_latest', [  # noqa
 
-    # BST
+    # EST
     # ==================================================================
     #  First thing Monday
     (
@@ -21,7 +21,7 @@ from notifications_utils.letter_timings import get_letter_timings, letter_can_be
         'Thursday 2017-07-13 16:00',
         'Friday 2017-07-14 16:00'
     ),
-    #  Monday at 17:29 BST (sent on monday)
+    #  Monday at 17:29 EST (sent on monday)
     (
         'Monday 2017-07-10 16:29:59',
         'Tuesday 2017-07-11 15:00',
@@ -30,7 +30,7 @@ from notifications_utils.letter_timings import get_letter_timings, letter_can_be
         'Thursday 2017-07-13 16:00',
         'Friday 2017-07-14 16:00'
     ),
-    #  Monday at 17:30 BST (sent on tuesday)
+    #  Monday at 17:30 EST (sent on tuesday)
     (
         'Monday 2017-07-10 16:30:01',
         'Wednesday 2017-07-12 15:00',
@@ -39,7 +39,7 @@ from notifications_utils.letter_timings import get_letter_timings, letter_can_be
         'Friday 2017-07-14 16:00',
         'Saturday 2017-07-15 16:00'
     ),
-    #  Tuesday before 17:30 BST
+    #  Tuesday before 17:30 EST
     (
         'Tuesday 2017-07-11 12:00:00',
         'Wednesday 2017-07-12 15:00',
@@ -48,7 +48,7 @@ from notifications_utils.letter_timings import get_letter_timings, letter_can_be
         'Friday 2017-07-14 16:00',
         'Saturday 2017-07-15 16:00'
     ),
-    #  Wednesday before 17:30 BST
+    #  Wednesday before 17:30 EST
     (
         'Wednesday 2017-07-12 12:00:00',
         'Thursday 2017-07-13 15:00',
@@ -57,7 +57,7 @@ from notifications_utils.letter_timings import get_letter_timings, letter_can_be
         'Saturday 2017-07-15 16:00',
         'Monday 2017-07-17 16:00'
     ),
-    #  Thursday before 17:30 BST
+    #  Thursday before 17:30 EST
     (
         'Thursday 2017-07-13 12:00:00',
         'Friday 2017-07-14 15:00',
@@ -100,7 +100,7 @@ from notifications_utils.letter_timings import get_letter_timings, letter_can_be
         'Wednesday 2017-07-19 16:00',
         'Thursday 2017-07-20 16:00'
     ),
-    #  Sunday before 1730 BST
+    #  Sunday before 1730 EST
     (
         'Sunday 2017-07-15 15:59:59',
         'Monday 2017-07-17 15:00',
@@ -109,7 +109,7 @@ from notifications_utils.letter_timings import get_letter_timings, letter_can_be
         'Wednesday 2017-07-19 16:00',
         'Thursday 2017-07-20 16:00'
     ),
-    #  Sunday after 17:30 BST
+    #  Sunday after 17:30 EST
     (
         'Sunday 2017-07-16 16:30:01',
         'Tuesday 2017-07-18 15:00',

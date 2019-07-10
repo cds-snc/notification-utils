@@ -3,7 +3,7 @@ import pytz
 from datetime import datetime, time, timedelta
 from collections import namedtuple
 
-from notifications_utils.timezones import convert_utc_to_bst, utc_string_to_aware_gmt_datetime
+from notifications_utils.timezones import convert_utc_to_est, utc_string_to_aware_gmt_datetime
 
 
 LETTER_PROCESSING_DEADLINE = time(17, 30)
@@ -64,7 +64,7 @@ def get_letter_timings(upload_time, postage='second'):
         earliest_delivery = get_next_royal_mail_working_day(transit_day)
         latest_delivery = get_next_royal_mail_working_day(earliest_delivery)
 
-    # print deadline is 3pm BST
+    # print deadline is 3pm EST
     printed_by = set_gmt_hour(print_day, hour=15)
     now = datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('Europe/London'))
 
@@ -92,37 +92,37 @@ def letter_can_be_cancelled(notification_status, notification_created_at):
 
     if _notification_created_before_that_day_deadline(
         notification_created_at
-    ) and notification_created_at.date() < convert_utc_to_bst(datetime.utcnow()).date():
+    ) and notification_created_at.date() < convert_utc_to_est(datetime.utcnow()).date():
         return False
-    if (convert_utc_to_bst(datetime.utcnow()).date() - notification_created_at.date()).days > 1:
+    if (convert_utc_to_est(datetime.utcnow()).date() - notification_created_at.date()).days > 1:
         return False
     return True
 
 
 def _after_letter_processing_deadline():
     current_utc_datetime = datetime.utcnow()
-    bst_time = convert_utc_to_bst(current_utc_datetime).time()
+    est_time = convert_utc_to_est(current_utc_datetime).time()
 
-    return bst_time >= LETTER_PROCESSING_DEADLINE
+    return est_time >= LETTER_PROCESSING_DEADLINE
 
 
 def _notification_created_before_today_deadline(notification_created_at):
-    current_bst_datetime = convert_utc_to_bst(datetime.utcnow())
-    todays_deadline = current_bst_datetime.replace(
+    current_est_datetime = convert_utc_to_est(datetime.utcnow())
+    todays_deadline = current_est_datetime.replace(
         hour=LETTER_PROCESSING_DEADLINE.hour,
         minute=LETTER_PROCESSING_DEADLINE.minute,
     )
 
-    notification_created_at_in_bst = convert_utc_to_bst(notification_created_at)
+    notification_created_at_in_est = convert_utc_to_est(notification_created_at)
 
-    return notification_created_at_in_bst <= todays_deadline
+    return notification_created_at_in_est <= todays_deadline
 
 
 def _notification_created_before_that_day_deadline(notification_created_at):
-    notification_created_at_bst_datetime = convert_utc_to_bst(notification_created_at)
-    created_at_day_deadline = notification_created_at_bst_datetime.replace(
+    notification_created_at_est_datetime = convert_utc_to_est(notification_created_at)
+    created_at_day_deadline = notification_created_at_est_datetime.replace(
         hour=LETTER_PROCESSING_DEADLINE.hour,
         minute=LETTER_PROCESSING_DEADLINE.minute,
     )
 
-    return notification_created_at_bst_datetime <= created_at_day_deadline
+    return notification_created_at_est_datetime <= created_at_day_deadline
