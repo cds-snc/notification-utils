@@ -13,5 +13,5 @@ action "docker://cdssnc/seekret-github-action" {
 action "docker://python:3.6-alpine" {
   uses = "docker://python:3.6-alpine"
   runs = "/bin/sh"
-  args = "-c /github/workspace/script/bootstrap.sh && /github/workspace/script/run_tests.sh"
+  args = "-c sh /github/workspace/script/bootstrap.sh && sh /github/workspace/script/run_tests.sh"
 }
