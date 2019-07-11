@@ -52,9 +52,9 @@ def test_govuk_banner(show_banner):
     email = HTMLEmailTemplate({'content': 'hello world', 'subject': ''})
     email.govuk_banner = show_banner
     if show_banner:
-        assert "sig-blk-en.svg" in str(email)
+        assert "sig-blk-en.png" in str(email)
     else:
-        assert "sig-blk-en.svg" not in str(email)
+        assert "sig-blk-en.png" not in str(email)
 
 
 def test_brand_banner_shows():
