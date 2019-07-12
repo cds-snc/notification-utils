@@ -192,7 +192,7 @@ def test_get_international_info(phone_number, expected_info):
     '(1)2345',
 ])
 def test_normalise_phone_number_raises_if_unparseable_characters(phone_number):
-    assert normalise_phone_number(phone_number) == False
+    assert normalise_phone_number(phone_number) is False
 
 
 @pytest.mark.parametrize('phone_number', [

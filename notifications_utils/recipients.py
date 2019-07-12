@@ -1,4 +1,3 @@
-import string
 import re
 import sys
 import csv
@@ -13,11 +12,10 @@ from orderedset import OrderedSet
 from flask import current_app
 
 from . import EMAIL_REGEX_PATTERN, hostname_part, tld_part
-from notifications_utils.formatters import strip_and_remove_obscure_whitespace, strip_whitespace, OBSCURE_WHITESPACE
+from notifications_utils.formatters import strip_and_remove_obscure_whitespace, strip_whitespace
 from notifications_utils.template import Template
 from notifications_utils.columns import Columns, Row, Cell
 from notifications_utils.international_billing_rates import (
-    COUNTRY_PREFIXES,
     INTERNATIONAL_BILLING_RATES,
 )
 
@@ -345,7 +343,11 @@ def normalise_phone_number(number):
 
 
 def is_local_phone_number(number):
-    return (not parse_number(number, region_code) == False)
+    if parse_number(number, region_code) is False:
+        return False
+    else:
+        return True
+
 
 international_phone_info = namedtuple('PhoneNumber', [
     'international',
@@ -390,7 +392,7 @@ def validate_phone_number(number, column=None, international=False):
 
     number = normalise_phone_number(number)
 
-    if number == False:
+    if number is False:
         raise InvalidPhoneError('Not a valid international number')
 
     if len(number) < 8:
@@ -502,7 +504,7 @@ def format_phone_number_human_readable(phone_number):
         return phonenumbers.format_number(match.number, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
 
     return phone_number
-    
+
 
 def allowed_to_send_to(recipient, whitelist):
     return format_recipient(recipient) in [
@@ -519,17 +521,18 @@ def insert_or_append_to_dict(dict_, key, value):
     else:
         dict_.update({key: value})
 
+
 def parse_number(number, region=None):
     matches = []
     for match in phonenumbers.PhoneNumberMatcher(number, region):
         matches.append(match)
 
     if len(matches) > 0:
-        if region != None:
+        if region is not None:
             if matches[0].number.country_code == int(country_code):
                 return matches[0]
             else:
-                return False 
+                return False
         return matches[0]
     else:
         return False
