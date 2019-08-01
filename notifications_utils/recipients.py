@@ -431,6 +431,9 @@ def validate_email_address(email_address, column=None):  # noqa (C901 too comple
     if not match:
         raise InvalidEmailError
 
+    if len(email_address) > 320:
+        raise InvalidEmailError
+
     # don't allow consecutive periods in either part
     if '..' in email_address:
         raise InvalidEmailError
