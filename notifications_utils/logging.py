@@ -114,11 +114,13 @@ def get_handlers(app):
     stream_handler = logging.StreamHandler(sys.stdout)
     if not app.debug:
         # machine readable json to both file and stdout
-        file_handler = logging.handlers.WatchedFileHandler(
-            filename='{}.json'.format(app.config['NOTIFY_LOG_PATH'])
-        )
+        # file_handler = logging.handlers.WatchedFileHandler(
+        #     filename='{}.json'.format(app.config['NOTIFY_LOG_PATH'])
+        # )
+
         handlers.append(configure_handler(stream_handler, app, json_formatter))
-        handlers.append(configure_handler(file_handler, app, json_formatter))
+        # Do not write to files, stdout logging is only needed
+        # handlers.append(configure_handler(file_handler, app, json_formatter))
     else:
         # turn off 200 OK static logs in development
         def is_200_static_log(log):
