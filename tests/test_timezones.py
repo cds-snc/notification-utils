@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 import pytz
 
-from notifications_utils.timezones import convert_est_to_utc, convert_utc_to_est, utc_string_to_aware_gmt_datetime 
+from notifications_utils.timezones import convert_est_to_utc, convert_utc_to_est, utc_string_to_aware_gmt_datetime
 from notifications_utils.timezones import convert_local_timezone_to_utc, convert_utc_to_local_timezone
 
 
@@ -49,8 +49,9 @@ def test_convert_est_to_utc():
     utc = convert_est_to_utc(est_datetime)
     assert utc == datetime(2017, 5, 12, 17, 15)
 
+
 @pytest.mark.parametrize('date, expected_date, timezone', [
-    (datetime(2017, 3, 26, 23, 0), datetime(2017, 3, 26, 19, 0), pytz.timezone("America/Toronto")),    
+    (datetime(2017, 3, 26, 23, 0), datetime(2017, 3, 26, 19, 0), pytz.timezone("America/Toronto")),
     (datetime(2017, 3, 20, 23, 0), datetime(2017, 3, 20, 16, 0), pytz.timezone("America/Vancouver")),
     (datetime(2017, 3, 28, 10, 0), datetime(2017, 3, 28, 16, 0), pytz.timezone("Asia/Dacca")),
     (datetime(2017, 10, 28, 1, 0), datetime(2017, 10, 28, 12, 0), pytz.timezone("Australia/Melbourne")),
@@ -65,5 +66,5 @@ def test_get_utc_in_local_timezone_returns_expected_date(date, expected_date, ti
 def test_convert_local_timezone_to_utc():
     local_timezone = "2017-05-12 13:15"
     local_timezone_datetime = datetime.strptime(local_timezone, "%Y-%m-%d %H:%M")
-    utc = convert_local_timezone_to_utc(local_timezone_datetime,  pytz.timezone("Pacific/Tongatapu"))
+    utc = convert_local_timezone_to_utc(local_timezone_datetime, pytz.timezone("Pacific/Tongatapu"))
     assert utc == datetime(2017, 5, 12, 0, 15)
