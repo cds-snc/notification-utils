@@ -1,8 +1,10 @@
+import os
+
 from dateutil import parser
 import pytz
 
 
-local_timezone = pytz.timezone("America/Toronto")
+local_timezone = pytz.timezone(os.getenv("TIMEZONE", "America/Toronto"))
 
 
 def utc_string_to_aware_gmt_datetime(date):
@@ -17,3 +19,11 @@ def convert_utc_to_est(utc_dt):
 
 def convert_est_to_utc(date):
     return local_timezone.localize(date).astimezone(pytz.UTC).replace(tzinfo=None)
+
+
+def convert_utc_to_local_timezone(utc_dt, timezone=local_timezone):
+    return pytz.utc.localize(utc_dt).astimezone(timezone).replace(tzinfo=None)
+
+
+def convert_local_timezone_to_utc(date, timezone=local_timezone):
+    return timezone.localize(date).astimezone(pytz.UTC).replace(tzinfo=None)
