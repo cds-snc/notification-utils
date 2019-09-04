@@ -32,6 +32,7 @@ from notifications_utils.formatters import (
     strip_leading_whitespace,
     add_trailing_newline,
     normalise_newlines,
+    normalise_whitespace,
     remove_smart_quotes_from_email_addresses,
     strip_unsupported_characters,
 )
@@ -237,7 +238,7 @@ class WithSubjectTemplate(Template):
         values=None,
         redact_missing_personalisation=False,
     ):
-        self._subject = template['subject'].replace('\r', '').replace('\n', '').replace('\t', ' ').strip()
+        self._subject = template['subject']
         super().__init__(template, values, redact_missing_personalisation=redact_missing_personalisation)
 
     def __str__(self):
@@ -258,6 +259,8 @@ class WithSubjectTemplate(Template):
             redact_missing_personalisation=self.redact_missing_personalisation,
         )).then(
             do_nice_typography
+        ).then(
+            normalise_whitespace
         ))
 
     @property
@@ -297,6 +300,8 @@ class PlainTextEmailTemplate(WithSubjectTemplate):
             redact_missing_personalisation=self.redact_missing_personalisation
         )).then(
             do_nice_typography
+        ).then(
+            normalise_whitespace
         ))
 
 
@@ -374,7 +379,6 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         from_name=None,
         from_address=None,
         reply_to=None,
-        expanded=False,
         show_recipient=True,
         redact_missing_personalisation=False,
     ):
@@ -382,7 +386,6 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         self.from_name = from_name
         self.from_address = from_address
         self.reply_to = reply_to
-        self.expanded = expanded
         self.show_recipient = show_recipient
 
     def __str__(self):
@@ -395,7 +398,6 @@ class EmailPreviewTemplate(WithSubjectTemplate):
             'from_address': self.from_address,
             'reply_to': self.reply_to,
             'recipient': Field("((email address))", self.values, with_brackets=False),
-            'expanded': self.expanded,
             'show_recipient': self.show_recipient
         }))
 
@@ -408,6 +410,8 @@ class EmailPreviewTemplate(WithSubjectTemplate):
             redact_missing_personalisation=self.redact_missing_personalisation
         )).then(
             do_nice_typography
+        ).then(
+            normalise_whitespace
         )
 
 
@@ -467,6 +471,8 @@ class LetterPreviewTemplate(WithSubjectTemplate):
             strip_pipes
         ).then(
             strip_dvla_markup
+        ).then(
+            normalise_whitespace
         )
 
     @property
