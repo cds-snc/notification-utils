@@ -50,7 +50,7 @@
 {% if brand_banner %}
 {% set brand_colour = brand_colour if brand_colour else '#0b0c0c' %}
 <table role="presentation" width="100%" style="border-collapse: collapse;min-width: 100%;width: 100% !important;" cellpadding="0" cellspacing="0" border="0">
-  <tr>
+  <tr style="margin-bottom:20px;">
     <td width="100%" height="53" bgcolor="{{brand_colour}}">
       <table role="presentation" width="100%" style="border-collapse: collapse;max-width: 580px;" cellpadding="0" cellspacing="0" border="0" align="left">
         <tr>
@@ -60,7 +60,7 @@
               height="{% if brand_text -%} 27 {%- else -%} 54 {%- endif %}"
               bgcolor="{{brand_colour}}"
               valign="middle"
-              style="padding: 10px 0px 12px 10px"
+              style="padding: 10px 0px 12px 0px"
             >
               <img
                 src="{{ brand_logo }}"
