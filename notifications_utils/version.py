@@ -1,2 +1,2 @@
-__version__ = '35.0.6'
+__version__ = '36.0.0'
 # GDS version '34.0.1'
