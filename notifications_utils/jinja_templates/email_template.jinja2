@@ -60,7 +60,7 @@
               height="{% if brand_text -%} 27 {%- else -%} 54 {%- endif %}"
               bgcolor="{{brand_colour}}"
               valign="middle"
-              style="padding: 10px 0px 12px 0px"
+              style="padding: 10px 0px 12px 10px"
             >
               <img
                 src="{{ brand_logo }}"
@@ -86,7 +86,16 @@
             </td>
           {% endif %}
         </tr>
-      </table>  
+      </table> 
+
+      <!-- push content -->
+      <table>
+        <tr>
+          <td height="20">&nbsp;</td>
+        </tr>
+      <table>
+      <!-- end push content -->
+
     </td>
   </tr>
 </table>
