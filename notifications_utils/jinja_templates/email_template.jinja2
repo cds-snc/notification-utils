@@ -193,6 +193,11 @@
   </tr>
 </table>
 {% endif %}
+
+{% if no_branding %}
+  {{ body|safe }}
+{% endif %}
+
 {% if complete_html %}
 </body>
 </html>
