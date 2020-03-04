@@ -23,16 +23,16 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'bleach==3.1.0',
+        'bleach==3.1.1',
         'mistune==0.8.4',
         'requests==2.21.0',
         'python-json-logger==0.1.11',
         'Flask>=0.12.2',
         'orderedset==2.0.1',
-        'Jinja2==2.10.1',
+        'Jinja2==2.11.1',
         'statsd==3.3.0',
         'Flask-Redis==0.4.0',
-        'pyyaml==4.2b1',
+        'pyyaml==5.3.0',
         'phonenumbers==8.10.13',
         'pytz==2019.1',
         'smartypants==2.0.1',
@@ -40,7 +40,7 @@ setup(
         'pypdf2==1.26.0',
 
         # required by both api and admin
-        'awscli==1.16.185',
-        'boto3==1.6.16',
+        'awscli==1.18.13',
+        'boto3==1.12.13',
     ]
 )
