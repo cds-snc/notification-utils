@@ -25,7 +25,7 @@ setup(
     install_requires=[
         'bleach==3.1.1',
         'mistune==0.8.4',
-        'requests==2.21.0',
+        'requests==2.23.0',
         'python-json-logger==0.1.11',
         'Flask>=0.12.2',
         'orderedset==2.0.1',
@@ -34,7 +34,7 @@ setup(
         'Flask-Redis==0.4.0',
         'pyyaml==5.3.0',
         'phonenumbers==8.10.13',
-        'pytz==2019.1',
+        'pytz==2019.3',
         'smartypants==2.0.1',
         'monotonic==1.5',
         'pypdf2==1.26.0',
