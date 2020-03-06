@@ -532,6 +532,7 @@ def test_sms_message_normalises_newlines(content):
     )
 
 
+@pytest.mark.skip(reason="not in use")
 @freeze_time("2012-12-12 12:12:12")
 @mock.patch('notifications_utils.template.LetterPreviewTemplate.jinja_template.render')
 @mock.patch('notifications_utils.template.remove_empty_lines', return_value='123 Street')
