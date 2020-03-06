@@ -388,11 +388,11 @@ def validate_local_phone_number(number, column=None):
 
 def validate_phone_number(number, column=None, international=False):
 
-    if (not international) or is_local_phone_number(number):
-        return validate_local_phone_number(number)
-
     if(";" in number):
         raise InvalidPhoneError('Not a valid number')
+
+    if (not international) or is_local_phone_number(number):
+        return validate_local_phone_number(number)
 
     number = normalise_phone_number(number)
 

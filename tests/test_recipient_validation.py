@@ -70,7 +70,6 @@ invalid_local_phone_numbers = sum([
             '07123 456789...',
             '07123 ☟☜⬇⬆☞☝',
             '07123☟☜⬇⬆☞☝',
-            '07";DROP TABLE;"',
             '+44 07ab cde fgh',
             'ALPHANUM3R1C',
         ))
@@ -218,6 +217,17 @@ def test_phone_number_accepts_valid_values(validator, phone_number):
         validator(phone_number)
     except InvalidPhoneError:
         pytest.fail('Unexpected InvalidPhoneError')
+
+
+@pytest.mark.parametrize('phone', [
+    '07";DROP TABLE;',
+    '416-234-8976;416-235-8976',
+    '416-234-8976;'
+])
+def test_phone_with_semicolon(phone):
+    with pytest.raises(InvalidPhoneError) as e:
+        validate_phone_number(phone)
+    assert "Not a valid number" == str(e.value)
 
 
 @pytest.mark.parametrize("phone_number", valid_phone_numbers)
