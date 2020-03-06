@@ -393,6 +393,9 @@ def validate_phone_number(number, column=None, international=False):
 
     number = normalise_phone_number(number)
 
+    # if(";" in number):
+    # raise InvalidPhoneError('Not a valid number')
+
     if number is False:
         raise InvalidPhoneError('Not a valid international number')
 
