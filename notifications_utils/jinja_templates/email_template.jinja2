@@ -24,7 +24,7 @@
 <span style="display: none;font-size: 1px;color: #fff; max-height: 0;">{{ preheader }}…</span>
 
 <!-- start primary template header EN + FR -->
-{% if govuk_banner || brand_name=="canada.ca-fr" %}
+{% if govuk_banner or brand_name equals "canada.ca-fr" %}
   <table role="presentation" width="100%" style="border-collapse: collapse; min-width: 100%; width: 100% !important;" cellpadding="0" cellspacing="0" border="0">
     <tr>
       <td width="100%" height="53" bgcolor="#fff">
@@ -44,7 +44,7 @@
               {% endif %}
 
                 <!-- FR Fip -->
-               {% if brand_name="canada.ca-fr" %}
+               {% if brand_name equals "canada.ca-fr" %}
 
                <img
                 src="https://notification-alpha-canada-ca-asset-upload.s3.amazonaws.com/09d0d711-9c23-48ec-b21e-fc6acd2412bf-gov-canada-fr.png"
@@ -184,7 +184,7 @@
   </tr>
 </table>
 <!-- end main content -->
-{% if govuk_banner or brand_name=="canada.ca-fr" %}
+{% if govuk_banner or brand_name equals "canada.ca-fr" %}
 <table role="presentation" width="100%" style="border-collapse: collapse;min-width: 100%; width: 100% !important;" cellpadding="0" cellspacing="0" border="0">
   <tr>
     <td width="100%" bgcolor="#fff"> 
