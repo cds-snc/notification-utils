@@ -85,7 +85,6 @@ class Template():
                     'jinja_templates',
                 )
             ))
-        
 
     def __repr__(self):
         return "{}(\"{}\", {})".format(self.__class__.__name__, self.content, self.values)
@@ -257,7 +256,10 @@ class WithSubjectTemplate(Template):
         jinja_path=None,
     ):
         self._subject = template['subject']
-        super().__init__(template, values, redact_missing_personalisation=redact_missing_personalisation, jinja_path=jinja_path)
+        super().__init__(template,
+                         values,
+                         redact_missing_personalisation=redact_missing_personalisation,
+                         jinja_path=jinja_path)
 
     def __str__(self):
         return str(Field(
@@ -399,7 +401,10 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         redact_missing_personalisation=False,
         jinja_path=None,
     ):
-        super().__init__(template, values, redact_missing_personalisation=redact_missing_personalisation, jinja_path=jinja_path)
+        super().__init__(template,
+                         values,
+                         redact_missing_personalisation=redact_missing_personalisation,
+                         jinja_path=jinja_path)
         self.from_name = from_name
         self.from_address = from_address
         self.reply_to = reply_to
