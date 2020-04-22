@@ -1,4 +1,5 @@
 import math
+import sys
 from os import path
 from datetime import datetime
 
@@ -94,7 +95,7 @@ class Template():
             self.content,
             self.values,
             html='escape',
-            redact_missing_personalisation=self.redact_missing_personalisation
+            redact_missing_personalisation=self.redact_missing_personalisation,
         ))
 
     @property
@@ -327,6 +328,9 @@ class PlainTextEmailTemplate(WithSubjectTemplate):
 
 class HTMLEmailTemplate(WithSubjectTemplate):
 
+    # Instantiate with regular jinja for test mocking (tests expect this to exist before init)
+    jinja_template = template_env.get_template('email_template.jinja2')
+
     PREHEADER_LENGTH_IN_CHARACTERS = 256
 
     def __init__(
@@ -350,7 +354,10 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.brand_colour = brand_colour
         self.brand_banner = brand_banner
         self.brand_name = brand_name
-        self.jinja_template = self.template_env.get_template('email_template.jinja2')
+        # set this again to make sure the correct either utils / downstream local jinja is used
+        # however, don't set if we are in a test environment (to preserve the above mock)
+        if("pytest" not in sys.modules):
+            self.jinja_template = self.template_env.get_template('email_template.jinja2')
 
     @property
     def preheader(self):
@@ -384,7 +391,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             'brand_text': self.brand_text,
             'brand_colour': self.brand_colour,
             'brand_banner': self.brand_banner,
-            'brand_name': self.brand_name
+            'brand_name': self.brand_name,
         })
 
 
