@@ -1,4 +1,5 @@
 import math
+import sys
 from os import path
 from datetime import datetime
 
@@ -58,6 +59,7 @@ class Template():
         template,
         values=None,
         redact_missing_personalisation=False,
+        jinja_path=None
     ):
         if not isinstance(template, dict):
             raise TypeError('Template must be a dict')
@@ -70,6 +72,20 @@ class Template():
         self.template_type = template.get('template_type', None)
         self._template = template
         self.redact_missing_personalisation = redact_missing_personalisation
+        if (jinja_path is not None):
+            self.template_env = Environment(loader=FileSystemLoader(
+                path.join(
+                    path.dirname(jinja_path),
+                    'jinja_templates',
+                )
+            ))
+        else:
+            self.template_env = Environment(loader=FileSystemLoader(
+                path.join(
+                    path.dirname(path.abspath(__file__)),
+                    'jinja_templates',
+                )
+            ))
 
     def __repr__(self):
         return "{}(\"{}\", {})".format(self.__class__.__name__, self.content, self.values)
@@ -79,7 +95,7 @@ class Template():
             self.content,
             self.values,
             html='escape',
-            redact_missing_personalisation=self.redact_missing_personalisation
+            redact_missing_personalisation=self.redact_missing_personalisation,
         ))
 
     @property
@@ -135,11 +151,12 @@ class SMSMessageTemplate(Template):
         prefix=None,
         show_prefix=True,
         sender=None,
+        jinja_path=None
     ):
         self.prefix = prefix
         self.show_prefix = show_prefix
         self.sender = sender
-        super().__init__(template, values)
+        super().__init__(template, values, jinja_path=jinja_path)
 
     def __str__(self):
         return Take(Field(
@@ -184,8 +201,6 @@ class SMSMessageTemplate(Template):
 
 class SMSPreviewTemplate(SMSMessageTemplate):
 
-    jinja_template = template_env.get_template('sms_preview_template.jinja2')
-
     def __init__(
         self,
         template,
@@ -197,12 +212,14 @@ class SMSPreviewTemplate(SMSMessageTemplate):
         show_sender=False,
         downgrade_non_sms_characters=True,
         redact_missing_personalisation=False,
+        jinja_path=None
     ):
         self.show_recipient = show_recipient
         self.show_sender = show_sender
         self.downgrade_non_sms_characters = downgrade_non_sms_characters
-        super().__init__(template, values, prefix, show_prefix, sender)
+        super().__init__(template, values, prefix, show_prefix, sender, jinja_path=jinja_path)
         self.redact_missing_personalisation = redact_missing_personalisation
+        self.jinja_template = self.template_env.get_template('sms_preview_template.jinja2')
 
     def __str__(self):
 
@@ -237,9 +254,13 @@ class WithSubjectTemplate(Template):
         template,
         values=None,
         redact_missing_personalisation=False,
+        jinja_path=None,
     ):
         self._subject = template['subject']
-        super().__init__(template, values, redact_missing_personalisation=redact_missing_personalisation)
+        super().__init__(template,
+                         values,
+                         redact_missing_personalisation=redact_missing_personalisation,
+                         jinja_path=jinja_path)
 
     def __str__(self):
         return str(Field(
@@ -307,6 +328,7 @@ class PlainTextEmailTemplate(WithSubjectTemplate):
 
 class HTMLEmailTemplate(WithSubjectTemplate):
 
+    # Instantiate with regular jinja for test mocking (tests expect this to exist before init)
     jinja_template = template_env.get_template('email_template.jinja2')
 
     PREHEADER_LENGTH_IN_CHARACTERS = 256
@@ -321,9 +343,10 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         brand_text=None,
         brand_colour=None,
         brand_banner=False,
-        brand_name=None
+        brand_name=None,
+        jinja_path=None,
     ):
-        super().__init__(template, values)
+        super().__init__(template, values, jinja_path=jinja_path)
         self.govuk_banner = govuk_banner
         self.complete_html = complete_html
         self.brand_logo = brand_logo
@@ -331,6 +354,10 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.brand_colour = brand_colour
         self.brand_banner = brand_banner
         self.brand_name = brand_name
+        # set this again to make sure the correct either utils / downstream local jinja is used
+        # however, don't set if we are in a test environment (to preserve the above mock)
+        if("pytest" not in sys.modules):
+            self.jinja_template = self.template_env.get_template('email_template.jinja2')
 
     @property
     def preheader(self):
@@ -364,13 +391,11 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             'brand_text': self.brand_text,
             'brand_colour': self.brand_colour,
             'brand_banner': self.brand_banner,
-            'brand_name': self.brand_name
+            'brand_name': self.brand_name,
         })
 
 
 class EmailPreviewTemplate(WithSubjectTemplate):
-
-    jinja_template = template_env.get_template('email_preview_template.jinja2')
 
     def __init__(
         self,
@@ -381,12 +406,17 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         reply_to=None,
         show_recipient=True,
         redact_missing_personalisation=False,
+        jinja_path=None,
     ):
-        super().__init__(template, values, redact_missing_personalisation=redact_missing_personalisation)
+        super().__init__(template,
+                         values,
+                         redact_missing_personalisation=redact_missing_personalisation,
+                         jinja_path=jinja_path)
         self.from_name = from_name
         self.from_address = from_address
         self.reply_to = reply_to
         self.show_recipient = show_recipient
+        self.jinja_template = self.template_env.get_template('email_preview_template.jinja2')
 
     def __str__(self):
         return Markup(self.jinja_template.render({
