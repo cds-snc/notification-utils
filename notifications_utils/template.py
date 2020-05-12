@@ -338,6 +338,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         template,
         values=None,
         fip_banner_english=True,
+        fip_banner_french=False,
         complete_html=True,
         brand_logo=None,
         brand_text=None,
@@ -348,6 +349,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
     ):
         super().__init__(template, values, jinja_path=jinja_path)
         self.fip_banner_english = fip_banner_english
+        self.fip_banner_french = fip_banner_french
         self.complete_html = complete_html
         self.brand_logo = brand_logo
         self.brand_text = brand_text
@@ -386,6 +388,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             ),
             'preheader': self.preheader,
             'fip_banner_english': self.fip_banner_english,
+            'fip_banner_french': self.fip_banner_french,
             'complete_html': self.complete_html,
             'brand_logo': self.brand_logo,
             'brand_text': self.brand_text,
