@@ -25,11 +25,11 @@
 
 <!-- start primary template header EN + FR -->
 {% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
-  <table role="presentation" width="100%" style="border-collapse: collapse; max-width: 100%; width: calc(100% - 10px) !important;" cellpadding="0" cellspacing="0" border="0">
+  <table role="presentation" style="border-collapse: collapse; min-width: 50%; max-width: 100%; width: 580px; margin: 0 auto;">
     <tr>
       <td width="100%" height="53" bgcolor="#fff">
         <!-- start fip -->
-        <table width="326" role="presentation" width="100%" style="border-collapse: collapse; max-width: 326px; width: calc(100% - 10px) !important;" cellpadding="0" cellspacing="0" border="0" align="left">
+        <table role="presentation" style="border-collapse: collapse; max-width: 326px; width: calc(100% - 10px) !important;" align="left">
           <tr>
             <td>
               
@@ -38,7 +38,7 @@
                 src="https://notification-alpha-canada-ca-asset-upload.s3.amazonaws.com/gov-canada-en-01.png"
                 alt="Government of Canada / Gouvernement du Canada"
                 height="30"
-                style="padding-left:10px;padding-bottom:30px; max-width: 100%; height: auto;"
+                style="padding-bottom:30px; max-width: 100%; height: auto;"
                 border="0"
               />
               {% endif %}
@@ -50,7 +50,7 @@
                 src="https://notification-alpha-canada-ca-asset-upload.s3.amazonaws.com/09d0d711-9c23-48ec-b21e-fc6acd2412bf-gov-canada-fr.png"
                 alt="Gouvernement du Canada / Government of Canada"
                 height="30"
-                style="padding-left:10px;padding-bottom:30px; max-width: 100%; height: auto;"
+                style="padding-bottom:30px; max-width: 100%; height: auto;"
                 border="0"
               />
 
@@ -68,7 +68,7 @@
 
 {% if logo_with_background_colour %}
 {% set brand_colour = brand_colour if brand_colour else '#0b0c0c' %}
-<table role="presentation" width="100%" style="border-collapse: collapse;min-width: 100%;width: 100% !important;" cellpadding="0" cellspacing="0" border="0">
+<table role="presentation" style="border-collapse: collapse; min-width: 50%; max-width: 100%; width: 580px; margin: 0 auto;">
   <tr style="margin-bottom:20px;">
     <td width="100%" height="53" bgcolor="{{brand_colour}}">
       <table role="presentation" width="100%" style="border-collapse: collapse;max-width: 580px;" cellpadding="0" cellspacing="0" border="0" align="left">
@@ -125,11 +125,7 @@
   role="presentation"
   class="content"
   align="center"
-  cellpadding="0"
-  cellspacing="0"
-  border="0"
-  style="border-collapse: collapse;max-width: 580px; width: 100% !important;"
-  width="100%"
+  style="border-collapse: collapse; min-width: 50%; max-width: 100%; width: 580px; margin: 0 auto;"
 >
   <tr>
     <td>
@@ -172,26 +168,25 @@
     role="presentation"
     class="content"
     align="center"
-    cellpadding="0"
-    cellspacing="0"
-    border="0"
-    style="border-collapse: collapse; max-width: 560px; width: calc(100% - 10px)!important; margin-left: 10px;"
-    width="100%"
+    style="border-collapse: collapse; min-width: 50%; max-width: 100%; width: 580px; margin: 0 auto;"
 >
   <tr>
-    <td width="560" style="font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.315789474; max-width: 560px;">
+    <td style="font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.315789474; max-width: 580px;">
         {{ body|safe }}
     </td>
   </tr>
 </table>
 <!-- end main content -->
+
 {% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
-<table role="presentation" width="100%" style="border-collapse: collapse;min-width: 100%; width: 100% !important;" cellpadding="0" cellspacing="0" border="0">
+<!-- for some reason some mobile clients don't want to respect the width: 580px / max-width:100% relationship here -->
+<!-- so added the min-width: 320 to make sure it looks right on small screens -->
+<table role="presentation" width="100%" style="border-collapse: collapse; min-width: 320px; max-width: 100%; width: 580px; margin: 0 auto;">
   <tr>
-    <td width="100%" bgcolor="#fff"> 
-      <table role="presentation" width="100%" style="border-collapse: collapse;max-width: 580px;" cellpadding="0" cellspacing="0" border="0" align="right">
+    <td width="100%" bgcolor="#fff" style="width:100%!important"> 
+      <table role="presentation" style="border-collapse: collapse; width: 100%!important; text-align: right;" align="right">
         <tr>
-          <td bgcolor="#fff" style="text-align:right;">
+          <td bgcolor="#fff" style="text-align:right;width:100%!important">
             <!-- start fip -->  
             <img
             src="https://cds-notification-assets.s3.ca-central-1.amazonaws.com/wmms-blk.png"
