@@ -79,7 +79,7 @@ def test_logo_with_background_colour_shows():
         '<td width="10" height="10" valign="middle"></td>'
     ) not in email
     assert (
-        'role="presentation" width="100%" style="border-collapse: collapse;min-width: 100%;width: 100% !important;"'
+        'role="presentation" style="border-collapse: collapse; max-width: 100%; width: 580px; margin: 0 auto;"' # noqa
     ) in email
 
 
