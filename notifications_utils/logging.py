@@ -198,7 +198,7 @@ class JSONFormatter(BaseJSONFormatter):
             log_record[newkey] = log_record.pop(key)
         log_record['logType'] = "application"
         try:
-            log_record['message'] = log_record['message'].format(**log_record)
+            log_record['message'] = str(log_record['message'])
         except (KeyError, IndexError) as e:
             logger.exception("failed to format log message: {} not found".format(e))
         return log_record
