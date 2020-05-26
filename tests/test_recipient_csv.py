@@ -318,7 +318,7 @@ def test_big_list_validates_right_through(template_type, row_count, header, fill
 
 def test_big_list():
     big_csv = RecipientCSV(
-        "email address,name\n" + ("a@b.com\n" * RecipientCSV.max_rows),
+        "email address,name\n" + ("a@b.com\n" * 50000),
         template_type='email',
         placeholders=['name'],
         max_errors_shown=100,
@@ -327,13 +327,13 @@ def test_big_list():
     )
     assert len(list(big_csv.initial_rows)) == 3
     assert len(list(big_csv.initial_rows_with_errors)) == 100
-    assert len(list(big_csv.rows)) == RecipientCSV.max_rows
+    assert len(list(big_csv.rows)) == big_csv.max_rows
     assert big_csv.has_errors
 
 
 def test_overly_big_list():
     big_csv = RecipientCSV(
-        "phonenumber,name\n" + ("6502532222,example\n" * (RecipientCSV.max_rows + 1)),
+        "phonenumber,name\n" + ("6502532222,example\n" * 50001),
         template_type='sms',
         placeholders=['name'],
     )
