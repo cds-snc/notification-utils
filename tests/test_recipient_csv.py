@@ -644,10 +644,10 @@ def test_international_recipients(file_contents, rows_with_bad_recipients):
 
 def test_errors_when_too_many_rows():
     recipients = RecipientCSV(
-        "email address\n" + ("a@b.com\n" * (RecipientCSV.max_rows + 1)),
+        "email address\n" + ("a@b.com\n" * (50001)),
         template_type='email'
     )
-    assert RecipientCSV.max_rows == 50000
+    assert recipients.max_rows == 50000
     assert recipients.too_many_rows is True
     assert recipients.has_errors is True
     assert recipients.rows[49000]['email_address'].data == 'a@b.com'
