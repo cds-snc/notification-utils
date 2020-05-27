@@ -48,7 +48,7 @@ optional_address_columns = {
 
 class RecipientCSV():
 
-    max_rows=100000
+    max_rows = 100000
 
     def __init__(
         self,
