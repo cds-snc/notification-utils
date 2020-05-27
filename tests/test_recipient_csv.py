@@ -318,7 +318,7 @@ def test_big_list_validates_right_through(template_type, row_count, header, fill
 
 def test_big_list():
     big_csv = RecipientCSV(
-        "email address,name\n" + ("a@b.com\n" * 50000),
+        "email address,name\n" + ("a@b.com\n" * RecipientCSV.max_rows),
         template_type='email',
         placeholders=['name'],
         max_errors_shown=100,
@@ -327,17 +327,17 @@ def test_big_list():
     )
     assert len(list(big_csv.initial_rows)) == 3
     assert len(list(big_csv.initial_rows_with_errors)) == 100
-    assert len(list(big_csv.rows)) == big_csv.max_rows
+    assert len(list(big_csv.rows)) == RecipientCSV.max_rows
     assert big_csv.has_errors
 
 
 def test_overly_big_list():
     big_csv = RecipientCSV(
-        "phonenumber,name\n" + ("6502532222,example\n" * 50001),
+        "phonenumber,name\n" + ("6502532222,example\n" * (RecipientCSV.max_rows + 1)),
         template_type='sms',
         placeholders=['name'],
     )
-    assert len(big_csv) == 50001
+    assert len(big_csv) == 100001
     assert big_csv.too_many_rows is True
     assert big_csv.has_errors is True
     assert list(big_csv.rows_with_missing_data) == []
@@ -644,15 +644,15 @@ def test_international_recipients(file_contents, rows_with_bad_recipients):
 
 def test_errors_when_too_many_rows():
     recipients = RecipientCSV(
-        "email address\n" + ("a@b.com\n" * (50001)),
+        "email address\n" + ("a@b.com\n" * (RecipientCSV.max_rows + 1)),
         template_type='email'
     )
-    assert recipients.max_rows == 50000
+    assert RecipientCSV.max_rows == 100000
     assert recipients.too_many_rows is True
     assert recipients.has_errors is True
-    assert recipients.rows[49000]['email_address'].data == 'a@b.com'
+    assert recipients.rows[99000]['email_address'].data == 'a@b.com'
     # We stop processing subsequent rows
-    assert recipients.rows[50000] is None
+    assert recipients.rows[100000] is None
 
 
 @pytest.mark.parametrize(

@@ -48,6 +48,8 @@ optional_address_columns = {
 
 class RecipientCSV():
 
+    max_rows=100000
+
     def __init__(
         self,
         file_data,
@@ -59,7 +61,6 @@ class RecipientCSV():
         template=None,
         remaining_messages=sys.maxsize,
         international_sms=False,
-        max_rows=50000,
     ):
         self.file_data = strip_whitespace(file_data, extra_characters=',')
         self.template_type = template_type
@@ -71,7 +72,6 @@ class RecipientCSV():
         self.international_sms = international_sms
         self.remaining_messages = remaining_messages
         self.rows_as_list = None
-        self.max_rows = max_rows
 
     def __len__(self):
         if not hasattr(self, '_len'):
