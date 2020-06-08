@@ -1,0 +1,156 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>1c6f9a02-9505-4903-bf1f-2f1ef28564ce</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>setup.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>notification-utils</Name>
+    <RootNamespace>notification-utils</RootNamespace>
+    <InterpreterId>MSBuild|notification-utils|$(MSBuildProjectFullPath)</InterpreterId>
+    <SuppressConfigureTestFrameworkPrompt>true</SuppressConfigureTestFrameworkPrompt>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="notifications_utils\base64_uuid.py" />
+    <Compile Include="notifications_utils\clients\antivirus\antivirus_client.py" />
+    <Compile Include="notifications_utils\clients\antivirus\__init__.py" />
+    <Compile Include="notifications_utils\clients\redis\redis_client.py" />
+    <Compile Include="notifications_utils\clients\redis\__init__.py" />
+    <Compile Include="notifications_utils\clients\statsd\statsd_client.py" />
+    <Compile Include="notifications_utils\clients\statsd\__init__.py" />
+    <Compile Include="notifications_utils\clients\zendesk\zendesk_client.py" />
+    <Compile Include="notifications_utils\clients\zendesk\__init__.py" />
+    <Compile Include="notifications_utils\clients\__init__.py" />
+    <Compile Include="notifications_utils\columns.py" />
+    <Compile Include="notifications_utils\field.py" />
+    <Compile Include="notifications_utils\formatters.py" />
+    <Compile Include="notifications_utils\international_billing_rates.py" />
+    <Compile Include="notifications_utils\letter_timings.py" />
+    <Compile Include="notifications_utils\logging.py" />
+    <Compile Include="notifications_utils\pdf.py" />
+    <Compile Include="notifications_utils\recipients.py" />
+    <Compile Include="notifications_utils\request_helper.py" />
+    <Compile Include="notifications_utils\s3.py" />
+    <Compile Include="notifications_utils\sanitise_text.py" />
+    <Compile Include="notifications_utils\statsd_decorators.py" />
+    <Compile Include="notifications_utils\take.py" />
+    <Compile Include="notifications_utils\template.py" />
+    <Compile Include="notifications_utils\template_change.py" />
+    <Compile Include="notifications_utils\timezones.py" />
+    <Compile Include="notifications_utils\url_safe_token.py" />
+    <Compile Include="notifications_utils\version.py" />
+    <Compile Include="notifications_utils\__init__.py" />
+    <Compile Include="setup.py" />
+    <Compile Include="tests\conftest.py" />
+    <Compile Include="tests\pdf_consts.py" />
+    <Compile Include="tests\test_antivirus_client.py" />
+    <Compile Include="tests\test_base64_uuid.py" />
+    <Compile Include="tests\test_base_template.py" />
+    <Compile Include="tests\test_columns.py" />
+    <Compile Include="tests\test_field.py" />
+    <Compile Include="tests\test_field_html_handling.py" />
+    <Compile Include="tests\test_formatted_list.py" />
+    <Compile Include="tests\test_formatters.py" />
+    <Compile Include="tests\test_international_billing_rates.py" />
+    <Compile Include="tests\test_letter_timings.py" />
+    <Compile Include="tests\test_logging.py" />
+    <Compile Include="tests\test_pdf.py" />
+    <Compile Include="tests\test_placeholders.py" />
+    <Compile Include="tests\test_recipient_csv.py" />
+    <Compile Include="tests\test_recipient_validation.py" />
+    <Compile Include="tests\test_redis_client.py" />
+    <Compile Include="tests\test_request_header_authentication.py" />
+    <Compile Include="tests\test_request_id.py" />
+    <Compile Include="tests\test_s3.py" />
+    <Compile Include="tests\test_sanitise_text.py" />
+    <Compile Include="tests\test_statsd_client.py" />
+    <Compile Include="tests\test_statsd_decorators.py" />
+    <Compile Include="tests\test_take.py" />
+    <Compile Include="tests\test_template_change.py" />
+    <Compile Include="tests\test_template_types.py" />
+    <Compile Include="tests\test_timezones.py" />
+    <Compile Include="tests\test_url_safe_tokens.py" />
+    <Compile Include="tests\test_zendesk_client.py" />
+    <Compile Include="tests\__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="docker\" />
+    <Folder Include="docs\" />
+    <Folder Include="docs\images\" />
+    <Folder Include="notifications_utils\" />
+    <Folder Include="notifications_utils\clients\" />
+    <Folder Include="notifications_utils\clients\antivirus\" />
+    <Folder Include="notifications_utils\clients\redis\" />
+    <Folder Include="notifications_utils\clients\statsd\" />
+    <Folder Include="notifications_utils\clients\zendesk\" />
+    <Folder Include="notifications_utils\jinja_templates\" />
+    <Folder Include="notifications_utils\jinja_templates\letter_pdf\" />
+    <Folder Include="scripts\" />
+    <Folder Include="tests\" />
+    <Folder Include="tests\test_files\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include=".flake8" />
+    <Content Include="docker\Dockerfile" />
+    <Content Include="docker\Makefile" />
+    <Content Include="docs\images\email-branding-types.png" />
+    <Content Include="docs\images\email-template-branding-modes.svg" />
+    <Content Include="docs\README.md" />
+    <Content Include="LICENSE" />
+    <Content Include="Makefile" />
+    <Content Include="MANIFEST.in" />
+    <Content Include="notifications_utils\.DS_Store" />
+    <Content Include="notifications_utils\international_billing_rates.yml" />
+    <Content Include="notifications_utils\jinja_templates\email_preview_template.jinja2" />
+    <Content Include="notifications_utils\jinja_templates\email_template.jinja2" />
+    <Content Include="notifications_utils\jinja_templates\letter_image_template.jinja2" />
+    <Content Include="notifications_utils\jinja_templates\letter_pdf\preview.jinja2" />
+    <Content Include="notifications_utils\jinja_templates\letter_pdf\print.jinja2" />
+    <Content Include="notifications_utils\jinja_templates\letter_pdf\_body.jinja2" />
+    <Content Include="notifications_utils\jinja_templates\letter_pdf\_head.jinja2" />
+    <Content Include="notifications_utils\jinja_templates\letter_pdf\_main_css.jinja2" />
+    <Content Include="notifications_utils\jinja_templates\letter_pdf\_print_only_css.jinja2" />
+    <Content Include="notifications_utils\jinja_templates\sms_preview_template.jinja2" />
+    <Content Include="README.md" />
+    <Content Include="requirements.txt" />
+    <Content Include="requirements_for_test.txt" />
+    <Content Include="scripts\bootstrap.sh" />
+    <Content Include="scripts\push-tag.sh" />
+    <Content Include="scripts\run_tests.sh" />
+    <Content Include="setup.cfg" />
+    <Content Include="tests\test_files\multi_page_pdf.pdf" />
+    <Content Include="tests\test_files\one_page_pdf.pdf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Interpreter Include="notification-utils\">
+      <Id>notification-utils</Id>
+      <Version>3.6</Version>
+      <Description>notification-utils (Python 3.6 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>
