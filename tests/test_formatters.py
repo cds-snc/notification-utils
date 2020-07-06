@@ -41,9 +41,9 @@ from notifications_utils.template import (
     ]
 )
 def test_makes_links_out_of_URLs(url):
-    link = '<a style="word-wrap: break-word; color: #005ea5;" href="{}">{}</a>'.format(url, url)
+    link = '<a style="word-wrap: break-word; color: #004795;" href="{}">{}</a>'.format(url, url)
     assert (notify_email_markdown(url) == (
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
         '{}'
         '</p>'
     ).format(link))
@@ -56,7 +56,7 @@ def test_makes_links_out_of_URLs(url):
         ),
         (
             'this is some text with a link '
-            '<a style="word-wrap: break-word; color: #005ea5;" href="http://example.com">http://example.com</a>'
+            '<a style="word-wrap: break-word; color: #004795;" href="http://example.com">http://example.com</a>'
             ' in the middle'
         ),
     ),
@@ -66,13 +66,13 @@ def test_makes_links_out_of_URLs(url):
         ),
         (
             'this link is in brackets '
-            '(<a style="word-wrap: break-word; color: #005ea5;" href="http://example.com">http://example.com</a>)'
+            '(<a style="word-wrap: break-word; color: #004795;" href="http://example.com">http://example.com</a>)'
         ),
     )
 ])
 def test_makes_links_out_of_URLs_in_context(input, output):
     assert notify_email_markdown(input) == (
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
         '{}'
         '</p>'
     ).format(output)
@@ -90,7 +90,7 @@ def test_makes_links_out_of_URLs_in_context(input, output):
 )
 def test_doesnt_make_links_out_of_invalid_urls(url):
     assert notify_email_markdown(url) == (
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
         '{}'
         '</p>'
     ).format(url)
@@ -100,8 +100,8 @@ def test_handles_placeholders_in_urls():
     assert notify_email_markdown(
         "http://example.com/?token=<span class='placeholder'>((token))</span>&key=1"
     ) == (
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
-        '<a style="word-wrap: break-word; color: #005ea5;" href="http://example.com/?token=">'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+        '<a style="word-wrap: break-word; color: #004795;" href="http://example.com/?token=">'
         'http://example.com/?token='
         '</a>'
         '<span class=\'placeholder\'>((token))</span>&amp;key=1'
@@ -113,19 +113,19 @@ def test_handles_placeholders_in_urls():
     "url, expected_html, expected_html_in_template", [
         (
             """https://example.com"onclick="alert('hi')""",
-            """<a style="word-wrap: break-word; color: #005ea5;" href="https://example.com%22onclick=%22alert%28%27hi">https://example.com"onclick="alert('hi</a>')""",  # noqa
-            """<a style="word-wrap: break-word; color: #005ea5;" href="https://example.com%22onclick=%22alert%28%27hi">https://example.com"onclick="alert('hi</a>‘)""",  # noqa
+            """<a style="word-wrap: break-word; color: #004795;" href="https://example.com%22onclick=%22alert%28%27hi">https://example.com"onclick="alert('hi</a>')""",  # noqa
+            """<a style="word-wrap: break-word; color: #004795;" href="https://example.com%22onclick=%22alert%28%27hi">https://example.com"onclick="alert('hi</a>‘)""",  # noqa
         ),
         (
             """https://example.com"style='text-decoration:blink'""",
-            """<a style="word-wrap: break-word; color: #005ea5;" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>'""",  # noqa
-            """<a style="word-wrap: break-word; color: #005ea5;" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>’""",  # noqa
+            """<a style="word-wrap: break-word; color: #004795;" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>'""",  # noqa
+            """<a style="word-wrap: break-word; color: #004795;" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>’""",  # noqa
         ),
     ]
 )
 def test_URLs_get_escaped(url, expected_html, expected_html_in_template):
     assert notify_email_markdown(url) == (
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
         '{}'
         '</p>'
     ).format(expected_html)
@@ -134,7 +134,7 @@ def test_URLs_get_escaped(url, expected_html, expected_html_in_template):
 
 def test_HTML_template_has_URLs_replaced_with_links():
     assert (
-        '<a style="word-wrap: break-word; color: #005ea5;" href="https://service.example.com/accept_invite/a1b2c3d4">'
+        '<a style="word-wrap: break-word; color: #004795;" href="https://service.example.com/accept_invite/a1b2c3d4">'
         'https://service.example.com/accept_invite/a1b2c3d4'
         '</a>'
     ) in str(HTMLEmailTemplate({'content': (
@@ -147,12 +147,12 @@ def test_HTML_template_has_URLs_replaced_with_links():
 
 @pytest.mark.parametrize('markdown_function, expected_output', [
     (notify_email_markdown, (
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
-        '<a style="word-wrap: break-word; color: #005ea5;" href="https://example.com">'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+        '<a style="word-wrap: break-word; color: #004795;" href="https://example.com">'
         'https://example.com'
         '</a>'
         '</p>'
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
         'Next paragraph'
         '</p>'
     )),
@@ -249,9 +249,9 @@ def test_block_code(markdown_function, expected):
         (
             '<blockquote '
             'style="Margin: 0 0 20px 0; border-left: 10px solid #BFC1C3;'
-            'padding: 15px 0 0.1px 15px; font-size: 19px; line-height: 25px;'
+            'padding: 15px 0 0.1px 15px; font-size: 16px; line-height: 25px;'
             '">'
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">inset text</p>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">inset text</p>'
             '</blockquote>'
         )
     ],
@@ -281,8 +281,8 @@ def test_block_quote(markdown_function, expected):
         [
             notify_email_markdown,
             (
-                '<h2 style="Margin: 0 0 20px 0; padding: 0; font-size: 27px; '
-                'line-height: 35px; font-weight: bold; color: #0B0C0C;">'
+                '<h2 style="Margin: 0 0 20px 0; padding: 0; font-size: 32px; '
+                'line-height: 35px; font-weight: bold; color: #323A45;">'
                 'heading'
                 '</h2>'
             )
@@ -309,7 +309,7 @@ def test_level_1_header(markdown_function, heading, expected):
     ],
     [
         notify_email_markdown,
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">inset text</p>'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">inset text</p>'
     ],
     [
         notify_plain_text_email_markdown,
@@ -335,9 +335,9 @@ def test_level_2_header(markdown_function, expected):
     [
         notify_email_markdown,
         (
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">a</p>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">a</p>'
             '<hr style="border: 0; height: 1px; background: #BFC1C3; Margin: 30px 0 30px 0;">'
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">b</p>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">b</p>'
         )
     ],
     [
@@ -375,12 +375,12 @@ def test_hrule(markdown_function, expected):
             '<tr>'
             '<td style="font-family: Helvetica, Arial, sans-serif;">'
             '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-            'line-height: 25px; color: #0B0C0C;">one</li>'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-            'line-height: 25px; color: #0B0C0C;">two</li>'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-            'line-height: 25px; color: #0B0C0C;">three</li>'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+            'line-height: 25px; color: #323A45;">one</li>'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+            'line-height: 25px; color: #323A45;">two</li>'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+            'line-height: 25px; color: #323A45;">three</li>'
             '</ol>'
             '</td>'
             '</tr>'
@@ -465,12 +465,12 @@ def test_ordered_list(markdown_function, expected):
             '<tr>'
             '<td style="font-family: Helvetica, Arial, sans-serif;">'
             '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-            'line-height: 25px; color: #0B0C0C;">one</li>'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-            'line-height: 25px; color: #0B0C0C;">two</li>'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-            'line-height: 25px; color: #0B0C0C;">three</li>'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+            'line-height: 25px; color: #323A45;">one</li>'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+            'line-height: 25px; color: #323A45;">two</li>'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+            'line-height: 25px; color: #323A45;">three</li>'
             '</ul>'
             '</td>'
             '</tr>'
@@ -499,9 +499,9 @@ def test_unordered_list(markdown, markdown_function, expected):
     [
         notify_email_markdown,
         (
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">+ one</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">+ two</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">+ three</p>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">+ one</p>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">+ two</p>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">+ three</p>'
         ),
     ],
     [
@@ -537,9 +537,9 @@ def test_pluses_dont_render_as_lists(markdown_function, expected):
     [
         notify_email_markdown,
         (
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">line one<br />'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">line one<br />'
             'line two</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">new paragraph</p>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">new paragraph</p>'
         )
     ],
     [
@@ -573,8 +573,8 @@ def test_paragraphs(markdown_function, expected):
     [
         notify_email_markdown,
         (
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">before</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">after</p>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">before</p>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">after</p>'
         )
     ],
     [
@@ -616,8 +616,8 @@ def test_table(markdown_function):
         notify_email_markdown,
         'http://example.com',
         (
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
-            '<a style="word-wrap: break-word; color: #005ea5;" href="http://example.com">http://example.com</a>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+            '<a style="word-wrap: break-word; color: #004795;" href="http://example.com">http://example.com</a>'
             '</p>'
         )
     ],
@@ -625,8 +625,8 @@ def test_table(markdown_function):
         notify_email_markdown,
         """https://example.com"onclick="alert('hi')""",
         (
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
-            '<a style="word-wrap: break-word; color: #005ea5;" href="https://example.com%22onclick=%22alert%28%27hi">'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+            '<a style="word-wrap: break-word; color: #004795;" href="https://example.com%22onclick=%22alert%28%27hi">'
             'https://example.com"onclick="alert(\'hi'
             '</a>\')'
             '</p>'
@@ -652,7 +652,7 @@ def test_autolink(markdown_function, link, expected):
     ],
     [
         notify_email_markdown,
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">variable called thing</p>'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">variable called thing</p>'
     ],
     [
         notify_plain_text_email_markdown,
@@ -672,7 +672,7 @@ def test_codespan(markdown_function, expected):
     ],
     [
         notify_email_markdown,
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">something **important**</p>'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">something **important**</p>'
     ],
     [
         notify_plain_text_email_markdown,
@@ -692,7 +692,7 @@ def test_double_emphasis(markdown_function, expected):
     ],
     [
         notify_email_markdown,
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">something *important*</p>'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">something *important*</p>'
     ],
     [
         notify_plain_text_email_markdown,
@@ -708,7 +708,7 @@ def test_emphasis(markdown_function, expected):
 @pytest.mark.parametrize('markdown_function, expected', (
     [
         notify_email_markdown,
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">foo ****** bar</p>'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">foo ****** bar</p>'
     ],
     [
         notify_plain_text_email_markdown,
@@ -742,9 +742,9 @@ def test_image(markdown_function):
     [
         notify_email_markdown,
         (
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; '
-            'color: #0B0C0C;">'
-            '<a style="word-wrap: break-word; color: #005ea5;" href="http://example.com">Example</a>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; '
+            'color: #323A45;">'
+            '<a style="word-wrap: break-word; color: #004795;" href="http://example.com">Example</a>'
             '</p>'
         )
     ],
@@ -772,9 +772,9 @@ def test_link(markdown_function, expected):
     [
         notify_email_markdown,
         (
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; '
-            'color: #0B0C0C;">'
-            '<a style="word-wrap: break-word; color: #005ea5;" href="http://example.com" title="An example URL">'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; '
+            'color: #323A45;">'
+            '<a style="word-wrap: break-word; color: #004795;" href="http://example.com" title="An example URL">'
             'Example'
             '</a>'
             '</p>'
@@ -801,7 +801,7 @@ def test_link_with_title(markdown_function, expected):
     ],
     [
         notify_email_markdown,
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">Strike</p>'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">Strike</p>'
     ],
     [
         notify_plain_text_email_markdown,

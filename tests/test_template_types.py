@@ -52,9 +52,9 @@ def test_govuk_banner(show_banner):
     email = HTMLEmailTemplate({'content': 'hello world', 'subject': ''})
     email.govuk_banner = show_banner
     if show_banner:
-        assert "gov-canada-en-01.png" in str(email)
+        assert "va-logo.png" in str(email)
     else:
-        assert "gov-canada-en-01.png" not in str(email)
+        assert "va-logo.png" not in str(email)
 
 
 def test_brand_banner_shows():
@@ -100,7 +100,7 @@ def test_brand_data_shows(brand_logo, brand_text, brand_colour):
         assert 'bgcolor="{}"'.format(brand_colour) in email
 
 
-def test_alt_text_with_brand_text_and_govuk_banner_shown():
+def test_brand_log_has_no_alt_text_when_brand_text_is_present():
     email = str(HTMLEmailTemplate(
         {'content': 'hello world', 'subject': ''},
         govuk_banner=True,
@@ -109,11 +109,12 @@ def test_alt_text_with_brand_text_and_govuk_banner_shown():
         brand_banner=True,
         brand_name='Notify Logo'
     ))
+    assert 'alt="U.S. Department of Veterans Affairs"' in email
     assert 'alt=" "' in email
     assert 'alt="Notify Logo"' not in email
 
 
-def test_alt_text_with_no_brand_text_and_govuk_banner_shown():
+def test_brand_logo_has_alt_text_when_no_brand_text():
     email = str(HTMLEmailTemplate(
         {'content': 'hello world', 'subject': ''},
         govuk_banner=True,
@@ -122,7 +123,7 @@ def test_alt_text_with_no_brand_text_and_govuk_banner_shown():
         brand_banner=True,
         brand_name='Notify Logo'
     ))
-    assert 'alt=" "' in email
+    assert 'alt="U.S. Department of Veterans Affairs"' in email
     assert 'alt="Notify Logo"' in email
 
 
@@ -187,7 +188,7 @@ def test_complete_html(complete_html, branding_should_be_present, brand_logo, br
 
 def test_preheader_is_at_start_of_html_emails():
     assert (
-        '<body style="font-family: Helvetica, Arial, sans-serif;font-size: 16px;margin: 0;color:#0b0c0c;">\n'
+        '<body style="font-family: Helvetica, Arial, sans-serif;font-size: 16px;margin: 0;color:#323A45;">\n'
         '\n'
         '<span style="display: none;font-size: 1px;color: #fff; max-height: 0;">content…</span>'
     ) in str(
@@ -337,7 +338,7 @@ def test_markdown_in_templates(
     ]
 )
 def test_makes_links_out_of_URLs(template_class, url, url_with_entities_replaced):
-    assert '<a style="word-wrap: break-word; color: #005ea5;" href="{}">{}</a>'.format(
+    assert '<a style="word-wrap: break-word; color: #004795;" href="{}">{}</a>'.format(
         url_with_entities_replaced, url_with_entities_replaced
     ) in str(template_class({'content': url, 'subject': ''}))
 
@@ -351,7 +352,7 @@ def test_makes_links_out_of_URLs(template_class, url, url_with_entities_replaced
             'Thanks\n'
         ),
         (
-            '<a style="word-wrap: break-word; color: #005ea5;"'
+            '<a style="word-wrap: break-word; color: #004795;"'
             ' href="https://service.example.com/accept_invite/a1b2c3d4">'
             'https://service.example.com/accept_invite/a1b2c3d4'
             '</a>'
@@ -362,7 +363,7 @@ def test_makes_links_out_of_URLs(template_class, url, url_with_entities_replaced
             'https://service.example.com/accept_invite/?a=b&c=d&'
         ),
         (
-            '<a style="word-wrap: break-word; color: #005ea5;"'
+            '<a style="word-wrap: break-word; color: #004795;"'
             ' href="https://service.example.com/accept_invite/?a=b&amp;c=d&amp;">'
             'https://service.example.com/accept_invite/?a=b&amp;c=d&amp;'
             '</a>'
@@ -927,7 +928,7 @@ def test_templates_handle_html_and_redacting(
     ]),
     (HTMLEmailTemplate, {}, [
         mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
             'content'
             '</p>'
         ),
@@ -937,7 +938,7 @@ def test_templates_handle_html_and_redacting(
     ]),
     (EmailPreviewTemplate, {}, [
         mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
             'content'
             '</p>'
         ),
@@ -992,7 +993,7 @@ def test_templates_remove_whitespace_before_punctuation(
     ]),
     (HTMLEmailTemplate, {}, [
         mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
             'content'
             '</p>'
         ),
@@ -1001,7 +1002,7 @@ def test_templates_remove_whitespace_before_punctuation(
     ]),
     (EmailPreviewTemplate, {}, [
         mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
             'content'
             '</p>'
         ),
@@ -1868,9 +1869,9 @@ def test_whitespace_in_subject_placeholders(template_class):
     (
         HTMLEmailTemplate,
         (
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">paragraph one</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">&nbsp;</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">paragraph two</p>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">paragraph one</p>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">&nbsp;</p>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">paragraph two</p>'
         ),
     ),
 ])
@@ -1990,9 +1991,9 @@ def test_plain_text_email_whitespace():
         '-----------------------------------------------------------------\n'
     )),
     (HTMLEmailTemplate, (
-        '<h2 style="Margin: 0 0 20px 0; padding: 0; font-size: 27px; '
-        'line-height: 35px; font-weight: bold; color: #0B0C0C;">'
-        'Heading <a style="word-wrap: break-word; color: #005ea5;" href="https://example.com">link</a>'
+        '<h2 style="Margin: 0 0 20px 0; padding: 0; font-size: 32px; '
+        'line-height: 35px; font-weight: bold; color: #323A45;">'
+        'Heading <a style="word-wrap: break-word; color: #004795;" href="https://example.com">link</a>'
         '</h2>'
     )),
     (LetterPreviewTemplate, (

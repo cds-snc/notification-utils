@@ -19,7 +19,7 @@
   </style>
 </head>
 
-<body style="font-family: Helvetica, Arial, sans-serif;font-size: 16px;margin: 0;color:#0b0c0c;">
+<body style="font-family: Helvetica, Arial, sans-serif;font-size: 16px;margin: 0;color:#323A45;">
 {% endif %}
 <span style="display: none;font-size: 1px;color: #fff; max-height: 0;">{{ preheader }}…</span>
 
@@ -49,7 +49,7 @@
 {% endif %}
 
 {% if brand_banner %}
-{% set brand_colour = brand_colour if brand_colour else '#0b0c0c' %}
+{% set brand_colour = brand_colour if brand_colour else '#323A45' %}
 <table role="presentation" width="100%" style="border-collapse: collapse;min-width: 100%;width: 100% !important;" cellpadding="0" cellspacing="0" border="0">
   <tr style="margin-bottom:20px;">
     <td width="100%" height="53" bgcolor="{{brand_colour}}">
@@ -78,7 +78,7 @@
                 display: block;
                 font-family: Helvetica, Arial, sans-serif;
                 font-weight: 700;
-                font-size: 19px;
+                font-size: 16px;
                 color: #ffffff;
                 line-height: 25px;
                 ">
@@ -126,7 +126,7 @@
                   <img src="{{ brand_logo }}" style="padding-left:0; display: block; border: 0" height="{% if brand_text -%} 27 {%- else -%} 108 {%- endif %}"
                         alt="{% if brand_text %} {% else -%}{{ brand_name }}{%- endif %}" />
                 </td>
-                <td width="100%" style="font-family: Helvetica, Arial, sans-serif; font-size: 18px; line-height: 23px;" valign="center">
+                <td width="100%" style="font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 23px;" valign="center">
                   {% if brand_text %}
                   {{ brand_text }}
                   {% endif %}

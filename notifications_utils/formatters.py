@@ -11,7 +11,7 @@ from notifications_utils.sanitise_text import SanitiseSMS
 import smartypants
 
 
-LINK_STYLE = 'word-wrap: break-word; color: #005ea5;'
+LINK_STYLE = 'word-wrap: break-word; color: #004795;'
 
 OBSCURE_WHITESPACE = (
     '\u180E'  # Mongolian vowel separator
@@ -359,7 +359,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         if level == 1:
             return (
                 '<h2 style="Margin: 0 0 20px 0; padding: 0; '
-                'font-size: 27px; line-height: 35px; font-weight: bold; color: #0B0C0C;">'
+                'font-size: 32px; line-height: 35px; font-weight: bold; color: #323A45;">'
                 '{}'
                 '</h2>'
             ).format(
@@ -404,8 +404,8 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
 
     def list_item(self, text):
         return (
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-            'line-height: 25px; color: #0B0C0C;">'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+            'line-height: 25px; color: #323A45;">'
             '{}'
             '</li>'
         ).format(
@@ -415,7 +415,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
     def paragraph(self, text):
         if text.strip():
             return (
-                '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">{}</p>'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">{}</p>'
             ).format(
                 text
             )
@@ -425,7 +425,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         return (
             '<blockquote '
             'style="Margin: 0 0 20px 0; border-left: 10px solid #BFC1C3;'
-            'padding: 15px 0 0.1px 15px; font-size: 19px; line-height: 25px;"'
+            'padding: 15px 0 0.1px 15px; font-size: 16px; line-height: 25px;"'
             '>'
             '{}'
             '</blockquote>'
