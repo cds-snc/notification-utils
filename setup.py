@@ -1,5 +1,5 @@
 """
-Python API client for GOV.UK Notify
+Python API client for VA Notify
 """
 import re
 import ast
@@ -13,12 +13,12 @@ with open('notifications_utils/version.py', 'rb') as f:
         f.read().decode('utf-8')).group(1)))
 
 setup(
-    name='notifications-utils',
+    name='notification-utils',
     version=version,
-    url='https://github.com/alphagov/notifications-utils',
+    url='https://github.com/department-of-veterans-affairs/notification-utils',
     license='MIT',
-    author='Government Digital Service',
-    description='Shared python code for GOV.UK Notify.',
+    author='Department of Veteran Affairs',
+    description='Shared python code for VA Notify. Forked from https://github.com/cds-snc/notification-utils',
     long_description=__doc__,
     packages=find_packages(),
     include_package_data=True,
