@@ -337,7 +337,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self,
         template,
         values=None,
-        govuk_banner=True,
+        default_banner=True,
         complete_html=True,
         brand_logo=None,
         brand_text=None,
@@ -347,7 +347,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         jinja_path=None,
     ):
         super().__init__(template, values, jinja_path=jinja_path)
-        self.govuk_banner = govuk_banner
+        self.default_banner = default_banner
         self.complete_html = complete_html
         self.brand_logo = brand_logo
         self.brand_text = brand_text
@@ -385,7 +385,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
                 self.content, self.values
             ),
             'preheader': self.preheader,
-            'govuk_banner': self.govuk_banner,
+            'default_banner': self.default_banner,
             'complete_html': self.complete_html,
             'brand_logo': self.brand_logo,
             'brand_text': self.brand_text,

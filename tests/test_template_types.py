@@ -48,9 +48,9 @@ def test_default_template(content):
 @pytest.mark.parametrize(
     "show_banner", (True, False)
 )
-def test_govuk_banner(show_banner):
+def test_default_banner(show_banner):
     email = HTMLEmailTemplate({'content': 'hello world', 'subject': ''})
-    email.govuk_banner = show_banner
+    email.default_banner = show_banner
     if show_banner:
         assert "va-logo.png" in str(email)
     else:
@@ -61,7 +61,7 @@ def test_brand_banner_shows():
     email = str(HTMLEmailTemplate(
         {'content': 'hello world', 'subject': ''},
         brand_banner=True,
-        govuk_banner=False
+        default_banner=False
     ))
     assert (
         '<td width="10" height="10" valign="middle"></td>'
@@ -85,7 +85,7 @@ def test_brand_data_shows(brand_logo, brand_text, brand_colour):
     email = str(HTMLEmailTemplate(
         {'content': 'hello world', 'subject': ''},
         brand_banner=True,
-        govuk_banner=False,
+        default_banner=False,
         brand_logo=brand_logo,
         brand_text=brand_text,
         brand_colour=brand_colour
@@ -103,7 +103,7 @@ def test_brand_data_shows(brand_logo, brand_text, brand_colour):
 def test_brand_log_has_no_alt_text_when_brand_text_is_present():
     email = str(HTMLEmailTemplate(
         {'content': 'hello world', 'subject': ''},
-        govuk_banner=True,
+        default_banner=True,
         brand_logo='http://example.com/image.png',
         brand_text='Example',
         brand_banner=True,
@@ -117,7 +117,7 @@ def test_brand_log_has_no_alt_text_when_brand_text_is_present():
 def test_brand_logo_has_alt_text_when_no_brand_text():
     email = str(HTMLEmailTemplate(
         {'content': 'hello world', 'subject': ''},
-        govuk_banner=True,
+        default_banner=True,
         brand_logo='http://example.com/image.png',
         brand_text=None,
         brand_banner=True,
@@ -133,10 +133,10 @@ def test_brand_logo_has_alt_text_when_no_brand_text():
     (False, 'Example', 'alt=" "'),
     (False, None, 'alt="Notify Logo"'),
 ])
-def test_alt_text_with_no_govuk_banner(brand_banner, brand_text, expected_alt_text):
+def test_alt_text_with_no_default_banner(brand_banner, brand_text, expected_alt_text):
     email = str(HTMLEmailTemplate(
         {'content': 'hello world', 'subject': ''},
-        govuk_banner=False,
+        default_banner=False,
         brand_logo='http://example.com/image.png',
         brand_text=brand_text,
         brand_banner=brand_banner,
