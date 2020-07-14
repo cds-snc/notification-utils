@@ -424,7 +424,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
     def block_quote(self, text):
         return (
             '<blockquote '
-            'style="Margin: 0 0 20px 0; border-left: 10px solid #BFC1C3;'
+            'style="Margin: 0 0 20px 0; background: #F1F1F1;'
             'padding: 15px 0 0.1px 15px; font-size: 16px; line-height: 25px;"'
             '>'
             '{}'
