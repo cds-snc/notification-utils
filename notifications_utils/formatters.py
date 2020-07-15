@@ -456,7 +456,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         )
 
     def double_emphasis(self, text):
-        return '**{}**'.format(text)
+        return '<strong>{}</strong>'.format(text)
 
     def emphasis(self, text):
         return '*{}*'.format(text)
@@ -528,6 +528,9 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
 
     def autolink(self, link, is_email=False):
         return link
+
+    def double_emphasis(self, text):
+        return text
 
 
 class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer):

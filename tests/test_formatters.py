@@ -672,16 +672,17 @@ def test_codespan(markdown_function, expected):
     ],
     [
         notify_email_markdown,
-        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">something **important**</p>'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; '
+        'color: #323A45;">something <strong>important</strong></p>'
     ],
     [
         notify_plain_text_email_markdown,
-        '\n\nsomething **important**',
+        '\n\nsomething important',
     ],
 ))
 def test_double_emphasis(markdown_function, expected):
     assert markdown_function(
-        'something **important**'
+        'something __important__'
     ) == expected
 
 
@@ -708,16 +709,17 @@ def test_emphasis(markdown_function, expected):
 @pytest.mark.parametrize('markdown_function, expected', (
     [
         notify_email_markdown,
-        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">foo ****** bar</p>'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; '
+        'color: #323A45;">foo <strong>**</strong> bar</p>'
     ],
     [
         notify_plain_text_email_markdown,
-        '\n\nfoo ****** bar',
+        '\n\nfoo ** bar',
     ],
 ))
 def test_nested_emphasis(markdown_function, expected):
     assert markdown_function(
-        'foo ****** bar'
+        'foo __**__ bar'
     ) == expected
 
 
