@@ -693,16 +693,17 @@ def test_double_emphasis(markdown_function, expected):
     ],
     [
         notify_email_markdown,
-        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">something *important*</p>'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; '
+        'color: #323A45;">something <em>important</em></p>'
     ],
     [
         notify_plain_text_email_markdown,
-        '\n\nsomething *important*',
+        '\n\nsomething important',
     ],
 ))
 def test_emphasis(markdown_function, expected):
     assert markdown_function(
-        'something *important*'
+        'something _important_'
     ) == expected
 
 
@@ -710,16 +711,16 @@ def test_emphasis(markdown_function, expected):
     [
         notify_email_markdown,
         '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; '
-        'color: #323A45;">foo <strong>**</strong> bar</p>'
+        'color: #323A45;">foo <strong><em>bar</em></strong></p>'
     ],
     [
         notify_plain_text_email_markdown,
-        '\n\nfoo ** bar',
+        '\n\nfoo bar',
     ],
 ))
 def test_nested_emphasis(markdown_function, expected):
     assert markdown_function(
-        'foo __**__ bar'
+        'foo ___bar___'
     ) == expected
 
 
