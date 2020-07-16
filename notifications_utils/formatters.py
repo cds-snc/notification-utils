@@ -425,7 +425,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         return (
             '<blockquote '
             'style="Margin: 0 0 20px 0; background: #F1F1F1;'
-            'padding: 15px 0 0.1px 15px; font-size: 16px; line-height: 25px;"'
+            'padding: 24px 24px 0.1px 24px; font-size: 16px; line-height: 25px;"'
             '>'
             '{}'
             '</blockquote>'
