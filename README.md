@@ -38,6 +38,21 @@ Running tests will also apply syntax checking, using [pycodestyle](https://pypi.
 
 Additionally code coverage is checked via pytest-cov:
 
+## Versioning
+
+After making changes in this repo, complete the following steps to see those changes in `notification-api`. 
+Note: to test locally before pushing, do steps #1 and #4 below and then follow instructions in the `notification-api` README.
+
+1. Increment the version in `notifications_utils/version.py`.
+
+2. Push this change.
+
+3. Manually run `./scripts/push-tag.sh`, which will look at `version.py` and push a tag with that version.
+
+4. In `notification-api`, update `requirements.txt` and `requirements-app.txt` to point at the newly generated tag.
+
+5. Push this change. 
+
 ## Documentation
 
 Documentation for the template used to render emails is in the [docs](./docs/README.md) folder.
