@@ -174,4 +174,4 @@ class Field:
 def str2bool(value):
     if not value:
         return False
-    return str(value).lower() in ("yes", "y", "true", "t", "1", "include", "show")
+    return str(value).lower() in ("yes", "y", "true", "t", "1", "include", "show", "oui", "vrai", "inclure", "afficher")
