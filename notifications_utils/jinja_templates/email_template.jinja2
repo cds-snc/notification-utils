@@ -24,33 +24,33 @@
 <span style="display: none;font-size: 1px;color: #fff; max-height: 0;">{{ preheader }}…</span>
 
 <!-- start primary template header EN + FR -->
-{% if govuk_banner or brand_name == "canada.ca-fr" %}
-  <table role="presentation" width="100%" style="border-collapse: collapse; min-width: 100%; width: 100% !important;" cellpadding="0" cellspacing="0" border="0">
+{% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
+  <table role="presentation" style="border-collapse: collapse; max-width: calc(100% - 10px); width: 580px; margin: 0 auto;">
     <tr>
-      <td width="100%" height="53" bgcolor="#fff">
+      <td width="100%" height="53" bgcolor="#fff" style="padding: 0;">
         <!-- start fip -->
-        <table width="580" role="presentation" width="100%" style="border-collapse: collapse; max-width: 580px;" cellpadding="0" cellspacing="0" border="0" align="left">
+        <table role="presentation" style="border-collapse: collapse; max-width: 326px; width: calc(100% - 10px) !important;" align="left">
           <tr>
-            <td>
+            <td style="padding-left: 10px;">
               
-              {% if govuk_banner %}
+              {% if fip_banner_english %}
               <img
                 src="https://notification-alpha-canada-ca-asset-upload.s3.amazonaws.com/gov-canada-en-01.png"
                 alt="Government of Canada / Gouvernement du Canada"
                 height="30"
-                style="padding-left:10px;padding-bottom:30px"
+                style="padding-bottom:30px; max-width: 100%; height: auto;"
                 border="0"
               />
               {% endif %}
 
                 <!-- FR Fip -->
-               {% if brand_name == "canada.ca-fr" %}
+               {% if fip_banner_french or brand_name == "canada.ca-fr" %}
 
                <img
                 src="https://notification-alpha-canada-ca-asset-upload.s3.amazonaws.com/09d0d711-9c23-48ec-b21e-fc6acd2412bf-gov-canada-fr.png"
                 alt="Gouvernement du Canada / Government of Canada"
                 height="30"
-                style="padding-left:10px;padding-bottom:30px"
+                style="padding-bottom:30px; max-width: 100%; height: auto;"
                 border="0"
               />
 
@@ -66,12 +66,12 @@
   </table>
 {% endif %}
 
-{% if brand_banner %}
+{% if logo_with_background_colour %}
 {% set brand_colour = brand_colour if brand_colour else '#0b0c0c' %}
-<table role="presentation" width="100%" style="border-collapse: collapse;min-width: 100%;width: 100% !important;" cellpadding="0" cellspacing="0" border="0">
+<table role="presentation" style="border-collapse: collapse; max-width: 100%; width: 580px; margin: 0 auto;">
   <tr style="margin-bottom:20px;">
-    <td width="100%" height="53" bgcolor="{{brand_colour}}">
-      <table role="presentation" width="100%" style="border-collapse: collapse;max-width: 580px;" cellpadding="0" cellspacing="0" border="0" align="left">
+    <td width="100%" height="53" bgcolor="{{brand_colour}}" style="padding: 0;">
+      <table role="presentation" width="100%" style="border-collapse: collapse;max-width: 580px; padding-left: 10px;" cellpadding="0" cellspacing="0" border="0" align="left">
         <tr>
           {% if brand_logo %}
             <td
@@ -91,7 +91,7 @@
             </td>
           {% endif %}
           {% if brand_text %}
-            <td width="100%" bgcolor="{{brand_colour}}" valign="middle" align="left" style="padding: 14px 0 14px 10px">
+            <td width="100%" bgcolor="{{brand_colour}}" valign="middle" align="left" style="padding: 10px 0 14px 10px">
               <span style="
                 display: block;
                 font-family: Helvetica, Arial, sans-serif;
@@ -119,28 +119,24 @@
   </tr>
 </table>
 {% endif %}
-{% if brand_logo and not brand_banner %}
+
+{% if brand_logo and not logo_with_background_colour %}
 <table
   role="presentation"
   class="content"
-  align="center"
-  cellpadding="0"
-  cellspacing="0"
-  border="0"
-  style="border-collapse: collapse;max-width: 580px; width: 100% !important;"
-  width="100%"
+  style="border-collapse: collapse; max-width: 100%; width: 580px; margin: 0 auto;"
 >
   <tr>
-    <td>
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse">
+    <td style="padding: 0;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse; padding-left: 10px;">
         <tr>
-          <td height="24" width="100%" colspan="2"><br /></td>
+          <td height="24" width="100%" colspan="2" style="padding: 0;"><br /></td>
         </tr>
         <tr>
-          <td>
+          <td style="padding: 0;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse">
               <tr>
-                <td style="padding: 0 5px 0{% if brand_colour %} 7px; border-left: solid 2px {{ brand_colour }}{% else %} 0{% endif %}">
+                <td style="padding: 0 5px 0 {% if brand_colour %} 8px; border-left: solid 2px {{ brand_colour }}{% else %} 10px{% endif %}">
                   <img src="{{ brand_logo }}" style="padding-left:0; display: block; border: 0" height="{% if brand_text -%} 27 {%- else -%} 108 {%- endif %}"
                         alt="{% if brand_text %} {% else -%}{{ brand_name }}{%- endif %}" />
                 </td>
@@ -170,36 +166,34 @@
 <table
     role="presentation"
     class="content"
-    align="center"
-    cellpadding="0"
-    cellspacing="0"
-    border="0"
-    style="border-collapse: collapse; max-width: 580px; width: 100% !important;"
-    width="100%"
+    style="border-collapse: collapse; max-width: calc(100% - 10px); width: 580px; margin: 0 auto;"
 >
   <tr>
-    <td width="560" style="font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.315789474; max-width: 560px;">
+    <td style="font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.315789474; max-width: 580px; padding-left: 10px;">
         {{ body|safe }}
     </td>
   </tr>
 </table>
 <!-- end main content -->
-{% if govuk_banner or brand_name == "canada.ca-fr" %}
-<table role="presentation" width="100%" style="border-collapse: collapse;min-width: 100%; width: 100% !important;" cellpadding="0" cellspacing="0" border="0">
+
+{% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
+<!-- for some reason some mobile clients don't want to respect the width: 580px / max-width:100% relationship here -->
+<!-- so added the min-width: 320 to make sure it looks right on small screens -->
+<table role="presentation" width="100%" style="border-collapse: collapse; min-width: 320px; max-width: 100%; width: 580px; margin: 0 auto;">
   <tr>
-    <td width="100%" bgcolor="#fff"> 
-      <table role="presentation" width="100%" style="border-collapse: collapse;max-width: 580px;" cellpadding="0" cellspacing="0" border="0" align="right">
+    <td width="100%" bgcolor="#fff" style="width:100%!important; padding: 0;"> 
+      <table role="presentation" style="border-collapse: collapse; width: 100%!important; text-align: right;" align="right">
         <tr>
-          <td bgcolor="#fff" style="text-align:right;">
+          <td bgcolor="#fff" style="text-align:right;width:100%!important; padding-left: 10px;">
             <!-- start fip -->  
             <img
-            src="https://cds-notification-assets.s3.ca-central-1.amazonaws.com/wmms-blk.png"
-            alt=" "
-            height="25"
-            style="padding-top:20px;padding-right:10px;"
-            border="0"
-            style="Margin-top: 4px;"
-          />
+              src="https://cds-notification-assets.s3.ca-central-1.amazonaws.com/wmms-blk.png"
+              alt=" "
+              height="25"
+              style="padding-top:20px;"
+              border="0"
+              style="Margin-top: 4px;"
+            />
             <!-- end fip -->
           </td>
         </tr>

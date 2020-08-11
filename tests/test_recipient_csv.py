@@ -318,22 +318,22 @@ def test_big_list_validates_right_through(template_type, row_count, header, fill
 
 def test_big_list():
     big_csv = RecipientCSV(
-        "email address,name\n" + ("a@b.com\n" * RecipientCSV.max_rows),
+        "email address,name\n" + ("a@b.com\n" * 50000),
         template_type='email',
         placeholders=['name'],
         max_errors_shown=100,
         max_initial_rows_shown=3,
-        whitelist=["a@b.com"]
+        safelist=["a@b.com"]
     )
     assert len(list(big_csv.initial_rows)) == 3
     assert len(list(big_csv.initial_rows_with_errors)) == 100
-    assert len(list(big_csv.rows)) == RecipientCSV.max_rows
+    assert len(list(big_csv.rows)) == big_csv.max_rows
     assert big_csv.has_errors
 
 
 def test_overly_big_list():
     big_csv = RecipientCSV(
-        "phonenumber,name\n" + ("6502532222,example\n" * (RecipientCSV.max_rows + 1)),
+        "phonenumber,name\n" + ("6502532222,example\n" * 50001),
         template_type='sms',
         placeholders=['name'],
     )
@@ -644,10 +644,10 @@ def test_international_recipients(file_contents, rows_with_bad_recipients):
 
 def test_errors_when_too_many_rows():
     recipients = RecipientCSV(
-        "email address\n" + ("a@b.com\n" * (RecipientCSV.max_rows + 1)),
+        "email address\n" + ("a@b.com\n" * (50001)),
         template_type='email'
     )
-    assert RecipientCSV.max_rows == 50000
+    assert recipients.max_rows == 50000
     assert recipients.too_many_rows is True
     assert recipients.has_errors is True
     assert recipients.rows[49000]['email_address'].data == 'a@b.com'
@@ -656,7 +656,7 @@ def test_errors_when_too_many_rows():
 
 
 @pytest.mark.parametrize(
-    "file_contents,template_type,whitelist,count_of_rows_with_errors",
+    "file_contents,template_type,safelist,count_of_rows_with_errors",
     [
         (
             """
@@ -684,21 +684,21 @@ def test_errors_when_too_many_rows():
         (
             """
                 email address
-                IN_WHITELIST@EXAMPLE.COM
-                not_in_whitelist@example.com
+                IN_SAFELIST@EXAMPLE.COM
+                not_in_safelist@example.com
             """,
             'email',
-            ['in_whitelist@example.com', '6502532222'],  # Email case differs to the one in the CSV
+            ['in_safelist@example.com', '6502532222'],  # Email case differs to the one in the CSV
             1
         )
     ]
 )
-def test_recipient_whitelist(file_contents, template_type, whitelist, count_of_rows_with_errors):
+def test_recipient_safelist(file_contents, template_type, safelist, count_of_rows_with_errors):
 
     recipients = RecipientCSV(
         file_contents,
         template_type=template_type,
-        whitelist=whitelist
+        safelist=safelist
     )
 
     if count_of_rows_with_errors:
@@ -706,17 +706,17 @@ def test_recipient_whitelist(file_contents, template_type, whitelist, count_of_r
     else:
         assert recipients.allowed_to_send_to
 
-    # Make sure the whitelist isn’t emptied by reading it. If it’s an iterator then
+    # Make sure the safelist isn’t emptied by reading it. If it’s an iterator then
     # there’s a risk that it gets emptied after being read once
-    recipients.whitelist = (str(fake_number) for fake_number in range(7700900888, 7700900898))
-    list(recipients.whitelist)
+    recipients.safelist = (str(fake_number) for fake_number in range(7700900888, 7700900898))
+    list(recipients.safelist)
     assert not recipients.allowed_to_send_to
     assert recipients.has_errors
 
-    # An empty whitelist is treated as no whitelist at all
-    recipients.whitelist = []
+    # An empty safelist is treated as no safelist at all
+    recipients.safelist = []
     assert recipients.allowed_to_send_to
-    recipients.whitelist = itertools.chain()
+    recipients.safelist = itertools.chain()
     assert recipients.allowed_to_send_to
 
 
