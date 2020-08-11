@@ -337,22 +337,24 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self,
         template,
         values=None,
-        govuk_banner=True,
+        fip_banner_english=True,
+        fip_banner_french=False,
         complete_html=True,
         brand_logo=None,
         brand_text=None,
         brand_colour=None,
-        brand_banner=False,
+        logo_with_background_colour=False,
         brand_name=None,
         jinja_path=None,
     ):
         super().__init__(template, values, jinja_path=jinja_path)
-        self.govuk_banner = govuk_banner
+        self.fip_banner_english = fip_banner_english
+        self.fip_banner_french = fip_banner_french
         self.complete_html = complete_html
         self.brand_logo = brand_logo
         self.brand_text = brand_text
         self.brand_colour = brand_colour
-        self.brand_banner = brand_banner
+        self.logo_with_background_colour = logo_with_background_colour
         self.brand_name = brand_name
         # set this again to make sure the correct either utils / downstream local jinja is used
         # however, don't set if we are in a test environment (to preserve the above mock)
@@ -385,12 +387,13 @@ class HTMLEmailTemplate(WithSubjectTemplate):
                 self.content, self.values
             ),
             'preheader': self.preheader,
-            'govuk_banner': self.govuk_banner,
+            'fip_banner_english': self.fip_banner_english,
+            'fip_banner_french': self.fip_banner_french,
             'complete_html': self.complete_html,
             'brand_logo': self.brand_logo,
             'brand_text': self.brand_text,
             'brand_colour': self.brand_colour,
-            'brand_banner': self.brand_banner,
+            'logo_with_background_colour': self.logo_with_background_colour,
             'brand_name': self.brand_name,
         })
 

@@ -48,8 +48,6 @@ optional_address_columns = {
 
 class RecipientCSV():
 
-    max_rows = 50000
-
     def __init__(
         self,
         file_data,
@@ -57,21 +55,23 @@ class RecipientCSV():
         placeholders=None,
         max_errors_shown=20,
         max_initial_rows_shown=10,
-        whitelist=None,
+        safelist=None,
         template=None,
         remaining_messages=sys.maxsize,
         international_sms=False,
+        max_rows=50000,
     ):
         self.file_data = strip_whitespace(file_data, extra_characters=',')
         self.template_type = template_type
         self.placeholders = placeholders
         self.max_errors_shown = max_errors_shown
         self.max_initial_rows_shown = max_initial_rows_shown
-        self.whitelist = whitelist
+        self.safelist = safelist
         self.template = template if isinstance(template, Template) else None
         self.international_sms = international_sms
         self.remaining_messages = remaining_messages
         self.rows_as_list = None
+        self.max_rows = max_rows
 
     def __len__(self):
         if not hasattr(self, '_len'):
@@ -82,15 +82,15 @@ class RecipientCSV():
         return self.rows[requested_index]
 
     @property
-    def whitelist(self):
-        return self._whitelist
+    def safelist(self):
+        return self._safelist
 
-    @whitelist.setter
-    def whitelist(self, value):
+    @safelist.setter
+    def safelist(self, value):
         try:
-            self._whitelist = list(value)
+            self._safelist = list(value)
         except TypeError:
-            self._whitelist = []
+            self._safelist = []
 
     @property
     def placeholders(self):
@@ -135,10 +135,10 @@ class RecipientCSV():
     def allowed_to_send_to(self):
         if self.template_type == 'letter':
             return True
-        if not self.whitelist:
+        if not self.safelist:
             return True
         return all(
-            allowed_to_send_to(row.recipient, self.whitelist)
+            allowed_to_send_to(row.recipient, self.safelist)
             for row in self.rows
         )
 
@@ -513,9 +513,9 @@ def format_phone_number_human_readable(phone_number):
     return phone_number
 
 
-def allowed_to_send_to(recipient, whitelist):
+def allowed_to_send_to(recipient, safelist):
     return format_recipient(recipient) in [
-        format_recipient(recipient) for recipient in whitelist
+        format_recipient(recipient) for recipient in safelist
     ]
 
 
