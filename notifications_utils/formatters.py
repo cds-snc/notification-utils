@@ -423,12 +423,17 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
 
     def block_quote(self, text):
         return (
-            '<blockquote '
-            'style="Margin: 0 0 20px 0; background: #F1F1F1;'
-            'padding: 24px 24px 0.1px 24px; font-size: 16px; line-height: 25px;"'
+            '<table '
+            'width="100%" '
+            'style="Margin: 0 0 20px 0; background: #F1F1F1;"'
+            '>'
+            '<td '
+            'style="Padding: 24px 24px 0.1px 24px; font-family: Helvetica, Arial, sans-serif; '
+            'font-size: 16px; line-height: 25px;"'
             '>'
             '{}'
-            '</blockquote>'
+            '</td>'
+            '</table>'
         ).format(
             text
         )

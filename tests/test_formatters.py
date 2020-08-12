@@ -247,12 +247,17 @@ def test_block_code(markdown_function, expected):
     [
         notify_email_markdown,
         (
-            '<blockquote '
-            'style="Margin: 0 0 20px 0; background: #F1F1F1;'
-            'padding: 24px 24px 0.1px 24px; font-size: 16px; line-height: 25px;'
-            '">'
+            '<table '
+            'width="100%" '
+            'style="Margin: 0 0 20px 0; background: #F1F1F1;"'
+            '>'
+            '<td '
+            'style="Padding: 24px 24px 0.1px 24px; font-family: Helvetica, Arial, sans-serif; '
+            'font-size: 16px; line-height: 25px;"'
+            '>'
             '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">inset text</p>'
-            '</blockquote>'
+            '</td>'
+            '</table>'
         )
     ],
     [
