@@ -15,6 +15,13 @@
         width: 600px !important;
       }
     }
+    @media all and (max-width: 600px) {
+        img#header {
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+    }
     body { Margin:0 !important; }
     div[style*="Margin: 16px 0"] { Margin:0 !important; }
   </style>
@@ -42,6 +49,7 @@
               <img
                 src="https://dev-notifications-va-gov-assets.s3.us-east-2.amazonaws.com/va-logo.png"
                 alt="U.S. Department of Veterans Affairs"
+                id="header"
                 height="48"
                 style="padding:16px 0;vertical-align: middle; color: white;"
                 border="0"
