@@ -32,7 +32,7 @@ setup(
         'Jinja2==2.11.1',
         'statsd==3.3.0',
         'Flask-Redis==0.4.0',
-        'pyyaml==5.3.0',
+        'pyyaml==5.3.1',
         'phonenumbers==8.10.13',
         'pytz==2019.3',
         'smartypants==2.0.1',
