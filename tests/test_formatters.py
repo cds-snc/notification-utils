@@ -286,10 +286,10 @@ def test_block_quote(markdown_function, expected):
         [
             notify_email_markdown,
             (
-                '<h2 style="Margin: 0 0 20px 0; padding: 0; font-size: 32px; '
+                '<h1 style="Margin: 0 0 20px 0; padding: 0; font-size: 32px; '
                 'line-height: 35px; font-weight: bold; color: #323A45;">'
                 'heading'
-                '</h2>'
+                '</h1>'
             )
         ],
         [

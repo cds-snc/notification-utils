@@ -358,10 +358,10 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
     def header(self, text, level, raw=None):
         if level == 1:
             return (
-                '<h2 style="Margin: 0 0 20px 0; padding: 0; '
+                '<h1 style="Margin: 0 0 20px 0; padding: 0; '
                 'font-size: 32px; line-height: 35px; font-weight: bold; color: #323A45;">'
                 '{}'
-                '</h2>'
+                '</h1>'
             ).format(
                 text
             )
