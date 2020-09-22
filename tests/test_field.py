@@ -116,7 +116,7 @@ def test_replacement_of_placeholders(template_content, data, expected):
         (
             "((code)) is your security code",
             {},
-            "<span class='placeholder-redacted'>hidden</span> is your security code"
+            "<span class='placeholder-redacted'>[hidden]</span> is your security code"
         ),
         (
             "Hey ((name)), click http://example.com/reset-password/?token=((token))",
@@ -124,7 +124,7 @@ def test_replacement_of_placeholders(template_content, data, expected):
             (
                 "Hey Example, click "
                 "http://example.com/reset-password/?token="
-                "<span class='placeholder-redacted'>hidden</span>"
+                "<span class='placeholder-redacted'>[hidden]</span>"
             )
         ),
     ]
@@ -179,6 +179,49 @@ def test_optional_redacting_of_missing_values(template_content, data, expected):
 )
 def test_formatting_of_placeholders(content, expected):
     assert str(Field(content)) == expected
+
+
+@pytest.mark.parametrize(
+    "content,expected,with_brackets,translated,values", [
+        (
+            "((colour))",
+            "<span class='placeholder-no-brackets'>colour</span>",
+            False,
+            False,
+            None
+        ),
+        (
+            "((colour))",
+            "<span class='placeholder-no-brackets'>[colour]</span>",
+            False,
+            True,
+            None
+        ),
+        (
+            "((colour))",
+            "blue",
+            True,
+            False,
+            {'colour': 'blue'}
+        ),
+        (
+            "((colour))",
+            "blue",
+            False,
+            True,
+            {'colour': 'blue'}
+        ),
+    ]
+)
+def test_formatting_of_placeholders_without_brackets_or_translated(
+    content,
+    expected,
+    with_brackets,
+    translated,
+    values
+):
+    field = Field(content, with_brackets=with_brackets, translated=translated, values=values)
+    assert str(field) == expected
 
 
 @pytest.mark.parametrize(

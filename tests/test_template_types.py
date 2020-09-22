@@ -863,13 +863,13 @@ def test_subject_line_gets_replaced():
     (EmailPreviewTemplate, {}, [
         mock.call('content', {}, html='escape', markdown_lists=True, redact_missing_personalisation=False),
         mock.call('subject', {}, html='escape', redact_missing_personalisation=False),
-        mock.call('((email address))', {}, with_brackets=False),
+        mock.call('((email address))', {}, translated=True),
     ]),
     (SMSMessageTemplate, {}, [
         mock.call('content', {}, html='passthrough'),
     ]),
     (SMSPreviewTemplate, {}, [
-        mock.call('((phone number))', {}, with_brackets=False, html='escape'),
+        mock.call('((phone number))', {}, translated=True, html='escape'),
         mock.call('content', {}, html='escape', redact_missing_personalisation=False),
     ]),
     (LetterPreviewTemplate, {'contact_block': 'www.gov.uk'}, [
@@ -911,10 +911,10 @@ def test_subject_line_gets_replaced():
     (EmailPreviewTemplate, {'redact_missing_personalisation': True}, [
         mock.call('content', {}, html='escape', markdown_lists=True, redact_missing_personalisation=True),
         mock.call('subject', {}, html='escape', redact_missing_personalisation=True),
-        mock.call('((email address))', {}, with_brackets=False),
+        mock.call('((email address))', {}, translated=True),
     ]),
     (SMSPreviewTemplate, {'redact_missing_personalisation': True}, [
-        mock.call('((phone number))', {}, with_brackets=False, html='escape'),
+        mock.call('((phone number))', {}, translated=True, html='escape'),
         mock.call('content', {}, html='escape', redact_missing_personalisation=True),
     ]),
     (LetterPreviewTemplate, {'contact_block': 'www.gov.uk', 'redact_missing_personalisation': True}, [
@@ -1206,7 +1206,7 @@ def test_email_preview_shows_reply_to_address(extra_args):
 @pytest.mark.parametrize('template_values, expected_content', [
     (
         {},
-        '<span class=\'placeholder-no-brackets\'>email address</span>'
+        '<span class=\'placeholder-no-brackets\'>[email address]</span>'
     ),
     (
         {'email address': 'test@example.com'},
