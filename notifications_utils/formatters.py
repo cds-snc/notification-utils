@@ -62,7 +62,7 @@ dvla_markup_tags = re.compile(
 
 smartypants.tags_to_skip = smartypants.tags_to_skip + ['a']
 
-whitespace_before_punctuation = re.compile(r'[ \t]+([,|\.])')
+whitespace_before_punctuation = re.compile(r'[ \t]+([,\.])')
 
 hyphens_surrounded_by_spaces = re.compile(r'\s+[-|–|—]{1,3}\s+')
 

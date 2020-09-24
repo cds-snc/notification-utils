@@ -876,8 +876,12 @@ def test_bleach_doesnt_try_to_make_valid_html_before_cleaning():
         '\n   \t    , word',
         '\n, word',
     ),
+    (
+        'bonjour | hi',
+        'bonjour | hi',
+    ),
 ])
-def test_removing_whitespace_before_commas(dirty, clean):
+def test_removing_whitespace_before_punctuation(dirty, clean):
     assert remove_whitespace_before_punctuation(dirty) == clean
 
 
