@@ -567,25 +567,25 @@ def test_sms_message_normalises_newlines(content):
 @mock.patch('notifications_utils.template.strip_pipes', side_effect=lambda x: x)
 @pytest.mark.parametrize('values, expected_address', [
     ({}, Markup(
-        "<span class='placeholder-no-brackets'>address line 1</span>\n"
-        "<span class='placeholder-no-brackets'>address line 2</span>\n"
-        "<span class='placeholder-no-brackets'>address line 3</span>\n"
-        "<span class='placeholder-no-brackets'>address line 4</span>\n"
-        "<span class='placeholder-no-brackets'>address line 5</span>\n"
-        "<span class='placeholder-no-brackets'>address line 6</span>\n"
-        "<span class='placeholder-no-brackets'>postcode</span>"
+        "<span class='placeholder-no-brackets'>[address line 1]</span>\n"
+        "<span class='placeholder-no-brackets'>[address line 2]</span>\n"
+        "<span class='placeholder-no-brackets'>[address line 3]</span>\n"
+        "<span class='placeholder-no-brackets'>[address line 4]</span>\n"
+        "<span class='placeholder-no-brackets'>[address line 5]</span>\n"
+        "<span class='placeholder-no-brackets'>[address line 6]</span>\n"
+        "<span class='placeholder-no-brackets'>[postcode]</span>"
     )),
     ({
         'address line 1': '123 Fake Street',
         'address line 6': 'United Kingdom',
     }, Markup(
         "123 Fake Street\n"
-        "<span class='placeholder-no-brackets'>address line 2</span>\n"
-        "<span class='placeholder-no-brackets'>address line 3</span>\n"
-        "<span class='placeholder-no-brackets'>address line 4</span>\n"
-        "<span class='placeholder-no-brackets'>address line 5</span>\n"
+        "<span class='placeholder-no-brackets'>[address line 2]</span>\n"
+        "<span class='placeholder-no-brackets'>[address line 3]</span>\n"
+        "<span class='placeholder-no-brackets'>[address line 4]</span>\n"
+        "<span class='placeholder-no-brackets'>[address line 5]</span>\n"
         "United Kingdom\n"
-        "<span class='placeholder-no-brackets'>postcode</span>"
+        "<span class='placeholder-no-brackets'>[postcode]</span>"
     )),
     ({
         'address line 1': '123 Fake Street',
@@ -764,13 +764,13 @@ def test_letter_image_renderer(
         'too_many_pages': expected_oversized,
         'address': (
             "<ul>"
-            "<li><span class='placeholder-no-brackets'>address line 1</span></li>"
-            "<li><span class='placeholder-no-brackets'>address line 2</span></li>"
-            "<li><span class='placeholder-no-brackets'>address line 3</span></li>"
-            "<li><span class='placeholder-no-brackets'>address line 4</span></li>"
-            "<li><span class='placeholder-no-brackets'>address line 5</span></li>"
-            "<li><span class='placeholder-no-brackets'>address line 6</span></li>"
-            "<li><span class='placeholder-no-brackets'>postcode</span></li>"
+            "<li><span class='placeholder-no-brackets'>[address line 1]</span></li>"
+            "<li><span class='placeholder-no-brackets'>[address line 2]</span></li>"
+            "<li><span class='placeholder-no-brackets'>[address line 3]</span></li>"
+            "<li><span class='placeholder-no-brackets'>[address line 4]</span></li>"
+            "<li><span class='placeholder-no-brackets'>[address line 5]</span></li>"
+            "<li><span class='placeholder-no-brackets'>[address line 6]</span></li>"
+            "<li><span class='placeholder-no-brackets'>[postcode]</span></li>"
             "</ul>"
         ),
         'contact_block': '10 Downing Street',
@@ -883,7 +883,7 @@ def test_subject_line_gets_replaced():
             '((address line 5))\n'
             '((address line 6))\n'
             '((postcode))'
-        ), {}, with_brackets=False, html='escape'),
+        ), {}, translated=True, html='escape'),
         mock.call('www.gov.uk', {}, html='escape', redact_missing_personalisation=False),
     ]),
     (LetterImageTemplate, {
@@ -897,7 +897,7 @@ def test_subject_line_gets_replaced():
             '((address line 5))\n'
             '((address line 6))\n'
             '((postcode))'
-        ), {}, with_brackets=False, html='escape'),
+        ), {}, translated=True, html='escape'),
         mock.call('www.gov.uk', {}, html='escape', redact_missing_personalisation=False),
         mock.call('subject', {}, html='escape', redact_missing_personalisation=False),
         mock.call('content', {}, html='escape', markdown_lists=True, redact_missing_personalisation=False),
@@ -928,7 +928,7 @@ def test_subject_line_gets_replaced():
             '((address line 5))\n'
             '((address line 6))\n'
             '((postcode))'
-        ), {}, with_brackets=False, html='escape'),
+        ), {}, translated=True, html='escape'),
         mock.call('www.gov.uk', {}, html='escape', redact_missing_personalisation=True),
     ]),
 ])
@@ -981,13 +981,13 @@ def test_templates_handle_html_and_redacting(
         mock.call(Markup('subject')),
         mock.call(Markup('<p>content</p>')),
         mock.call((
-            "<span class='placeholder-no-brackets'>address line 1</span>\n"
-            "<span class='placeholder-no-brackets'>address line 2</span>\n"
-            "<span class='placeholder-no-brackets'>address line 3</span>\n"
-            "<span class='placeholder-no-brackets'>address line 4</span>\n"
-            "<span class='placeholder-no-brackets'>address line 5</span>\n"
-            "<span class='placeholder-no-brackets'>address line 6</span>\n"
-            "<span class='placeholder-no-brackets'>postcode</span>"
+            "<span class='placeholder-no-brackets'>[address line 1]</span>\n"
+            "<span class='placeholder-no-brackets'>[address line 2]</span>\n"
+            "<span class='placeholder-no-brackets'>[address line 3]</span>\n"
+            "<span class='placeholder-no-brackets'>[address line 4]</span>\n"
+            "<span class='placeholder-no-brackets'>[address line 5]</span>\n"
+            "<span class='placeholder-no-brackets'>[address line 6]</span>\n"
+            "<span class='placeholder-no-brackets'>[postcode]</span>"
         )),
         mock.call(Markup('www.gov.uk')),
         mock.call(Markup('subject')),

@@ -541,7 +541,7 @@ class LetterPreviewTemplate(WithSubjectTemplate):
                 }) else self.values
             ),
             html='escape',
-            with_brackets=False
+            translated=True
         )).then(
             strip_pipes
         ).then(

@@ -182,45 +182,40 @@ def test_formatting_of_placeholders(content, expected):
 
 
 @pytest.mark.parametrize(
-    "content,expected,with_brackets,translated,values", [
+    "content,expected,translated,values", [
         (
             "((colour))",
-            "<span class='placeholder-no-brackets'>colour</span>",
-            False,
+            "<span class='placeholder'>((colour))</span>",
             False,
             None
         ),
         (
             "((colour))",
             "<span class='placeholder-no-brackets'>[colour]</span>",
-            False,
             True,
             None
         ),
         (
             "((colour))",
             "blue",
-            True,
             False,
             {'colour': 'blue'}
         ),
         (
             "((colour))",
             "blue",
-            False,
             True,
             {'colour': 'blue'}
         ),
     ]
 )
-def test_formatting_of_placeholders_without_brackets_or_translated(
+def test_formatting_of_placeholders_translated(
     content,
     expected,
-    with_brackets,
     translated,
     values
 ):
-    field = Field(content, with_brackets=with_brackets, translated=translated, values=values)
+    field = Field(content, translated=translated, values=values)
     assert str(field) == expected
 
 

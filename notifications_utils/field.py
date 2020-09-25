@@ -56,15 +56,13 @@ class Field:
     )
     placeholder_tag = "<span class='placeholder'>(({}))</span>"
     conditional_placeholder_tag = "<span class='placeholder-conditional'>(({}??</span>{}))"
-    placeholder_tag_no_brackets = "<span class='placeholder-no-brackets'>{}</span>"
-    placeholder_tag_no_brackets_translated = "<span class='placeholder-no-brackets'>[{}]</span>"
+    placeholder_tag_translated = "<span class='placeholder-no-brackets'>[{}]</span>"
     placeholder_tag_redacted = "<span class='placeholder-redacted'>[hidden]</span>"
 
     def __init__(
         self,
         content,
         values=None,
-        with_brackets=True,
         html='strip',
         markdown_lists=False,
         redact_missing_personalisation=False,
@@ -73,10 +71,8 @@ class Field:
         self.content = content
         self.values = values
         self.markdown_lists = markdown_lists
-        if not with_brackets:
-            self.placeholder_tag = self.placeholder_tag_no_brackets
         if translated:
-            self.placeholder_tag = self.placeholder_tag_no_brackets_translated
+            self.placeholder_tag = self.placeholder_tag_translated
         self.sanitizer = {
             'strip': strip_html,
             'escape': escape_html,
