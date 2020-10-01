@@ -52,9 +52,9 @@ def test_default_banner(show_banner):
     email = HTMLEmailTemplate({'content': 'hello world', 'subject': ''})
     email.default_banner = show_banner
     if show_banner:
-        assert "va-logo.png" in str(email)
+        assert "vanotify-header-logo.png" in str(email)
     else:
-        assert "va-logo.png" not in str(email)
+        assert "vanotify-header-logo.png" not in str(email)
 
 
 def test_brand_banner_shows():
