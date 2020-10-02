@@ -192,6 +192,17 @@ def test_escaping_govuk_in_email_templates(template_content, expected):
 
 
 @pytest.mark.parametrize(
+    "subject,expected", [
+        ("bonjour | hi", "bonjour | hi"),
+        ("bonjour .", "bonjour."),
+        ('double -- dash', 'double \u2013 dash'),
+    ]
+)
+def test_subject_is_cleaned_up(subject, expected):
+    assert expected == HTMLEmailTemplate({'content': '', 'subject': subject}).subject
+
+
+@pytest.mark.parametrize(
     "prefix, body, expected", [
         ("a", "b", "a: b"),
         (None, "b", "b"),
@@ -959,6 +970,10 @@ def test_smart_quotes(dumb, smart):
     (
         '2004-2008',
         '2004-2008',  # no replacement
+    ),
+    (
+        'bonjour | hi',
+        'bonjour | hi',
     ),
 ])
 def test_en_dashes(nasty, nice):
