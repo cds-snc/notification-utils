@@ -7,8 +7,6 @@ params, ids = zip(
     (('a', 'a'), 'ascii char (a)'),
     # ascii control char (not in GSM)
     (('\t', ' '), 'ascii control char not in gsm (tab)'),
-    # these are not in GSM charset so are downgraded
-    (('ç', 'c'), 'decomposed unicode char (C with cedilla)'),
     # these unicode chars should change to something completely different for compatibility
     (('–', '-'), 'compatibility transform unicode char (EN DASH (U+2013)'),
     (('—', '-'), 'compatibility transform unicode char (EM DASH (U+2014)'),
