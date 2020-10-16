@@ -100,7 +100,7 @@ class SanitiseSMS(SanitiseText):
     WELSH_NON_GSM_CHARACTERS = set('ÂâÊêÎîÔôÛûŴŵŶŷ')
 
     ALLOWED_CHARACTERS = set(
-        '@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ\x1bÆæßÉ !"#¤%&\'()*+,-./0123456789:;<=>?' +
+        '@£$¥èéùìòçÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ\x1bÆæßÉ !"#¤%&\'()*+,-./0123456789:;<=>?' +
         '¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà' +
         # character set extension
         '^{}\\[~]|€'
