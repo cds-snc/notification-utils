@@ -24,6 +24,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'bleach==3.2.1',
+        'cachetools==4.1.0',
         'mistune==0.8.4',
         'requests==2.24.0',
         'python-json-logger==2.0.0',
