@@ -226,7 +226,7 @@ class SMSPreviewTemplate(SMSMessageTemplate):
         return Markup(self.jinja_template.render({
             'sender': self.sender,
             'show_sender': self.show_sender,
-            'recipient': Field('((phone number))', self.values, with_brackets=False, html='escape'),
+            'recipient': Field('((phone number))', self.values, html='escape', translated=True),
             'show_recipient': self.show_recipient,
             'body': Take(Field(
                 self.content,
@@ -430,7 +430,7 @@ class EmailPreviewTemplate(WithSubjectTemplate):
             'from_name': escape_html(self.from_name),
             'from_address': self.from_address,
             'reply_to': self.reply_to,
-            'recipient': Field("((email address))", self.values, with_brackets=False),
+            'recipient': Field("((email address))", self.values, translated=True),
             'show_recipient': self.show_recipient
         }))
 
@@ -541,7 +541,7 @@ class LetterPreviewTemplate(WithSubjectTemplate):
                 }) else self.values
             ),
             html='escape',
-            with_brackets=False
+            translated=True
         )).then(
             strip_pipes
         ).then(
