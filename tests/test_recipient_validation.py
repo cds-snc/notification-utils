@@ -101,6 +101,10 @@ valid_email_addresses = (
     'info@german-financial-services.vermögensberatung',
     'info@german-financial-services.reallylongarbitrarytldthatiswaytoohugejustincase',
     'japanese-info@例え.テスト',
+    "fançoisthe'éüî@mailinator.com",
+    "Jean-o'briån@mailinator.com",
+    "Tom!the#taglover?@mailinator.com",
+    "2+2={5*4/5}@mailinator.com",
 )
 invalid_email_addresses = (
     'email@123.123.123.123',
