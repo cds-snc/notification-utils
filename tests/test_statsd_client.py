@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from datetime import datetime, timedelta
@@ -103,3 +103,60 @@ def test_should_log_but_not_throw_if_socket_errors(app, mocker):
 
     stats_client._send('data')
     mock_logger.warning.assert_called_with('Error sending statsd metric: Mock Exception')
+
+
+def test_should_not_attempt_to_send_if_cache_contains_none(app, mocker):
+    stats_client = NotifyStatsClient('localhost', 8125, '')
+    mock_sock = mocker.patch.object(stats_client, "_sock")
+    mock_cached_host = mocker.patch.object(stats_client, '_cached_host', return_value=None)
+
+    stats_client._send('data')
+
+    mock_cached_host.assert_called_once_with()
+    assert mock_sock.called is False
+
+
+def test_records_points_when_cache_contains_none(app, mocker):
+    stats_client = NotifyStatsClient('localhost', 8125, '')
+    mock_sock = mocker.patch.object(stats_client, "_sock")
+    mock_cached_host = mocker.patch.object(stats_client, '_cached_host', side_effect=[None, '1.2.3.4'])
+
+    stats_client._send('data')
+    mock_cached_host.assert_called_once_with()
+    assert mock_sock.called is False
+    assert len(stats_client._queue) == 1
+
+    stats_client._send('foo')
+    assert mock_sock.called is False
+    assert len(stats_client._queue) == 2
+
+
+def test_should_manage_dns(app, mocker):
+    stats_client = NotifyStatsClient('exporter.apps.internal', 8125, '')
+
+    with patch.object(stats_client, '_resolve', return_value='1.2.3.4'):
+        assert stats_client._cached_host() == '1.2.3.4'
+
+
+def test_should_cache_dns(app, mocker):
+    stats_client = NotifyStatsClient('exporter.apps.internal', 8125, '')
+
+    with patch.object(stats_client, '_resolve', return_value='1.2.3.4') as mock_dns_lookup:
+        assert stats_client._cached_host() == '1.2.3.4'
+        mock_dns_lookup.assert_called_once_with('exporter.apps.internal')
+
+    with patch.object(stats_client, '_resolve') as mock_dns_lookup:
+        assert stats_client._cached_host() == '1.2.3.4'
+        assert mock_dns_lookup.called is False
+
+
+def test_should_cache_none_if_dns_fails(app, mocker):
+    stats_client = NotifyStatsClient('exporter.apps.internal', 8125, '')
+
+    with patch.object(stats_client, '_resolve', side_effect=Exception('DNS No Worky')) as mock_dns_lookup:
+        assert stats_client._cached_host() is None
+        mock_dns_lookup.assert_called_once_with('exporter.apps.internal')
+
+    with patch.object(stats_client, '_resolve') as mock_dns_lookup:
+        assert stats_client._cached_host() is None
+        assert mock_dns_lookup.called is False
