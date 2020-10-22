@@ -1,6 +1,5 @@
 import random
 import time
-from collections import deque
 from socket import AF_INET, SOCK_DGRAM, gethostbyname, socket
 
 import cachetools.func
@@ -19,7 +18,6 @@ class NotifyStatsClient(StatsClientBase):
         self._port = port
         self._prefix = prefix
         self._sock = socket(AF_INET, SOCK_DGRAM)
-        self._queue = deque()
 
     def _resolve(self, addr):
         return gethostbyname(addr)
@@ -35,16 +33,13 @@ class NotifyStatsClient(StatsClientBase):
             return None
 
     def _send(self, data):
-        self._queue.append(data)
         try:
             host = self._cached_host()
             # If we can't resolve DNS, then host is `None`
-            # Don't send to statsd, data will be sent later
+            # Don't send to statsd
             if host is None:
                 return
-
-            for elem in self._queue:
-                self._sock.sendto(elem.encode('ascii'), (host, self._port))
+            self._sock.sendto(data.encode('ascii'), (host, self._port))
         except Exception as e:
             current_app.logger.warning('Error sending statsd metric: {}'.format(str(e)))
             pass

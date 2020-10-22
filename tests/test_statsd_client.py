@@ -116,21 +116,6 @@ def test_should_not_attempt_to_send_if_cache_contains_none(app, mocker):
     assert mock_sock.called is False
 
 
-def test_records_points_when_cache_contains_none(app, mocker):
-    stats_client = NotifyStatsClient('localhost', 8125, '')
-    mock_sock = mocker.patch.object(stats_client, "_sock")
-    mock_cached_host = mocker.patch.object(stats_client, '_cached_host', side_effect=[None, '1.2.3.4'])
-
-    stats_client._send('data')
-    mock_cached_host.assert_called_once_with()
-    assert mock_sock.called is False
-    assert len(stats_client._queue) == 1
-
-    stats_client._send('foo')
-    assert mock_sock.called is False
-    assert len(stats_client._queue) == 2
-
-
 def test_should_manage_dns(app, mocker):
     stats_client = NotifyStatsClient('exporter.apps.internal', 8125, '')
 
