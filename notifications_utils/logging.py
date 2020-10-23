@@ -75,7 +75,7 @@ def init_app(app, statsd_client=None):
             statsd_client.incr(stat)
 
             if 'time_taken' in extra_fields:
-                statsd_client.timing(stat, time_taken)
+                statsd_client.timing(stat + '.elapsed_time', time_taken)
 
         return response
 

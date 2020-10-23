@@ -15,7 +15,7 @@ def statsd(namespace):
                 current_app.statsd_client.incr('{namespace}.{func}'.format(
                     namespace=namespace, func=func.__name__)
                 )
-                current_app.statsd_client.timing('{namespace}.{func}'.format(
+                current_app.statsd_client.timing('{namespace}.{func}.elapsed_time'.format(
                     namespace=namespace, func=func.__name__), elapsed_time
                 )
 

@@ -24,4 +24,4 @@ def test_should_call_statsd(app, mocker):
     assert test_function()
     mock_logger.assert_called_once_with(AnyStringWith("test call test_function took "))
     app.statsd_client.incr.assert_called_once_with("test.test_function")
-    app.statsd_client.timing.assert_called_once_with("test.test_function", ANY)
+    app.statsd_client.timing.assert_called_once_with("test.test_function.elapsed_time", ANY)
