@@ -72,6 +72,7 @@ def init_app(app, statsd_client=None):
 
         if statsd_client:
             stat = build_statsd_line(extra_fields)
+            app.logger.info(build_log_line(extra_fields))
             statsd_client.incr(stat)
 
             if 'time_taken' in extra_fields:
