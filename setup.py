@@ -24,7 +24,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'bleach==3.2.1',
-        'cachetools==4.1.0',
+        'cachetools==4.1.1',
         'mistune==0.8.4',
         'requests==2.24.0',
         'python-json-logger==2.0.0',
@@ -34,14 +34,14 @@ setup(
         'statsd==3.3.0',
         'Flask-Redis==0.4.0',
         'PyYAML==5.3.1',
-        'phonenumbers==8.12.10',
-        'pytz==2020.1',
+        'phonenumbers==8.12.12',
+        'pytz==2020.4',
         'smartypants==2.0.1',
         'monotonic==1.5',
         'pypdf2==1.26.0',
 
         # required by both api and admin
-        'awscli==1.18.154',
-        'boto3==1.15.13',
+        'awscli==1.18.170',
+        'boto3==1.16.10',
     ]
 )
