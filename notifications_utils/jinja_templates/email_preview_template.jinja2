@@ -1,39 +1,39 @@
-<div class="email-message">
-  <table class="email-message-meta">
+<div class="email-message mb-12 border border-solid border-gray-grey2">
+  <table class="email-message-meta m-0 text-smaller leading-tight font-normal">
     <tbody>
       {% if show_recipient %}
         {% if from_name %}
           <tr>
-            <th>[From]</th>
-            <td>
+            <th class="email-message-table pl-doubleGutter text-gray-grey1">[From]</th>
+            <td class="email-message-table">
               {{ from_name }}
             </td>
           </tr>
         {% endif %}
         {% if reply_to %}
           <tr>
-            <th>[Reply to]</th>
-            <td>
+            <th class="email-message-table pl-doubleGutter text-gray-grey1">[Reply to]</th>
+            <td class="email-message-table">
               {{ reply_to }}
             </td>
           </tr>
         {% endif %}
         <tr>
-          <th>[To]</th>
-          <td>
+          <th class="email-message-table pl-doubleGutter text-gray-grey1">[To]</th>
+          <td class="email-message-table">
             {{ recipient }}
           </td>
         </tr>
       {% endif %}
-      <tr class="email-message-meta">
-        <th>[Subject]</th>
-        <td>
+      <tr class="email-message-meta m-0 text-smaller leading-tight font-normal">
+        <th class="email-message-table pl-doubleGutter text-gray-grey1">[Subject]</th>
+        <td class="email-message-table">
           {{ subject }}
         </td>
       </tr>
     </tbody>
   </table>
-  <div class="email-message-body">
+  <div class="email-message-body w-full m-0 relative break-words clear-both box-border px-doubleGutter pt-gutterHalf pb-0">
     {{ body }}
   </div>
 </div>

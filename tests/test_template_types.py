@@ -1173,7 +1173,7 @@ def test_email_preview_shows_from_name(extra_args):
         {'content': 'content', 'subject': 'subject'},
         **extra_args
     )
-    assert '<th>[From]</th>' in str(template)
+    assert '<th class="email-message-table pl-doubleGutter text-gray-grey1">[From]</th>' in str(template)
     assert 'Example service' in str(template)
     assert 'test@example.com' not in str(template)
 
@@ -1199,7 +1199,7 @@ def test_email_preview_shows_reply_to_address(extra_args):
         {'content': 'content', 'subject': 'subject'},
         **extra_args
     )
-    assert '<th>[Reply to]</th>' in str(template)
+    assert '<th class="email-message-table pl-doubleGutter text-gray-grey1">[Reply to]</th>' in str(template)
     assert 'test@example.com' in str(template)
 
 
