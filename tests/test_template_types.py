@@ -52,9 +52,9 @@ def test_fip_banner_english(show_banner):
     email = HTMLEmailTemplate({'content': 'hello world', 'subject': ''})
     email.fip_banner_english = show_banner
     if show_banner:
-        assert "gov-canada-en-01.png" in str(email)
+        assert "gov-canada-en.png" in str(email)
     else:
-        assert "gov-canada-en-01.png" not in str(email)
+        assert "gov-canada-en.png" not in str(email)
 
 
 @pytest.mark.parametrize(
