@@ -26,7 +26,7 @@ setup(
         'bleach==3.2.1',
         'cachetools==4.1.1',
         'mistune==0.8.4',
-        'requests==2.24.0',
+        'requests==2.25.0',
         'python-json-logger==2.0.0',
         'Flask>=0.12.2',
         'orderedset==2.0.3',
@@ -41,7 +41,7 @@ setup(
         'pypdf2==1.26.0',
 
         # required by both api and admin
-        'awscli==1.18.170',
+        'awscli==1.18.188',
         'boto3==1.16.10',
     ]
 )
