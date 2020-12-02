@@ -34,13 +34,13 @@ setup(
         'Flask-Redis==0.4.0',
         'pyyaml==5.3.1',
         'phonenumbers==8.12.12',
-        'pytz==2020.1',
+        'pytz==2020.4',
         'smartypants==2.0.1',
         'monotonic==1.5',
         'pypdf2==1.26.0',
 
         # required by both api and admin
-        'awscli==1.18.150',
-        'boto3==1.15.9',
+        'awscli==1.18.172',
+        'boto3==1.16.12',
     ]
 )
