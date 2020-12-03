@@ -21,4 +21,5 @@ function display_result {
 }
 
 # Install Python development dependencies
+python -m pip install --upgrade pip
 pip3 install -r requirements_for_test.txt
