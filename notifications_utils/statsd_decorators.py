@@ -36,6 +36,32 @@ def statsd(namespace):
 
 
 def statsd_catch(namespace: str, counter_name: str, exception: Type[Exception]):
+    """Increases a statsd counter when a given exception is raised.
+
+    When the expected exception is raised, the statsd counter will be
+    incremented and the initial exception re-raised again.
+
+    When a non-expected exception is raised, no counter increment
+    occurs and nothing is caught: it should go through with no problem.
+
+    All parameters are required.
+
+    Parameters
+    ----------
+    namespace : str, required
+        The statsd counter namespace.
+
+    counter_name : str, required
+        The statsd counter name.
+
+    exception : Type[Exception]
+        The exception to catch and raise the counter upon.
+
+    Raises
+    ------
+    BaseException
+        Any parameter that is thrown by the decorated method.
+    """
     def catch_function(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
