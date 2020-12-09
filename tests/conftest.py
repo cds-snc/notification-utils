@@ -2,6 +2,7 @@ import pytest
 from flask import Flask
 
 import requests_mock
+from unittest.mock import Mock
 
 
 class FakeService():
@@ -13,7 +14,6 @@ def app():
     flask_app = Flask(__name__)
     ctx = flask_app.app_context()
     ctx.push()
-
     yield flask_app
 
     ctx.pop()
@@ -28,3 +28,14 @@ def sample_service():
 def rmock():
     with requests_mock.mock() as rmock:
         yield rmock
+
+
+@pytest.fixture
+def app_with_statsd(app):
+    app.config['NOTIFY_ENVIRONMENT'] = "test"
+    app.config['NOTIFY_APP_NAME'] = "api"
+    app.config['STATSD_HOST'] = "localhost"
+    app.config['STATSD_PORT'] = "8000"
+    app.config['STATSD_PREFIX'] = "prefix"
+    app.statsd_client = Mock()
+    return app

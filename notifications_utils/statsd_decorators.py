@@ -2,6 +2,7 @@ import functools
 
 from flask import current_app
 from monotonic import monotonic
+from typing import Type
 
 
 def statsd(namespace):
@@ -32,3 +33,20 @@ def statsd(namespace):
         return wrapper
 
     return time_function
+
+
+def statsd_catch(namespace: str, counter_name: str, exception: Type[Exception]):
+    def catch_function(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except exception as e:
+                current_app.statsd_client.incr('{namespace}.{counter_name}'.format(
+                    namespace=namespace, counter_name=counter_name
+                ))
+                raise e
+        wrapper.__wrapped__.__name__ = func.__name__
+        return wrapper
+
+    return catch_function
