@@ -33,7 +33,7 @@ def rmock():
 @pytest.fixture
 def app_with_statsd(app):
     app.config['NOTIFY_ENVIRONMENT'] = "test"
-    app.config['NOTIFY_APP_NAME'] = "api"
+    app.config['NOTIFY_APP_NAME'] = "utils"
     app.config['STATSD_HOST'] = "localhost"
     app.config['STATSD_PORT'] = "8000"
     app.config['STATSD_PREFIX'] = "prefix"
