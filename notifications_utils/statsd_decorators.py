@@ -68,9 +68,7 @@ def statsd_catch(namespace: str, counter_name: str, exception: Type[Exception]):
             try:
                 return func(*args, **kwargs)
             except exception as e:
-                current_app.statsd_client.incr('{namespace}.{counter_name}'.format(
-                    namespace=namespace, counter_name=counter_name
-                ))
+                current_app.statsd_client.incr(f'{namespace}.{counter_name}')
                 raise e
         wrapper.__wrapped__.__name__ = func.__name__
         return wrapper
