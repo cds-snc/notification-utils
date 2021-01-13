@@ -314,12 +314,12 @@ def test_level_1_header(markdown_function, heading, expected):
     ],
     [
         notify_email_markdown,
-        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">inset text</p>'
+        '<h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 30pm; color: #323A45;'
+        'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">inset text</h2>'
     ],
     [
         notify_plain_text_email_markdown,
         (
-            '\n'
             '\ninset text'
         ),
     ],
