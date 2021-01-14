@@ -322,7 +322,7 @@ def test_level_1_header(markdown_function, heading, expected):
         (
             '\n'
             '\ninset text'
-            '\n-------------'
+            '\n-----------------------------------------------------------------'
         ),
     ],
 ))
