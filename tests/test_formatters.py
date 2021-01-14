@@ -320,12 +320,14 @@ def test_level_1_header(markdown_function, heading, expected):
     [
         notify_plain_text_email_markdown,
         (
+            '\n'
             '\ninset text'
+            '\n-------------'
         ),
     ],
 ))
 def test_level_2_header(markdown_function, expected):
-    assert markdown_function('## inset text') == (expected)
+    assert markdown_function('## inset text') == expected
 
 
 @pytest.mark.parametrize('markdown_function, expected', (
