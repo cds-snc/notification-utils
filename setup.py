@@ -26,7 +26,7 @@ setup(
         'bleach==3.1.5',
         'mistune==0.8.4',
         'requests~=2.25',
-        'idna<3'
+        'idna<3',
         'python-json-logger==0.1.11',
         'Flask>=1.1.1',
         'orderedset==2.0.3',
