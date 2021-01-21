@@ -37,6 +37,7 @@ from notifications_utils.formatters import (
     remove_smart_quotes_from_email_addresses,
     strip_unsupported_characters,
 )
+from notifications_utils.strftime_codes import no_pad_day
 from notifications_utils.take import Take
 from notifications_utils.template_change import TemplateChange
 from notifications_utils.sanitise_text import SanitiseSMS
@@ -572,7 +573,7 @@ class LetterPreviewTemplate(WithSubjectTemplate):
 
     @property
     def _date(self):
-        return self.date.strftime('%-d %B %Y')
+        return self.date.strftime(f'{no_pad_day()} %B %Y')
 
     @property
     def _message(self):
