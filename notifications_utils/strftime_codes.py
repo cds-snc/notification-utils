@@ -25,8 +25,6 @@ import platform
 
 SYSTEM = platform.system().lower()
 IS_WINDOWS: bool = SYSTEM == 'windows'
-IS_LINUX: bool = SYSTEM == 'linux'
-IS_MAC: bool = SYSTEM == 'darwin'
 
 NO_PAD_POSIX_CHAR = '-'
 NO_PAD_WINDOWS_CHAR = '#'
