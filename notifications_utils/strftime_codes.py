@@ -2,12 +2,12 @@
 
    By default, Python does not check the format codes sent to strftime:
    these are sent directly to the platform's implementation. This leads
-   developers to use platform specific format codes for strftime that 
+   developers to use platform specific format codes for strftime that
    can't easily run on other platforms that are popular and normally
    easy to support for by the Python language.
 
    Hence we have this module that makes the translation between platform
-   specific format codes. To refer to the different platform specific 
+   specific format codes. To refer to the different platform specific
    codes and what is deemed safe (i.e. ANSI C/ POSIX compatible):
 
    For windows, see:
