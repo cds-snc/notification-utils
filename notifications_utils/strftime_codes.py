@@ -23,9 +23,6 @@
 import platform
 
 
-SYSTEM = platform.system().lower()
-IS_WINDOWS: bool = SYSTEM == 'windows'
-
 NO_PAD_POSIX_CHAR = '-'
 NO_PAD_WINDOWS_CHAR = '#'
 
@@ -33,8 +30,16 @@ NO_PAD_CODES: list = ['d', 'D', 'e', 'F', 'H', 'I', 'j', 'm', 'M',
                       'r', 'R', 'S', 'T', 'U', 'V', 'W', 'y', 'Y']
 
 
+def _get_system():
+    return platform.system().lower()
+
+
 def _get_no_pad_char() -> str:
-    return NO_PAD_WINDOWS_CHAR if IS_WINDOWS else NO_PAD_POSIX_CHAR
+    return NO_PAD_WINDOWS_CHAR if _is_windows() else NO_PAD_POSIX_CHAR
+
+
+def _is_windows() -> bool:
+    return _get_system() == 'windows'
 
 
 def no_pad_code(code: str) -> str:
