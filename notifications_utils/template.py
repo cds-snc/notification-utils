@@ -573,7 +573,7 @@ class LetterPreviewTemplate(WithSubjectTemplate):
 
     @property
     def _date(self):
-        return self.date.strftime('{} %B %Y'.format(no_pad_day()))
+        return self.date.strftime(f'{no_pad_day()} %B %Y')
 
     @property
     def _message(self):
