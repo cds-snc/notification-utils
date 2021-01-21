@@ -9,24 +9,20 @@ def statsd(namespace):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             start_time = monotonic()
+            current_app.statsd_client.incr(f'{namespace}.{func.__name__}')
             try:
                 res = func(*args, **kwargs)
-                elapsed_time = monotonic() - start_time
-                current_app.statsd_client.incr('{namespace}.{func}'.format(
-                    namespace=namespace, func=func.__name__)
-                )
-                current_app.statsd_client.timing('{namespace}.{func}.elapsed_time'.format(
-                    namespace=namespace, func=func.__name__), elapsed_time
-                )
-
             except Exception as e:
+                current_app.statsd_client.incr(f'{namespace}.{func.__name__}.exception')
                 raise e
             else:
-                current_app.logger.debug(
-                    "{namespace} call {func} took {time}".format(
-                        namespace=namespace, func=func.__name__, time="{0:.4f}".format(elapsed_time)
-                    )
-                )
+                elapsed_time = monotonic() - start_time
+
+                current_app.statsd_client.incr(f'{namespace}.{func.__name__}.success')
+                current_app.statsd_client.timing(f'{namespace}.{func.__name__}.success.elapsed_time', elapsed_time)
+
+                current_app.logger.debug(f"{namespace} call {func.__name__} took {'{0:.4f}'.format(elapsed_time)}")
+
                 return res
         wrapper.__wrapped__.__name__ = func.__name__
         return wrapper

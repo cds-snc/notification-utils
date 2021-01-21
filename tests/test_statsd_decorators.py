@@ -1,3 +1,4 @@
+import pytest
 from unittest.mock import ANY, Mock
 from notifications_utils.statsd_decorators import statsd
 
@@ -7,7 +8,8 @@ class AnyStringWith(str):
         return self in other
 
 
-def test_should_call_statsd(app, mocker):
+@pytest.fixture
+def test_app(app):
     app.config['NOTIFY_ENVIRONMENT'] = "test"
     app.config['NOTIFY_APP_NAME'] = "api"
     app.config['STATSD_HOST'] = "localhost"
@@ -15,7 +17,12 @@ def test_should_call_statsd(app, mocker):
     app.config['STATSD_PREFIX'] = "prefix"
     app.statsd_client = Mock()
 
-    mock_logger = mocker.patch.object(app.logger, 'debug')
+    return app
+
+
+def test_should_call_statsd(test_app, mocker):
+
+    mock_logger = mocker.patch.object(test_app.logger, 'debug')
 
     @statsd(namespace="test")
     def test_function():
@@ -23,5 +30,19 @@ def test_should_call_statsd(app, mocker):
 
     assert test_function()
     mock_logger.assert_called_once_with(AnyStringWith("test call test_function took "))
-    app.statsd_client.incr.assert_called_once_with("test.test_function")
-    app.statsd_client.timing.assert_called_once_with("test.test_function.elapsed_time", ANY)
+    test_app.statsd_client.incr.assert_any_call("test.test_function")
+    test_app.statsd_client.incr.assert_any_call("test.test_function.success")
+    test_app.statsd_client.timing.assert_called_once_with("test.test_function.success.elapsed_time", ANY)
+
+
+def test_should_call_statsd_on_exception(test_app):
+
+    @statsd(namespace="test")
+    def test_function():
+        raise Exception()
+
+    with pytest.raises(Exception):
+        test_function()
+
+    test_app.statsd_client.incr.assert_any_call("test.test_function")
+    test_app.statsd_client.incr.assert_any_call("test.test_function.exception")
