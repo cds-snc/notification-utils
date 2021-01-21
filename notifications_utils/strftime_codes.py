@@ -39,16 +39,12 @@ def _get_no_pad_char() -> str:
     return NO_PAD_WINDOWS_CHAR if IS_WINDOWS else NO_PAD_POSIX_CHAR
 
 
-def _get_no_pad_code(char: str) -> str:
-    if char not in NO_PAD_CODES:
-        raise ValueError(f'The {char} character is not supported for no padding: {NO_PAD_CODES}')
-    no_pad = _get_no_pad_char()
-    return f'%{no_pad}{char}'
-
-
 def no_pad_code(code: str) -> str:
     """Gets the non padded format for the given code (i.e. leading zero is removed)"""
-    return _get_no_pad_code(code)
+    if code not in NO_PAD_CODES:
+        raise ValueError(f'The {code} character is not supported for no padding: {NO_PAD_CODES}')
+    no_pad = _get_no_pad_char()
+    return f'%{no_pad}{code}'
 
 
 def no_pad_day() -> str:
