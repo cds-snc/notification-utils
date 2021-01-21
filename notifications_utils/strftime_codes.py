@@ -30,7 +30,7 @@ NO_PAD_CODES: list = ['d', 'D', 'e', 'F', 'H', 'I', 'j', 'm', 'M',
                       'r', 'R', 'S', 'T', 'U', 'V', 'W', 'y', 'Y']
 
 
-def _get_system():
+def _get_system() -> str:
     return platform.system().lower()
 
 
@@ -60,11 +60,11 @@ def no_pad_hour12() -> str:
     return no_pad_code('I')
 
 
-def no_pad_hour24():
+def no_pad_hour24() -> str:
     """Gets the format code for non padded hour (i.e. 24h format & leading zero is removed)"""
     return no_pad_code('H')
 
 
-def no_pad_month():
+def no_pad_month() -> str:
     """Gets the format code for non padded month (i.e. leading zero is removed)"""
     return no_pad_code('m')
