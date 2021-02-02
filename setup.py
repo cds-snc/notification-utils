@@ -23,7 +23,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'bleach==3.1.5',
+        'bleach==3.3.0',
         'mistune==0.8.4',
         'requests~=2.25',
         'idna<3',
