@@ -100,6 +100,31 @@ def test_returns_a_string_without_placeholders(content):
             {"warning": False},
             ""
         ),
+        (
+            "((warning??This is a conditional warning: {}))",
+            {"warning": "Tornado is coming"},
+            "This is a conditional warning: Tornado is coming"
+        ),
+        (
+            "((warning??This is a conditional warning: {}))",
+            {"warning": True},
+            "This is a conditional warning: True"
+        ),
+        (
+            "((warning??This is a conditional warning: {}))",
+            {"warning": ""},
+            ""
+        ),
+        (
+            "((warning??This is a conditional warning: {}))",
+            {"warning": False},
+            ""
+        ),
+        (
+            "((warning??This is a conditional warning: {}))",
+            {"warning": None},
+            ""
+        ),
     ]
 )
 def test_replacement_of_placeholders(template_content, data, expected):
