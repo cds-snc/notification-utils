@@ -13,6 +13,10 @@ from notifications_utils.formatters import (
 
 
 class Placeholder:
+    conditional_placeholder_pattern = re.compile(
+        r'(\{\})'  # look for just '{}'
+    )
+
     def __init__(self, body):
         # body should not include the (( and )).
         self.body = body.lstrip('((').rstrip('))')
@@ -37,10 +41,13 @@ class Placeholder:
         else:
             raise ValueError('{} not conditional'.format(self))
 
-    def get_conditional_body(self, show_conditional):
+    def get_conditional_body(self, value):
         # note: unsanitised/converted
         if self.is_conditional():
-            return self.conditional_text if str2bool(show_conditional) else ''
+            replaced_text = re.sub(
+                self.conditional_placeholder_pattern, str(value), self.conditional_text
+            )
+            return replaced_text if value else ''
         else:
             raise ValueError('{} not conditional'.format(self))
 
