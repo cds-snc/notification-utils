@@ -157,12 +157,16 @@ class Field:
         return Markup(self._raw_formatted)
 
     @property
-    def placeholder_names(self):
+    def placeholders(self):
         return OrderedSet(
-            Placeholder(body).name for body in re.findall(
+            Placeholder(body) for body in re.findall(
                 self.placeholder_pattern, self.content
             )
         )
+
+    @property
+    def placeholder_names(self):
+        return OrderedSet(placeholder.name for placeholder in self.placeholders)
 
     @property
     def replaced(self):

@@ -118,14 +118,14 @@ class Template():
             )
 
     @property
-    def placeholders(self):
+    def placeholders(self):  # TODO: rename to placeholder_names
         return Field(self.content).placeholder_names
 
     @property
     def missing_data(self):
         return list(
-            placeholder for placeholder in self.placeholders
-            if self.values.get(placeholder) is None
+            placeholder.name for placeholder in Field(self.content).placeholders
+            if not placeholder.is_conditional() and self.values.get(placeholder.name) is None
         )
 
     @property
