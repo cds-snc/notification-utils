@@ -13,9 +13,6 @@ from notifications_utils.formatters import (
 
 
 class Placeholder:
-    conditional_placeholder_pattern = re.compile(
-        r'(\{\})'  # look for just '{}'
-    )
 
     def __init__(self, body):
         # body should not include the (( and )).
@@ -27,6 +24,12 @@ class Placeholder:
 
     def is_conditional(self):
         return '??' in self.body
+
+    @staticmethod
+    def should_render_conditional(palceholder_value: str) -> bool:
+        if str(palceholder_value) in ['', 'False']:
+            return False
+        return True
 
     @property
     def name(self):
@@ -41,13 +44,10 @@ class Placeholder:
         else:
             raise ValueError('{} not conditional'.format(self))
 
-    def get_conditional_body(self, value):
+    def get_conditional_body(self, placeholder_value):
         # note: unsanitised/converted
         if self.is_conditional():
-            replaced_text = re.sub(
-                self.conditional_placeholder_pattern, str(value), self.conditional_text
-            )
-            return replaced_text if value else ''
+            return self.conditional_text if self.should_render_conditional(placeholder_value) else ''
         else:
             raise ValueError('{} not conditional'.format(self))
 
@@ -60,6 +60,9 @@ class Field:
         r'\({2}'        # opening ((
         r'([^()]+)'     # body of placeholder - potentially standard or conditional.
         r'\){2}'        # closing ))
+    )
+    conditional_placeholder_pattern = re.compile(
+        r'(\{\})'  # look for just '{}' inside conditional block
     )
     placeholder_tag = "<span class='placeholder'>(({}))</span>"
     conditional_placeholder_tag = "<span class='placeholder-conditional'>(({}??</span>{}))"
@@ -125,12 +128,16 @@ class Field:
         replacement = self.values.get(placeholder.name)
 
         if placeholder.is_conditional() and replacement is not None:
-            return placeholder.get_conditional_body(replacement)
+            return re.sub(
+                self.conditional_placeholder_pattern,
+                self.sanitizer(str(replacement)),
+                placeholder.get_conditional_body(replacement)
+            )
 
         replaced_value = self.get_replacement(placeholder)
         if replaced_value is not None:
             return self.get_replacement(placeholder)
-
+# TODO: invesitgate why this fallback is necessary and potentially remove to enable truly conditional placeholders
         return self.format_match(match)
 
     def get_replacement(self, placeholder):
@@ -180,9 +187,3 @@ class Field:
         return re.sub(
             self.placeholder_pattern, self.replace_match, self.sanitizer(self.content)
         )
-
-
-def str2bool(value):
-    if not value:
-        return False
-    return str(value).lower() in ("yes", "y", "true", "t", "1", "include", "show")

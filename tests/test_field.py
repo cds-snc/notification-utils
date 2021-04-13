@@ -1,5 +1,5 @@
 import pytest
-from notifications_utils.field import Field, str2bool
+from notifications_utils.field import Field
 
 
 @pytest.mark.parametrize("content", [
@@ -120,11 +120,6 @@ def test_returns_a_string_without_placeholders(content):
             {"warning": False},
             ""
         ),
-        (
-            "((warning??This is a conditional warning: {}))",
-            {"warning": None},
-            ""
-        ),
     ]
 )
 def test_replacement_of_placeholders(template_content, data, expected):
@@ -227,41 +222,6 @@ def test_formatting_of_placeholders(content, expected):
 )
 def test_handling_of_missing_values(content, values, expected):
     assert str(Field(content, values)) == expected
-
-
-@pytest.mark.parametrize(
-    "value", [
-        '0',
-        0, 2, 99.99999,
-        'off',
-        'exclude',
-        'no'
-        'any random string',
-        'false',
-        False,
-        [], {}, (),
-        ['true'], {'True': True}, (True, 'true', 1)
-    ]
-)
-def test_what_will_not_trigger_conditional_placeholder(value):
-    assert str2bool(value) is False
-
-
-@pytest.mark.parametrize(
-    "value", [
-        1,
-        '1',
-        'yes',
-        'y',
-        'true',
-        'True',
-        True,
-        'include',
-        'show'
-    ]
-)
-def test_what_will_trigger_conditional_placeholder(value):
-    assert str2bool(value) is True
 
 
 @pytest.mark.parametrize("values, expected, expected_as_markdown", [
