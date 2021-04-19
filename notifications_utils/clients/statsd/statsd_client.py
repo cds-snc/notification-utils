@@ -79,7 +79,7 @@ class StatsdClient():
         if self.active:
             self.statsd_client.timing(self.format_stat_name(stat), delta, rate)
 
-    def timing_with_dates(self, stat, start, end, rate=1):
+    def timing_with_dates(self, stat, end, start, rate=1):
         if self.active:
-            delta = (start - end).total_seconds()
+            delta = (end - start).total_seconds()
             self.statsd_client.timing(self.format_stat_name(stat), delta, rate)
