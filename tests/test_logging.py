@@ -1,5 +1,10 @@
 import logging as builtin_logging
 import uuid
+from time import monotonic
+from unittest.mock import call
+
+import pytest
+from flask import request, g
 
 from notifications_utils import logging
 
@@ -133,3 +138,34 @@ def test_get_handlers_sets_up_logging_appropriately_without_debug(tmpdir):
     # dir_contents = tmpdir.listdir()
     # assert len(dir_contents) == 1
     # assert dir_contents[0].basename == 'foo.json'
+
+
+@pytest.mark.parametrize('service_id', ["fake-service_id", None])
+def test_logging_records_statsd_stats(app_with_statsd, service_id):
+    app = app_with_statsd
+    statsd = app_with_statsd.statsd_client
+    logging.init_app(app_with_statsd, statsd)
+
+    @app.before_request
+    def record_request_details():
+        g.start = monotonic()
+        g.endpoint = request.endpoint
+        if service_id:
+            g.service_id = "fake-service_id"
+
+    @app.route('/')
+    def homepage():
+        return "ok"
+
+    with app.app_context():
+        response = app.test_client().get('/')
+        assert response.status_code == 200
+        if service_id:
+            assert statsd.incr.call_args_list == [
+                call('service-id.fake-service_id.GET.homepage.200'),
+                call('GET.homepage.200'),
+            ]
+            assert statsd.timing.call_count == 2
+        else:
+            assert statsd.incr.call_args_list == [call('GET.homepage.200')]
+            assert statsd.timing.call_count == 1
