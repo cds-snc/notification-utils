@@ -70,12 +70,7 @@ def init_app(app, statsd_client=None):
                 'endpoint': g.endpoint
             })
 
-        if statsd_client:
-            stat = build_statsd_line(extra_fields)
-            statsd_client.incr(stat)
-
-            if 'time_taken' in extra_fields:
-                statsd_client.timing(stat, time_taken)
+        record_stats(statsd_client, extra_fields, time_taken)
 
         return response
 
@@ -93,6 +88,23 @@ def init_app(app, statsd_client=None):
     logging.getLogger('boto3').setLevel(logging.WARNING)
     logging.getLogger('s3transfer').setLevel(logging.WARNING)
     app.logger.info("Logging configured")
+
+
+def record_stats(statsd_client, extra_fields, time_taken):
+    if not statsd_client:
+        return
+    stats = [build_statsd_line(extra_fields)]
+    if 'service_id' in g:
+        line_without_service_id = build_statsd_line(
+            {k: v for k, v in extra_fields.items() if k != 'service_id'}
+        )
+        stats.append(line_without_service_id)
+
+    for stat in stats:
+        statsd_client.incr(stat)
+
+        if 'time_taken' in extra_fields:
+            statsd_client.timing(stat, time_taken)
 
 
 def ensure_log_path_exists(path):
