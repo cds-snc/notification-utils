@@ -1,7 +1,7 @@
 import functools
 
 from flask import current_app
-from monotonic import monotonic
+from time import monotonic
 from typing import Type
 
 
