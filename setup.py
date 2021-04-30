@@ -33,15 +33,14 @@ setup(
         'Jinja2==2.11.3',
         'statsd==3.3.0',
         'Flask-Redis==0.4.0',
-        'PyYAML==5.3.1',
-        'phonenumbers==8.12.12',
+        'PyYAML==5.4.1',
+        'phonenumbers==8.12.21',
         'pytz==2021.1',
         'smartypants==2.0.1',
-        'monotonic==1.5',
         'pypdf2==1.26.0',
 
         # required by both api and admin
-        'awscli==1.19.0',
-        'boto3==1.17.0',
+        'awscli==1.19.58',
+        'boto3==1.17.58',
     ]
 )
