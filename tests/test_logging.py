@@ -169,3 +169,36 @@ def test_logging_records_statsd_stats(app_with_statsd, service_id):
         else:
             assert statsd.incr.call_args_list == [call('GET.homepage.200')]
             assert statsd.timing.call_count == 1
+            args, _ = statsd.timing.call_args_list[0]
+            time_ms = args[1]
+            assert time_ms >= 0.1
+
+
+@pytest.mark.parametrize('service_id', ["fake-service_id", None])
+def test_logging_records_statsd_stats_without_time(app_with_statsd, service_id):
+    app = app_with_statsd
+    statsd = app_with_statsd.statsd_client
+    logging.init_app(app_with_statsd, statsd)
+
+    @app.before_request
+    def record_request_details():
+        g.endpoint = request.endpoint
+        if service_id:
+            g.service_id = "fake-service_id"
+
+    @app.route('/')
+    def homepage():
+        return "ok"
+
+    with app.app_context():
+        response = app.test_client().get('/')
+        assert response.status_code == 200
+        if service_id:
+            assert statsd.incr.call_args_list == [
+                call('service-id.fake-service_id.GET.homepage.200'),
+                call('GET.homepage.200'),
+            ]
+            statsd.timing.assert_not_called()
+        else:
+            assert statsd.incr.call_args_list == [call('GET.homepage.200')]
+            statsd.timing.assert_not_called()

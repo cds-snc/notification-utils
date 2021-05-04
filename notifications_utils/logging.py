@@ -60,9 +60,8 @@ def init_app(app, statsd_client=None):
             })
 
         if 'start' in g:
-            time_taken = monotonic() - g.start
             extra_fields.update({
-                'time_taken': "%.5f" % time_taken
+                'time_taken': (monotonic() - g.start) * 1000
             })
 
         if 'endpoint' in g:
@@ -70,7 +69,7 @@ def init_app(app, statsd_client=None):
                 'endpoint': g.endpoint
             })
 
-        record_stats(statsd_client, extra_fields, time_taken)
+        record_stats(statsd_client, extra_fields)
 
         return response
 
@@ -90,7 +89,7 @@ def init_app(app, statsd_client=None):
     app.logger.info("Logging configured")
 
 
-def record_stats(statsd_client, extra_fields, time_taken):
+def record_stats(statsd_client, extra_fields):
     if not statsd_client:
         return
     stats = [build_statsd_line(extra_fields)]
@@ -104,7 +103,7 @@ def record_stats(statsd_client, extra_fields, time_taken):
         statsd_client.incr(stat)
 
         if 'time_taken' in extra_fields:
-            statsd_client.timing(stat, time_taken)
+            statsd_client.timing(stat, extra_fields['time_taken'])
 
 
 def ensure_log_path_exists(path):
