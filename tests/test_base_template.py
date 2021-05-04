@@ -120,7 +120,17 @@ def test_does_not_include_placeholder_in_missing_data_if_placeholder_is_conditio
             "((warning? one question mark))",
             "",
             ["warning? one question mark"]
-        )
+        ),
+        (
+            "Dear ((name)), ((warning?? This is a warning {}))",
+            "",
+            ["name", "warning"]
+        ),
+        (
+            "A conditional url: ((has_url?? [some link](http://test.me)))",
+            "",
+            ["has_url"]
+        ),
     ]
 )
 def test_extracting_placeholders(template_content, template_subject, expected):

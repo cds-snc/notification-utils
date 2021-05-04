@@ -120,6 +120,11 @@ def test_returns_a_string_without_placeholders(content):
             {"warning": False},
             ""
         ),
+        (
+            "((url_param??Url with param: [url](http://test.me/{})))",
+            {"url_param": "foo"},
+            "Url with param: [url](http://test.me/foo)"
+        ),
     ]
 )
 def test_replacement_of_placeholders(template_content, data, expected):
