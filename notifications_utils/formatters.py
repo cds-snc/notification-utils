@@ -365,7 +365,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
             )
         elif level == 2:
             return (
-                '<h3 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;'
+                '<h3 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #0B0C0C;'
                 'font-size: 24px; font-weight: bold;">'
                 f'{text}'
                 '</h3>'

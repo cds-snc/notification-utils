@@ -320,7 +320,7 @@ def test_level_1_header(markdown_function, heading, expected):
     ],
     [
         notify_email_markdown,
-        '<h3 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;'
+        '<h3 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #0B0C0C;'
         'font-size: 24px; font-weight: bold;">inset text</h3>'
     ],
     [
