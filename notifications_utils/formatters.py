@@ -360,10 +360,15 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
             return (
                 '<h2 style="Margin: 0 0 20px 0; padding: 0; '
                 'font-size: 27px; line-height: 35px; font-weight: bold; color: #0B0C0C;">'
-                '{}'
+                f'{text}'
                 '</h2>'
-            ).format(
-                text
+            )
+        elif level == 2:
+            return (
+                '<h3 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #0B0C0C;'
+                'font-size: 24px; font-weight: bold;">'
+                f'{text}'
+                '</h3>'
             )
         return self.paragraph(text)
 
@@ -456,10 +461,10 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         )
 
     def double_emphasis(self, text):
-        return '**{}**'.format(text)
+        return f"<strong>{text}</strong>"
 
     def emphasis(self, text):
-        return '*{}*'.format(text)
+        return f"<em>{text}</em>"
 
 
 class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
@@ -473,6 +478,13 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
                 text,
                 self.linebreak(),
                 '-' * self.COLUMN_WIDTH,
+            ))
+        elif level == 2:
+            return ''.join((
+                self.linebreak() * 2,
+                text,
+                self.linebreak(),
+                '-' * self.COLUMN_WIDTH
             ))
         return self.paragraph(text)
 
@@ -528,6 +540,12 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
 
     def autolink(self, link, is_email=False):
         return link
+
+    def double_emphasis(self, text):
+        return f"**{text}**"
+
+    def emphasis(self, text):
+        return f"_{text}_"
 
 
 class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer):
