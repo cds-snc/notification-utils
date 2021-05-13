@@ -29,6 +29,8 @@ from notifications_utils.template import (
     SMSPreviewTemplate
 )
 
+PARAGRAPH_TEXT = '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">{}</p>'
+
 
 @pytest.mark.parametrize(
     "url", [
@@ -40,12 +42,10 @@ from notifications_utils.template import (
         pytest.param("http://service.gov.uk/blah.ext?q=one two three", marks=pytest.mark.xfail),
     ]
 )
-def test_makes_links_out_of_URLs(url):
+def test_makes_links_out_of_urls(url):
     link = '<a style="word-wrap: break-word; color: #004795;" href="{}">{}</a>'.format(url, url)
     assert (notify_email_markdown(url) == (
-        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-        '{}'
-        '</p>'
+        PARAGRAPH_TEXT
     ).format(link))
 
 
@@ -70,11 +70,9 @@ def test_makes_links_out_of_URLs(url):
         ),
     )
 ])
-def test_makes_links_out_of_URLs_in_context(input, output):
+def test_makes_links_out_of_urls_in_context(input, output):
     assert notify_email_markdown(input) == (
-        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-        '{}'
-        '</p>'
+        PARAGRAPH_TEXT
     ).format(output)
 
 
@@ -90,9 +88,7 @@ def test_makes_links_out_of_URLs_in_context(input, output):
 )
 def test_doesnt_make_links_out_of_invalid_urls(url):
     assert notify_email_markdown(url) == (
-        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-        '{}'
-        '</p>'
+        PARAGRAPH_TEXT
     ).format(url)
 
 
@@ -123,16 +119,14 @@ def test_handles_placeholders_in_urls():
         ),
     ]
 )
-def test_URLs_get_escaped(url, expected_html, expected_html_in_template):
+def test_urls_get_escaped(url, expected_html, expected_html_in_template):
     assert notify_email_markdown(url) == (
-        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-        '{}'
-        '</p>'
+        PARAGRAPH_TEXT
     ).format(expected_html)
     assert expected_html_in_template in str(HTMLEmailTemplate({'content': url, 'subject': ''}))
 
 
-def test_HTML_template_has_URLs_replaced_with_links():
+def test_html_template_has_urls_replaced_with_links():
     assert (
         '<a style="word-wrap: break-word; color: #004795;" href="https://service.example.com/accept_invite/a1b2c3d4">'
         'https://service.example.com/accept_invite/a1b2c3d4'
@@ -366,16 +360,6 @@ def test_hrule(markdown_function, expected):
 
 @pytest.mark.parametrize('markdown_function, expected', (
     [
-        notify_letter_preview_markdown,
-        (
-            '<ol>\n'
-            '<li>one</li>\n'
-            '<li>two</li>\n'
-            '<li>three</li>\n'
-            '</ol>\n'
-        )
-    ],
-    [
         notify_email_markdown,
         (
             '<table role="presentation" style="padding: 0 0 20px 0;">'
@@ -394,15 +378,6 @@ def test_hrule(markdown_function, expected):
             '</table>'
         )
     ],
-    [
-        notify_plain_text_email_markdown,
-        (
-            '\n'
-            '\n1. one'
-            '\n2. two'
-            '\n3. three'
-        ),
-    ],
 ))
 def test_ordered_list(markdown_function, expected):
     assert markdown_function(
@@ -415,6 +390,118 @@ def test_ordered_list(markdown_function, expected):
         '2.two\n'
         '3.three\n'
     ) == expected
+
+
+@pytest.mark.parametrize('markdown_function, test_text, expected', (  # noqa: E126
+    [
+        notify_email_markdown,
+        (
+            '1. List item 1\n\n'
+            '\tShould be paragraph in the list item without extra br above'
+        ),
+        (
+            '<table role="presentation" style="padding: 0 0 20px 0;">'
+            '<tr>'
+            '<td style="font-family: Helvetica, Arial, sans-serif;">'
+            '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+            'line-height: 25px; color: #323A45;">'
+            '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">List item 1</p>'
+            '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+            '  Should be paragraph in the list item without extra br above</p>'
+            '</li>'
+            '</ol>'
+            '</td>'
+            '</tr>'
+            '</table>'
+        )
+    ],
+    [
+        notify_email_markdown,
+        (
+                '1. List item 1\n\n'
+                ' Should be paragraph in the list item without extra br above'
+        ),
+        (
+                '<table role="presentation" style="padding: 0 0 20px 0;">'
+                '<tr>'
+                '<td style="font-family: Helvetica, Arial, sans-serif;">'
+                '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">'
+                '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">List item 1</p>'
+                '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+                'Should be paragraph in the list item without extra br above</p>'
+                '</li>'
+                '</ol>'
+                '</td>'
+                '</tr>'
+                '</table>'
+        )
+    ],
+    [
+        notify_email_markdown,
+        (
+                '1. one'
+                '\n\n nested 1'
+                '\n\n nested 2'
+                '\n1. two'
+                '\n1. three'
+        ),
+        (
+                '<table role="presentation" style="padding: 0 0 20px 0;">'
+                '<tr>'
+                '<td style="font-family: Helvetica, Arial, sans-serif;">'
+                '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">'
+                '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">one</p>'
+                '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 1</p>'
+                '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 2</p>'
+                '</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">two</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">three</li>'
+                '</ol>'
+                '</td>'
+                '</tr>'
+                '</table>'
+        )
+    ],
+    [
+        notify_email_markdown,
+        (
+                '* one'
+                '\n\n nested 1'
+                '\n\n nested 2'
+                '\n* two'
+                '\n* three'
+        ),
+        (
+                '<table role="presentation" style="padding: 0 0 20px 0;">'
+                '<tr>'
+                '<td style="font-family: Helvetica, Arial, sans-serif;">'
+                '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">'
+                '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">one</p>'
+                '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 1</p>'
+                '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 2</p>'
+                '</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">two</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">three</li>'
+                '</ul>'
+                '</td>'
+                '</tr>'
+                '</table>'
+        )
+    ],
+))
+def test_paragraph_in_list_has_no_linebreak(markdown_function, test_text, expected):
+    assert markdown_function(test_text) == expected
 
 
 @pytest.mark.parametrize('markdown', (
