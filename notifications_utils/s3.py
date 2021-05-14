@@ -9,7 +9,6 @@ def s3upload(filedata, region, bucket_name, file_location, content_type='binary/
     _s3 = resource('s3')
 
     key = _s3.Object(bucket_name, file_location)
-    key.Acl().put(ACL='public-read')
 
     put_args = {
         'Body': filedata,
