@@ -421,13 +421,10 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
             text.strip()
         )
 
-    def paragraph(self, text):
+    def paragraph(self, text, is_inside_list=False):
+        margin = 'Margin: 5px 0 5px 0' if is_inside_list else 'Margin: 0 0 20px 0'
         if text.strip():
-            return (
-                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">{}</p>'
-            ).format(
-                text
-            )
+            return f'<p style="{margin}; font-size: 16px; line-height: 25px; color: #323A45;">{text}</p>'
         return ""
 
     def block_quote(self, text):
@@ -528,7 +525,7 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
             text.strip(),
         ))
 
-    def paragraph(self, text):
+    def paragraph(self, text, is_inside_list=False):
         if text.strip():
             return ''.join((
                 self.linebreak() * 2,
@@ -572,8 +569,44 @@ class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer)
         ))
 
 
-notify_email_markdown = mistune.Markdown(
+class NotifyEmailBlockLexer(mistune.BlockLexer):
+
+    def __init__(self, rules=None, **kwargs):
+        super().__init__(rules, **kwargs)
+
+    def parse_newline(self, m):
+        if self._list_depth == 0:
+            super().parse_newline(m)
+
+
+class NotifyEmailMarkdown(mistune.Markdown):
+
+    def __init__(self, renderer=None, inline=None, block=None, **kwargs):
+        super().__init__(renderer, inline, block, **kwargs)
+        self._is_inside_list = False
+
+    def output_loose_item(self):
+        body = self.renderer.placeholder()
+        self._is_inside_list = True
+        while self.pop()['type'] != 'list_item_end':
+            body += self.tok()
+
+        self._is_inside_list = False
+        return self.renderer.list_item(body)
+
+    def tok_text(self):
+        if self._is_inside_list:
+            return self.inline(self.token['text'])
+        else:
+            return super().tok_text()
+
+    def output_text(self):
+        return self.renderer.paragraph(self.tok_text(), self._is_inside_list)
+
+
+notify_email_markdown = NotifyEmailMarkdown(
     renderer=NotifyEmailMarkdownRenderer(),
+    block=NotifyEmailBlockLexer,
     hard_wrap=True,
     use_xhtml=False,
 )
