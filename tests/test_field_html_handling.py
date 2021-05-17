@@ -11,11 +11,11 @@ from notifications_utils.field import Field
         'string <em>with</em> html',
     ),
     (
-        'string ((<em>with</em>)) html',
+        'string ((<em>with</em>)) html',        # This is not a valid placeholder name
         {},
-        'string <span class=\'placeholder\'>((with))</span> html',
-        'string <span class=\'placeholder\'>((&lt;em&gt;with&lt;/em&gt;))</span> html',
-        'string <span class=\'placeholder\'>((<em>with</em>))</span> html',
+        'string <span class=\'placeholder\'>((with))</span> html',      # Stripping will make it into a valid placeholder
+        'string ((&lt;em&gt;with&lt;/em&gt;)) html',
+        'string ((<em>with</em>)) html',
     ),
     (
         'string ((placeholder)) html',
@@ -25,20 +25,18 @@ from notifications_utils.field import Field
         'string <em>without</em> html',
     ),
     (
-        'string ((<em>conditional</em>??<em>placeholder</em>)) html',
+        'string ((<em>conditional</em>??<em>placeholder</em>)) html',       # This is not a valid placeholder name
         {},
-        'string <span class=\'placeholder-conditional\'>((conditional??</span>placeholder)) html',
+        'string <span class=\'placeholder-conditional\'>((conditional??</span>placeholder)) html',            # Stripping will make it into a valid placeholder
         (
             'string '
-            '<span class=\'placeholder-conditional\'>'
-            '((&lt;em&gt;conditional&lt;/em&gt;??</span>'
+            '((&lt;em&gt;conditional&lt;/em&gt;??'
             '&lt;em&gt;placeholder&lt;/em&gt;)) '
             'html'
         ),
         (
             'string '
-            '<span class=\'placeholder-conditional\'>'
-            '((<em>conditional</em>??</span>'
+            '((<em>conditional</em>??'
             '<em>placeholder</em>)) '
             'html'
         ),

@@ -117,9 +117,9 @@ def test_does_not_include_placeholder_in_missing_data_if_placeholder_is_conditio
             ["name", "warning"]
         ),
         (
-            "((warning? one question mark))",
+            "((warning? one question mark))",       # Placeholder names are limited to alphanumeric characters, spaces and dashes
             "",
-            ["warning? one question mark"]
+            []
         ),
         (
             "Dear ((name)), ((warning?? This is a warning {}))",
@@ -127,7 +127,7 @@ def test_does_not_include_placeholder_in_missing_data_if_placeholder_is_conditio
             ["name", "warning"]
         ),
         (
-            "A conditional url: ((has_url?? [some link](http://test.me)))",
+            "A conditional url: ((has_url?? [some link](http://test.me) ))",
             "",
             ["has_url"]
         ),
