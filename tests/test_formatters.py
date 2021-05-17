@@ -534,6 +534,33 @@ def test_pluses_dont_render_as_lists(markdown_function, expected):
     ) == expected
 
 
+@pytest.mark.parametrize('markdown_function, input, expected', (
+    [
+        notify_email_markdown,
+        '**title**: description',
+        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+        '<strong>title</strong>: description</p>'
+    ],
+    [
+        notify_email_markdown,
+        '**_title_**: description',
+        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+        '<strong><em>title</em></strong>: description</p>'
+    ],
+    [
+        notify_email_markdown,
+        '* **title**: description',
+        '<table role="presentation" style="padding: 0 0 20px 0;">'
+        '<tr><td style="font-family: Helvetica, Arial, sans-serif;">'
+        '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
+        '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">'
+        '<strong>title</strong>: description</li></ul></td></tr></table>'
+    ],
+))
+def test_list_and_bold_or_italic(markdown_function, input, expected):
+    assert markdown_function(input) == expected
+
+
 @pytest.mark.parametrize('markdown_function, expected', (
     [
         notify_letter_preview_markdown,
