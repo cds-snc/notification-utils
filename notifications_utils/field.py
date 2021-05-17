@@ -58,7 +58,13 @@ class Placeholder:
 class Field:
     placeholder_pattern = re.compile(
         r'\({2}'        # opening ((
-        r'([^()]+)'     # body of placeholder - potentially standard or conditional.
+        r'('            # start capture group
+        r'[\w \-]+'     # placeholder name that allows only alpha numberic characters, space and dash
+        r'(?:'          # start non-capture group
+        r'\?{2}'        # match ?? for conditional placeholder
+        r'.*?(?!\({2}[\w \-]+\){2}.*?)'     # negative lookeahead to prevent matching when there is a nested placeholder
+        r')?'           # end optional non-capture group
+        r')'            # end capture group
         r'\){2}'        # closing ))
     )
     conditional_placeholder_pattern = re.compile(
