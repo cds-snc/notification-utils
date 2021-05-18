@@ -13,7 +13,8 @@ from notifications_utils.field import Field
     (
         'string ((<em>with</em>)) html',        # This is not a valid placeholder name
         {},
-        'string <span class=\'placeholder\'>((with))</span> html',      # Stripping will make it into a valid placeholder
+        # Stripping will make it into a valid placeholder
+        'string <span class=\'placeholder\'>((with))</span> html',
         'string ((&lt;em&gt;with&lt;/em&gt;)) html',
         'string ((<em>with</em>)) html',
     ),
@@ -27,7 +28,8 @@ from notifications_utils.field import Field
     (
         'string ((<em>conditional</em>??<em>placeholder</em>)) html',       # This is not a valid placeholder name
         {},
-        'string <span class=\'placeholder-conditional\'>((conditional??</span>placeholder)) html',            # Stripping will make it into a valid placeholder
+        # Stripping will make it into a valid placeholder
+        'string <span class=\'placeholder-conditional\'>((conditional??</span>placeholder)) html',
         (
             'string '
             '((&lt;em&gt;conditional&lt;/em&gt;??'

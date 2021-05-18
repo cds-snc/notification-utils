@@ -117,7 +117,8 @@ def test_include_placeholder_in_missing_data_if_placeholder_is_conditional(perso
             ["name", "warning"]
         ),
         (
-            "((warning? one question mark))",       # Placeholder names are limited to alphanumeric characters, spaces and dashes
+            # Placeholder names are limited to alphanumeric characters, spaces and dashes
+            "((warning? one question mark))",
             "",
             []
         ),
