@@ -11,7 +11,7 @@ from notifications_utils.sanitise_text import SanitiseSMS
 import smartypants
 
 
-LINK_STYLE = 'word-wrap: break-word; color: #005ea5;'
+LINK_STYLE = 'word-wrap: break-word;'
 
 OBSCURE_WHITESPACE = (
     '\u180E'  # Mongolian vowel separator
