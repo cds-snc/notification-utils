@@ -73,14 +73,12 @@ def test_logo_with_background_colour_shows():
     email = str(HTMLEmailTemplate(
         {'content': 'hello world', 'subject': ''},
         logo_with_background_colour=True,
-        fip_banner_english=False
+        fip_banner_english=False,
+        brand_colour='#eee'
     ))
-    assert (
-        '<td width="10" height="10" valign="middle"></td>'
-    ) not in email
-    assert (
-        'role="presentation" style="border-collapse: collapse; max-width: 100%; width: 580px; margin: 0 auto;"' # noqa
-    ) in email
+    assert "gov-canada-en.png" not in email
+    assert 'bgcolor="#eee"' in email
+    assert 'background: linear-gradient(#eee, #eee);' in email
 
 
 @pytest.mark.parametrize(
