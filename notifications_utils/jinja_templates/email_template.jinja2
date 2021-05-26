@@ -16,6 +16,8 @@
     }
     body { margin:0 !important; }
     div[style*="margin: 16px 0"] { margin:0 !important; }
+    .force-white-bg { background-color: #fff; background: linear-gradient(#fff, #fff); background-image: url("https://assets.notification.canada.ca/1x1-ffffff.png"); }
+    [data-ogsc] .force-white-bg { background-color: #fff; }
   </style>
   <!--[if gte mso 9]>
   <style>
@@ -32,11 +34,11 @@
 {% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
   <table role="presentation" style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 0 auto 20px auto;">
     <tr>
-      <td width="100%" bgcolor="#fff" style="padding: 15px 0; background-color: #fff; background: linear-gradient(#fff, #fff); border-radius: 10px;">
+      <td width="100%" class="force-white-bg" style="padding: 15px 0; border-radius: 10px;">
         <!-- start fip -->
         <table role="presentation" style="border-collapse: collapse; max-width: 263px; margin: 0 10px" align="left">
           <tr>
-            <td style="line-height: 0; border: 0; padding: 0">
+            <td style="line-height: 0px; border: 0; padding: 0">
 
               {% if fip_banner_english %}
               <img
@@ -44,7 +46,6 @@
                 alt="Government of Canada / Gouvernement du Canada"
                 height="25"
                 width="263"
-                style="max-width: 100%; height: auto;"
                 border="0"
               />
               {% endif %}
@@ -55,7 +56,6 @@
                 alt="Gouvernement du Canada / Government of Canada"
                 height="25"
                 width="263"
-                style="max-width: 100%; height: auto;"
                 border="0"
               />
               {% endif %}
@@ -121,7 +121,7 @@
   style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 0 auto 20px auto;"
 >
   <tr>
-    <td bgcolor="#fff" style="padding: 15px 0; background-color: #fff; background: linear-gradient(#fff, #fff); border-radius: 10px;">
+    <td class="force-white-bg" style="padding: 15px 0; border-radius: 10px;">
       <table role="presentation" width="100%" style="border-collapse: collapse;">
         <tr>
           <td style="padding: 0;">
@@ -163,10 +163,10 @@
 {% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
 <table role="presentation" width="100%" style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 10px auto 0 auto;">
   <tr>
-    <td width="100%" bgcolor="#fff" style="text-align:right; width:100%!important; padding: 15px 10px; background-color: #fff; background: linear-gradient(#fff, #fff); border-radius: 10px;">
+    <td width="100%" class="force-white-bg" style="text-align:right; width:100%!important; padding: 15px 10px; border-radius: 10px;">
       <table role="presentation" style="border-collapse: collapse; width: 100%!important; text-align: right;" align="right">
         <tr>
-          <td style="line-height: 0; border: 0; padding: 0">
+          <td style="line-height: 0px; border: 0; padding: 0">
             <img
               src="https://assets.notification.canada.ca/wmms-blk.png"
               alt=" "
