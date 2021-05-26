@@ -1,5 +1,5 @@
-<div class="email-message mb-12 border border-solid border-gray-grey2">
-  <table class="email-message-meta m-0 text-smaller leading-tight font-normal">
+<div class="email-message mb-12">
+  <table class="email-message-meta mb-12 leading-tight font-normal border border-solid border-gray-grey2">
     <tbody>
       {% if show_recipient %}
         {% if from_name %}
@@ -33,7 +33,60 @@
       </tr>
     </tbody>
   </table>
-  <div class="email-message-body w-full m-0 relative break-words clear-both box-border px-doubleGutter pt-gutterHalf pb-0">
-    {{ body }}
+
+  <div class="email-message-body w-full m-0 relative break-words clear-both box-border px-doubleGutter py-4 border-gray-grey2 border">
+
+    <div style="max-width: 580px; margin: 0 auto">
+      {% if fip_banner_english %}
+        <div style="max-width: 326px">
+          <img
+            src="https://{{ asset_domain }}/gov-canada-en.png"
+            alt="Government of Canada / Gouvernement du Canada"
+            height="30"
+            style="padding-bottom:30px; max-width: 100%; height: auto;"
+          />
+        </div>
+      {% endif %}
+
+      {% if fip_banner_french or brand_name == "canada.ca-fr" %}
+        <div style="max-width: 326px">
+          <img
+            src="https://{{ asset_domain }}/gov-canada-fr.png"
+            alt="Gouvernement du Canada / Government of Canada"
+            height="30"
+            style="padding-bottom:30px; max-width: 100%; height: auto;"
+          />
+        </div>
+      {% endif %}
+
+      {% if brand_logo %}
+        <div style="padding: 0 5px 0 {% if brand_colour %} 8px; border-left: solid 2px {{ brand_colour }}{% else %} 10px{% endif %}; display: inline-block">
+        <img
+          src="https://{{ asset_domain }}/{{ brand_logo }}"
+          style="padding-left:0; display: block; border: 0; height:{% if brand_text -%} 27 {%- else -%} 108 {%- endif %}px"
+          alt="{% if brand_text %} {% else -%}{{ brand_name }}{%- endif %}"
+        />
+        </div>
+
+        <p style="font-family: Helvetica, Arial, sans-serif; font-size: 18px; line-height: 23px; display: inline-block">
+          {% if brand_text %}
+          {{ brand_text }}
+          {% endif %}
+        </p>
+      {% endif %}
+
+      {{ body }}
+
+      {% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
+        <div>
+          <img
+            src="https://{{ asset_domain }}/wmms-blk.png"
+            alt=" "
+            style="padding-top:20px; float: right; height: 45px"
+          />
+        </div>
+        <div style="clear:both;"></div>
+      {% endif %}
+    </div>
   </div>
 </div>

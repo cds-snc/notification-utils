@@ -411,6 +411,14 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         show_recipient=True,
         redact_missing_personalisation=False,
         jinja_path=None,
+        fip_banner_english=None,
+        fip_banner_french=None,
+        brand_colour=None,
+        brand_logo=None,
+        brand_text=None,
+        brand_name=None,
+        logo_with_background_colour=None,
+        asset_domain=None,
     ):
         super().__init__(template,
                          values,
@@ -421,6 +429,13 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         self.reply_to = reply_to
         self.show_recipient = show_recipient
         self.jinja_template = self.template_env.get_template('email_preview_template.jinja2')
+        self.fip_banner_english = fip_banner_english
+        self.fip_banner_french = fip_banner_french
+        self.brand_colour = brand_colour
+        self.brand_logo = brand_logo
+        self.brand_text = brand_text
+        self.brand_name = brand_name
+        self.asset_domain = asset_domain or "assets.notification.canada.ca"
 
     def __str__(self):
         return Markup(self.jinja_template.render({
@@ -432,7 +447,14 @@ class EmailPreviewTemplate(WithSubjectTemplate):
             'from_address': self.from_address,
             'reply_to': self.reply_to,
             'recipient': Field("((email address))", self.values, translated=True),
-            'show_recipient': self.show_recipient
+            'show_recipient': self.show_recipient,
+            'fip_banner_english': self.fip_banner_english,
+            'fip_banner_french': self.fip_banner_french,
+            'brand_colour': self.brand_colour,
+            'brand_logo': self.brand_logo,
+            'brand_text': self.brand_text,
+            'brand_name': self.brand_name,
+            'asset_domain': self.asset_domain,
         }))
 
     @property

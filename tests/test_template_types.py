@@ -45,28 +45,52 @@ def test_default_template(content):
     assert content in str(HTMLEmailTemplate({'content': 'hello world', 'subject': ''}))
 
 
+@pytest.mark.parametrize('renderer', [HTMLEmailTemplate, EmailPreviewTemplate])
 @pytest.mark.parametrize(
     "show_banner", (True, False)
 )
-def test_fip_banner_english(show_banner):
-    email = HTMLEmailTemplate({'content': 'hello world', 'subject': ''})
+def test_fip_banner_english(renderer, show_banner):
+    email = renderer({'content': 'hello world', 'subject': ''})
     email.fip_banner_english = show_banner
     if show_banner:
         assert "gov-canada-en.png" in str(email)
+        assert "wmms-blk.png" in str(email)
     else:
         assert "gov-canada-en.png" not in str(email)
+        assert "wmms-blk.png" not in str(email)
 
 
+@pytest.mark.parametrize('lang', ['en', 'fr'])
+@pytest.mark.parametrize('asset_domain', [None, 'assets.example.com'])
+def test_custom_asset_domain(lang, asset_domain):
+    expected_domain = asset_domain or 'assets.notification.canada.ca'
+    email = EmailPreviewTemplate(
+        {
+            'content': 'hello world',
+            'subject': '',
+        },
+        fip_banner_english=lang == "en",
+        fip_banner_french=lang == "fr",
+        asset_domain=asset_domain
+    )
+
+    assert f"https://{expected_domain}/gov-canada-{lang}.png" in str(email)
+
+
+@pytest.mark.parametrize('renderer', [HTMLEmailTemplate, EmailPreviewTemplate])
 @pytest.mark.parametrize(
     "show_banner", (True, False)
 )
-def test_fip_banner_french(show_banner):
-    email = HTMLEmailTemplate({'content': 'hello world', 'subject': ''})
+def test_fip_banner_french(renderer, show_banner):
+    email = renderer({'content': 'hello world', 'subject': ''})
+    email.fip_banner_english = False
     email.fip_banner_french = show_banner
     if show_banner:
         assert "gov-canada-fr.png" in str(email)
+        assert "wmms-blk.png" in str(email)
     else:
         assert "gov-canada-fr.png" not in str(email)
+        assert "wmms-blk.png" not in str(email)
 
 
 def test_logo_with_background_colour_shows():
@@ -112,8 +136,9 @@ def test_brand_data_shows(brand_logo, brand_text, brand_colour):
         assert 'bgcolor="{}"'.format(brand_colour) in email
 
 
-def test_alt_text_with_brand_text_and_fip_banner_english_shown():
-    email = str(HTMLEmailTemplate(
+@pytest.mark.parametrize('renderer', [HTMLEmailTemplate, EmailPreviewTemplate])
+def test_alt_text_with_brand_text_and_fip_banner_english_shown(renderer):
+    email = str(renderer(
         {'content': 'hello world', 'subject': ''},
         fip_banner_english=True,
         brand_logo='http://example.com/image.png',
@@ -125,8 +150,9 @@ def test_alt_text_with_brand_text_and_fip_banner_english_shown():
     assert 'alt="Notify Logo"' not in email
 
 
-def test_alt_text_with_no_brand_text_and_fip_banner_english_shown():
-    email = str(HTMLEmailTemplate(
+@pytest.mark.parametrize('renderer', [HTMLEmailTemplate, EmailPreviewTemplate])
+def test_alt_text_with_no_brand_text_and_fip_banner_english_shown(renderer):
+    email = str(renderer(
         {'content': 'hello world', 'subject': ''},
         fip_banner_english=True,
         brand_logo='http://example.com/image.png',
@@ -138,8 +164,9 @@ def test_alt_text_with_no_brand_text_and_fip_banner_english_shown():
     assert 'alt="Notify Logo"' in email
 
 
-def test_alt_text_with_no_brand_text_and_fip_banner_french_shown():
-    email = str(HTMLEmailTemplate(
+@pytest.mark.parametrize('renderer', [HTMLEmailTemplate, EmailPreviewTemplate])
+def test_alt_text_with_no_brand_text_and_fip_banner_french_shown(renderer):
+    email = str(renderer(
         {'content': 'hello world', 'subject': ''},
         fip_banner_english=False,
         fip_banner_french=True,
@@ -152,14 +179,15 @@ def test_alt_text_with_no_brand_text_and_fip_banner_french_shown():
     assert 'alt="Notify Logo"' in email
 
 
+@pytest.mark.parametrize('renderer', [HTMLEmailTemplate, EmailPreviewTemplate])
 @pytest.mark.parametrize('logo_with_background_colour, brand_text, expected_alt_text', [
     (True, None, 'alt="Notify Logo"'),
     (True, 'Example', 'alt=" "'),
     (False, 'Example', 'alt=" "'),
     (False, None, 'alt="Notify Logo"'),
 ])
-def test_alt_text_with_no_fip_banner(logo_with_background_colour, brand_text, expected_alt_text):
-    email = str(HTMLEmailTemplate(
+def test_alt_text_with_no_fip_banner(logo_with_background_colour, brand_text, expected_alt_text, renderer):
+    email = str(renderer(
         {'content': 'hello world', 'subject': ''},
         fip_banner_english=False,
         brand_logo='http://example.com/image.png',
