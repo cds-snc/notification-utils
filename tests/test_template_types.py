@@ -53,11 +53,11 @@ def test_fip_banner_english(renderer, show_banner):
     email = renderer({'content': 'hello world', 'subject': ''})
     email.fip_banner_english = show_banner
     if show_banner:
-        assert "gov-canada-en.png" in str(email)
-        assert "wmms-blk.png" in str(email)
+        assert "gc-logo-en.png" in str(email)
+        assert "canada-logo.png" in str(email)
     else:
-        assert "gov-canada-en.png" not in str(email)
-        assert "wmms-blk.png" not in str(email)
+        assert "gc-logo-en.png" not in str(email)
+        assert "canada-logo.png" not in str(email)
 
 
 @pytest.mark.parametrize('lang', ['en', 'fr'])
@@ -74,7 +74,7 @@ def test_custom_asset_domain(lang, asset_domain):
         asset_domain=asset_domain
     )
 
-    assert f"https://{expected_domain}/gov-canada-{lang}.png" in str(email)
+    assert f"https://{expected_domain}/gc-logo-{lang}.png" in str(email)
 
 
 @pytest.mark.parametrize('renderer', [HTMLEmailTemplate, EmailPreviewTemplate])
@@ -86,11 +86,11 @@ def test_fip_banner_french(renderer, show_banner):
     email.fip_banner_english = False
     email.fip_banner_french = show_banner
     if show_banner:
-        assert "gov-canada-fr.png" in str(email)
-        assert "wmms-blk.png" in str(email)
+        assert "gc-logo-fr.png" in str(email)
+        assert "canada-logo.png" in str(email)
     else:
-        assert "gov-canada-fr.png" not in str(email)
-        assert "wmms-blk.png" not in str(email)
+        assert "gc-logo-fr.png" not in str(email)
+        assert "canada-logo.png" not in str(email)
 
 
 def test_logo_with_background_colour_shows():
@@ -100,7 +100,7 @@ def test_logo_with_background_colour_shows():
         fip_banner_english=False,
         brand_colour='#eee'
     ))
-    assert "gov-canada-en.png" not in email
+    assert "gc-logo-en.png" not in email
     assert 'bgcolor="#eee"' in email
     assert 'background: linear-gradient(#eee, #eee);' in email
 
