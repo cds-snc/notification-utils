@@ -30,32 +30,33 @@
 {% endif %}
 <span style="display: none;font-size: 1px;color: #fff; max-height: 0;">{{ preheader }}…</span>
 
+<div style="height:20px">&nbsp;</div>
 <!-- start primary template header EN + FR -->
 {% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
-  <table role="presentation" style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 20px auto 30px auto;">
+  <table role="presentation" style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 0px auto">
     <tr>
-      <td width="100%" class="force-white-bg" style="padding: 15px 0; border-radius: 10px;">
+      <td width="100%" class="force-white-bg" style="border-radius: 10px;">
         <!-- start fip -->
-        <table role="presentation" style="border-collapse: collapse; max-width: 263px; margin: 0 10px" align="left">
+        <table role="presentation" style="border-collapse: collapse; max-width: 281px;" align="left">
           <tr>
             <td style="line-height: 0px; border: 0; padding: 0">
 
               {% if fip_banner_english %}
               <img
-                src="https://assets.notification.canada.ca/gov-canada-en.png"
+                src="https://assets.notification.canada.ca/gc-logo-en.png"
                 alt="Government of Canada / Gouvernement du Canada"
-                height="25"
-                width="263"
+                height="55"
+                width="281"
                 border="0"
               />
               {% endif %}
 
               {% if fip_banner_french or brand_name == "canada.ca-fr" %}
                <img
-                src="https://assets.notification.canada.ca/gov-canada-fr.png"
+                src="https://assets.notification.canada.ca/gc-logo-fr.png"
                 alt="Gouvernement du Canada / Government of Canada"
-                height="25"
-                width="263"
+                height="70"
+                width="281"
                 border="0"
               />
               {% endif %}
@@ -67,11 +68,12 @@
       </td>
     </tr>
   </table>
+<div style="height:30px">&nbsp;</div>
 {% endif %}
 
 {% if logo_with_background_colour %}
 {% set brand_colour = brand_colour if brand_colour else '#0b0c0c' %}
-<table role="presentation" style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 20px auto 30px auto;">
+<table role="presentation" style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 0px auto">
   <tr>
     <td width="100%" bgcolor="{{brand_colour}}" style="padding: 15px 0; background-color: {{brand_colour}}; background: linear-gradient({{brand_colour}}, {{brand_colour}}); border-radius: 10px;">
       <table role="presentation" width="100%" style="border-collapse: collapse;max-width: 580px; padding-left: 10px;" align="left">
@@ -112,13 +114,14 @@
     </td>
   </tr>
 </table>
+<div style="height:30px">&nbsp;</div>
 {% endif %}
 
 {% if brand_logo and not logo_with_background_colour %}
 <table
   role="presentation"
   class="content"
-  style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 20px auto 30px auto;"
+  style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 0px auto"
 >
   <tr>
     <td class="force-white-bg" style="padding: 15px 0; border-radius: 10px;">
@@ -144,6 +147,7 @@
     </td>
   </tr>
 </table>
+<div style="height:30px">&nbsp;</div>
 {% endif %}
 
 <!-- main content -->
@@ -161,17 +165,18 @@
 <!-- end main content -->
 
 {% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
-<table role="presentation" width="100%" style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 10px auto 20px auto;">
+<div style="height:10px">&nbsp;</div>
+<table role="presentation" width="100%" style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 0px auto;">
   <tr>
-    <td width="100%" class="force-white-bg" style="text-align:right; width:100%!important; padding: 15px 10px; border-radius: 10px;">
+    <td width="100%" class="force-white-bg" style="text-align:right; width:100%!important; border-radius: 10px;">
       <table role="presentation" style="border-collapse: collapse; width: 100%!important; text-align: right;" align="right">
         <tr>
           <td style="line-height: 0px; border: 0; padding: 0">
             <img
-              src="https://assets.notification.canada.ca/wmms-blk.png"
+              src="https://assets.notification.canada.ca/canada-logo.png"
               alt=" "
-              width="105"
-              height="25"
+              width="123"
+              height="55"
               border="0"
             />
           </td>
@@ -180,6 +185,7 @@
     </td>
   </tr>
 </table>
+<div style="height:20px">&nbsp;</div>
 {% endif %}
 
 {% if complete_html %}
