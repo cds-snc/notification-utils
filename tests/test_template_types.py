@@ -53,11 +53,11 @@ def test_fip_banner_english(renderer, show_banner):
     email = renderer({'content': 'hello world', 'subject': ''})
     email.fip_banner_english = show_banner
     if show_banner:
-        assert "gov-canada-en.png" in str(email)
-        assert "wmms-blk.png" in str(email)
+        assert "gc-logo-en.png" in str(email)
+        assert "canada-logo.png" in str(email)
     else:
-        assert "gov-canada-en.png" not in str(email)
-        assert "wmms-blk.png" not in str(email)
+        assert "gc-logo-en.png" not in str(email)
+        assert "canada-logo.png" not in str(email)
 
 
 @pytest.mark.parametrize('lang', ['en', 'fr'])
@@ -74,7 +74,7 @@ def test_custom_asset_domain(lang, asset_domain):
         asset_domain=asset_domain
     )
 
-    assert f"https://{expected_domain}/gov-canada-{lang}.png" in str(email)
+    assert f"https://{expected_domain}/gc-logo-{lang}.png" in str(email)
 
 
 @pytest.mark.parametrize('renderer', [HTMLEmailTemplate, EmailPreviewTemplate])
@@ -86,25 +86,23 @@ def test_fip_banner_french(renderer, show_banner):
     email.fip_banner_english = False
     email.fip_banner_french = show_banner
     if show_banner:
-        assert "gov-canada-fr.png" in str(email)
-        assert "wmms-blk.png" in str(email)
+        assert "gc-logo-fr.png" in str(email)
+        assert "canada-logo.png" in str(email)
     else:
-        assert "gov-canada-fr.png" not in str(email)
-        assert "wmms-blk.png" not in str(email)
+        assert "gc-logo-fr.png" not in str(email)
+        assert "canada-logo.png" not in str(email)
 
 
 def test_logo_with_background_colour_shows():
     email = str(HTMLEmailTemplate(
         {'content': 'hello world', 'subject': ''},
         logo_with_background_colour=True,
-        fip_banner_english=False
+        fip_banner_english=False,
+        brand_colour='#eee'
     ))
-    assert (
-        '<td width="10" height="10" valign="middle"></td>'
-    ) not in email
-    assert (
-        'role="presentation" style="border-collapse: collapse; max-width: 100%; width: 580px; margin: 0 auto;"' # noqa
-    ) in email
+    assert "gc-logo-en.png" not in email
+    assert 'bgcolor="#eee"' in email
+    assert 'background: linear-gradient(#eee, #eee);' in email
 
 
 @pytest.mark.parametrize(
@@ -391,7 +389,7 @@ def test_markdown_in_templates(
     ]
 )
 def test_makes_links_out_of_URLs(template_class, url, url_with_entities_replaced):
-    assert '<a style="word-wrap: break-word; color: #005ea5;" href="{}">{}</a>'.format(
+    assert '<a style="word-wrap: break-word;" href="{}">{}</a>'.format(
         url_with_entities_replaced, url_with_entities_replaced
     ) in str(template_class({'content': url, 'subject': ''}))
 
@@ -405,7 +403,7 @@ def test_makes_links_out_of_URLs(template_class, url, url_with_entities_replaced
             'Thanks\n'
         ),
         (
-            '<a style="word-wrap: break-word; color: #005ea5;"'
+            '<a style="word-wrap: break-word;"'
             ' href="https://service.example.com/accept_invite/a1b2c3d4">'
             'https://service.example.com/accept_invite/a1b2c3d4'
             '</a>'
@@ -416,7 +414,7 @@ def test_makes_links_out_of_URLs(template_class, url, url_with_entities_replaced
             'https://service.example.com/accept_invite/?a=b&c=d&'
         ),
         (
-            '<a style="word-wrap: break-word; color: #005ea5;"'
+            '<a style="word-wrap: break-word;"'
             ' href="https://service.example.com/accept_invite/?a=b&amp;c=d&amp;">'
             'https://service.example.com/accept_invite/?a=b&amp;c=d&amp;'
             '</a>'
@@ -2046,7 +2044,7 @@ def test_plain_text_email_whitespace():
     (HTMLEmailTemplate, (
         '<h2 style="Margin: 0 0 20px 0; padding: 0; font-size: 27px; '
         'line-height: 35px; font-weight: bold; color: #0B0C0C;">'
-        'Heading <a style="word-wrap: break-word; color: #005ea5;" href="https://example.com">link</a>'
+        'Heading <a style="word-wrap: break-word;" href="https://example.com">link</a>'
         '</h2>'
     )),
     (LetterPreviewTemplate, (

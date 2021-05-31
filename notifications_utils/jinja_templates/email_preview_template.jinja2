@@ -34,33 +34,33 @@
     </tbody>
   </table>
 
-  <div class="email-message-body w-full m-0 relative break-words clear-both box-border px-doubleGutter py-4 border-gray-grey2 border">
+  <div class="email-message-body w-full relative break-words box-border px-doubleGutter border-gray-grey2 border">
 
-    <div style="max-width: 580px; margin: 0 auto">
+    <div style="max-width: 580px; margin: 0 auto;">
       {% if fip_banner_english %}
-        <div style="max-width: 326px">
+        <div style="margin: 20px auto 30px auto;">
           <img
-            src="https://{{ asset_domain }}/gov-canada-en.png"
+            src="https://{{ asset_domain }}/gc-logo-en.png"
             alt="Government of Canada / Gouvernement du Canada"
-            height="30"
-            style="padding-bottom:30px; max-width: 100%; height: auto;"
+            height="55"
+            width="281"
           />
         </div>
       {% endif %}
 
       {% if fip_banner_french or brand_name == "canada.ca-fr" %}
-        <div style="max-width: 326px">
+        <div style="margin: 20px auto 30px auto;">
           <img
-            src="https://{{ asset_domain }}/gov-canada-fr.png"
+            src="https://{{ asset_domain }}/gc-logo-fr.png"
             alt="Gouvernement du Canada / Government of Canada"
-            height="30"
-            style="padding-bottom:30px; max-width: 100%; height: auto;"
+            height="55"
+            width="281"
           />
         </div>
       {% endif %}
 
       {% if brand_logo %}
-        <div style="padding: 0 5px 0 {% if brand_colour %} 8px; border-left: solid 2px {{ brand_colour }}{% else %} 10px{% endif %}; display: inline-block">
+        <div style="margin: 20px auto 30px auto; padding: 0 5px 0 {% if brand_colour %} 8px; border-left: solid 2px {{ brand_colour }}{% else %} 10px{% endif %}; display: inline-block">
         <img
           src="https://{{ asset_domain }}/{{ brand_logo }}"
           style="padding-left:0; display: block; border: 0; height:{% if brand_text -%} 27 {%- else -%} 108 {%- endif %}px"
@@ -75,14 +75,17 @@
         </p>
       {% endif %}
 
-      {{ body }}
+      <div style="padding: 0 10px">
+        {{ body }}
+      </div>
 
       {% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
-        <div>
+        <div style="margin: 10px 0 20px 0; float: right">
           <img
-            src="https://{{ asset_domain }}/wmms-blk.png"
+            src="https://{{ asset_domain }}/canada-logo.png"
             alt=" "
-            style="padding-top:20px; float: right; height: 45px"
+            height="55"
+            width="123"
           />
         </div>
         <div style="clear:both;"></div>
