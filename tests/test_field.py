@@ -1,5 +1,5 @@
 import pytest
-from notifications_utils.field import Field, str2bool
+from notifications_utils.field import Field
 
 
 @pytest.mark.parametrize("content", [
@@ -81,14 +81,14 @@ def test_returns_a_string_without_placeholders(content):
             'before {\'key\': \'value\'} after',
         ),
         (
-            "((warning?))",
+            "((warning?))",             # This is not a valid palceholder
             {"warning?": "This is not a conditional"},
-            "This is not a conditional"
+            "((warning?))"              # No substitution because it's not a valid placholder
         ),
         (
-            "((warning?warning))",
+            "((warning?warning))",      # This is not a valid palceholder
             {"warning?warning": "This is not a conditional"},
-            "This is not a conditional"
+            "((warning?warning))"     # No substitution because it's not a valid placholder
         ),
         (
             "((warning??This is a conditional warning))",
@@ -99,6 +99,36 @@ def test_returns_a_string_without_placeholders(content):
             "((warning??This is a conditional warning))",
             {"warning": False},
             ""
+        ),
+        (
+            "((warning??This is a conditional warning: {}))",
+            {"warning": "Tornado is coming"},
+            "This is a conditional warning: Tornado is coming"
+        ),
+        (
+            "((warning??This is a conditional warning: {}))",
+            {"warning": True},
+            "This is a conditional warning: True"
+        ),
+        (
+            "((warning??This is a conditional warning: {}))",
+            {"warning": ""},
+            ""
+        ),
+        (
+            "((warning??This is a conditional warning: {}))",
+            {"warning": False},
+            ""
+        ),
+        (
+            "((url_param??Url with param: [static url name](http://test.me/{}) ))",
+            {"url_param": "foo"},
+            "Url with param: [static url name](http://test.me/foo) "
+        ),
+        (
+            "((dynamic_url??Url with param: [{}]({}) ))",
+            {"dynamic_url": "https://foo.bar"},
+            "Url with param: [https://foo.bar](https://foo.bar) "
         ),
     ]
 )
@@ -164,16 +194,24 @@ def test_optional_redacting_of_missing_values(template_content, data, expected):
             "the quick (<span class='placeholder'>((colour))</span>) fox"
         ),
         (
-            "((warning?))",
-            "<span class='placeholder'>((warning?))</span>"
+            "((warning?))",             # This is not a valid placeholder name
+            "((warning?))"
         ),
         (
-            "((warning? This is not a conditional))",
-            "<span class='placeholder'>((warning? This is not a conditional))</span>"
+            "((warning? This is not a conditional))",       # This is not a valid placeholder name
+            "((warning? This is not a conditional))"
         ),
         (
             "((warning?? This is a warning))",
             "<span class='placeholder-conditional'>((warning??</span> This is a warning))"
+        ),
+        (
+            "((condition?? Let's use conditional value: {} here))",
+            "<span class='placeholder-conditional'>((condition??</span> Let's use conditional value: {} here))"
+        ),
+        (
+            "((url?? We can have conditional urls: [url](url) ))",
+            "<span class='placeholder-conditional'>((url??</span> We can have conditional urls: [url](url) ))"
         ),
     ]
 )
@@ -202,41 +240,6 @@ def test_formatting_of_placeholders(content, expected):
 )
 def test_handling_of_missing_values(content, values, expected):
     assert str(Field(content, values)) == expected
-
-
-@pytest.mark.parametrize(
-    "value", [
-        '0',
-        0, 2, 99.99999,
-        'off',
-        'exclude',
-        'no'
-        'any random string',
-        'false',
-        False,
-        [], {}, (),
-        ['true'], {'True': True}, (True, 'true', 1)
-    ]
-)
-def test_what_will_not_trigger_conditional_placeholder(value):
-    assert str2bool(value) is False
-
-
-@pytest.mark.parametrize(
-    "value", [
-        1,
-        '1',
-        'yes',
-        'y',
-        'true',
-        'True',
-        True,
-        'include',
-        'show'
-    ]
-)
-def test_what_will_trigger_conditional_placeholder(value):
-    assert str2bool(value) is True
 
 
 @pytest.mark.parametrize("values, expected, expected_as_markdown", [

@@ -61,6 +61,19 @@ def test_matches_keys_to_placeholder_names():
     assert template.missing_data == ['name']
 
 
+@pytest.mark.parametrize('personalisation', [
+    {'has_name': None},
+    {},
+    None
+])
+def test_include_placeholder_in_missing_data_if_placeholder_is_conditional(personalisation):
+
+    template = Template({"content": "((has_name??hello!))"})
+
+    template.values = personalisation
+    assert template.missing_data == ['has_name']
+
+
 @pytest.mark.parametrize(
     "template_content, template_subject, expected", [
         (
@@ -104,10 +117,21 @@ def test_matches_keys_to_placeholder_names():
             ["name", "warning"]
         ),
         (
+            # Placeholder names are limited to alphanumeric characters, spaces and dashes
             "((warning? one question mark))",
             "",
-            ["warning? one question mark"]
-        )
+            []
+        ),
+        (
+            "Dear ((name)), ((warning?? This is a warning {}))",
+            "",
+            ["name", "warning"]
+        ),
+        (
+            "A conditional url: ((has_url?? [some link](http://test.me) ))",
+            "",
+            ["has_url"]
+        ),
     ]
 )
 def test_extracting_placeholders(template_content, template_subject, expected):

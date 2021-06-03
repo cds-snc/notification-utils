@@ -38,7 +38,10 @@ def test_placeholder_raises_if_accessing_conditional_text_on_non_conditional():
 
 @pytest.mark.parametrize('body, value, result', [
     ('a??b', 'Yes', 'b'),
-    ('a??b', 'No', ''),
+    ('a??b', 'No', 'b'),
+    ('a??b', True, 'b'),
+    ('a??b', '', ''),
+    ('a??b', False, ''),
 ])
 def test_placeholder_gets_conditional_body(body, value, result):
     assert Placeholder(body).get_conditional_body(value) == result

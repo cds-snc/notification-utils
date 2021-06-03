@@ -118,14 +118,14 @@ class Template():
             )
 
     @property
-    def placeholders(self):
-        return Field(self.content).placeholders
+    def placeholders(self):  # TODO: rename to placeholder_names
+        return Field(self.content).placeholder_names
 
     @property
     def missing_data(self):
         return list(
-            placeholder for placeholder in self.placeholders
-            if self.values.get(placeholder) is None
+            placeholder.name for placeholder in Field(self.content).placeholders
+            if self.values.get(placeholder.name) is None
         )
 
     @property
@@ -286,7 +286,7 @@ class WithSubjectTemplate(Template):
 
     @property
     def placeholders(self):
-        return Field(self._subject).placeholders | Field(self.content).placeholders
+        return Field(self._subject).placeholder_names | Field(self.content).placeholder_names
 
 
 class PlainTextEmailTemplate(WithSubjectTemplate):
@@ -510,7 +510,7 @@ class LetterPreviewTemplate(WithSubjectTemplate):
 
     @property
     def placeholders(self):
-        return super().placeholders | Field(self.contact_block).placeholders
+        return super().placeholders | Field(self.contact_block).placeholder_names
 
     @property
     def values_with_default_optional_address_lines(self):
