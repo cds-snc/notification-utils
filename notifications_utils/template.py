@@ -124,8 +124,8 @@ class Template():
     @property
     def missing_data(self):
         return list(
-            placeholder.name for placeholder in Field(self.content).placeholders
-            if self.values.get(placeholder.name) is None
+            placeholder_name for placeholder_name in Field(self.content).placeholder_names
+            if self.values.get(placeholder_name) is None
         )
 
     @property
