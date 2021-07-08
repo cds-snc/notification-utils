@@ -1,8 +1,8 @@
 import unicodedata
-
+from typing import Set
 
 class SanitiseText:
-    ALLOWED_CHARACTERS = set()
+    ALLOWED_CHARACTERS: Set = set()
 
     REPLACEMENT_CHARACTERS = {
         '–': '-',  # EN DASH (U+2013)
