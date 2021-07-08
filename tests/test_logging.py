@@ -11,97 +11,53 @@ from notifications_utils import logging
 
 def test_should_build_complete_log_line():
     service_id = uuid.uuid4()
-    extra_fields = {
-        'method': "method",
-        'url': "url",
-        'status': 200,
-        'time_taken': "time_taken",
-        'service_id': service_id
-    }
-    assert "{service_id} method url 200 time_taken".format(
-        service_id=str(service_id)) == logging.build_log_line(extra_fields)
+    extra_fields = {"method": "method", "url": "url", "status": 200, "time_taken": "time_taken", "service_id": service_id}
+    assert "{service_id} method url 200 time_taken".format(service_id=str(service_id)) == logging.build_log_line(extra_fields)
 
 
 def test_should_build_complete_log_line_ignoring_missing_fields():
     service_id = uuid.uuid4()
-    extra_fields = {
-        'method': "method",
-        'status': 200,
-        'time_taken': "time_taken",
-        'service_id': service_id
-    }
-    assert "{service_id} method 200 time_taken".format(
-        service_id=str(service_id)) == logging.build_log_line(extra_fields)
+    extra_fields = {"method": "method", "status": 200, "time_taken": "time_taken", "service_id": service_id}
+    assert "{service_id} method 200 time_taken".format(service_id=str(service_id)) == logging.build_log_line(extra_fields)
 
 
 def test_should_build_log_line_without_service_id():
-    extra_fields = {
-        'method': "method",
-        'url': "url",
-        'status': 200,
-        'time_taken': "time_taken"
-    }
+    extra_fields = {"method": "method", "url": "url", "status": 200, "time_taken": "time_taken"}
     assert "method url 200 time_taken" == logging.build_log_line(extra_fields)
 
 
 def test_should_build_log_line_without_service_id_or_time_taken():
-    extra_fields = {
-        'method': "method",
-        'url': "url",
-        'status': 200
-    }
+    extra_fields = {"method": "method", "url": "url", "status": 200}
     assert "method url 200" == logging.build_log_line(extra_fields)
 
 
 def test_should_build_complete_statsd_line():
     service_id = uuid.uuid4()
-    extra_fields = {
-        'method': "method",
-        'endpoint': "endpoint",
-        'status': 200,
-        'service_id': service_id
-    }
-    assert "service-id.{service_id}.method.endpoint.200".format(
-        service_id=str(service_id)) == logging.build_statsd_line(extra_fields)
+    extra_fields = {"method": "method", "endpoint": "endpoint", "status": 200, "service_id": service_id}
+    assert "service-id.{service_id}.method.endpoint.200".format(service_id=str(service_id)) == logging.build_statsd_line(
+        extra_fields
+    )
 
 
 def test_should_build_complete_statsd_line_without_service_id_prefix_for_admin_api_calls():
-    extra_fields = {
-        'method': "method",
-        'endpoint': "endpoint",
-        'status': 200,
-        'service_id': 'notify-admin'
-    }
+    extra_fields = {"method": "method", "endpoint": "endpoint", "status": 200, "service_id": "notify-admin"}
     assert "notify-admin.method.endpoint.200" == logging.build_statsd_line(extra_fields)
 
 
 def test_should_build_complete_statsd_line_ignoring_missing_fields():
     service_id = uuid.uuid4()
-    extra_fields = {
-        'method': "method",
-        'endpoint': "endpoint",
-        'service_id': service_id
-    }
-    assert "service-id.{service_id}.method.endpoint".format(
-        service_id=str(service_id)) == logging.build_statsd_line(extra_fields)
+    extra_fields = {"method": "method", "endpoint": "endpoint", "service_id": service_id}
+    assert "service-id.{service_id}.method.endpoint".format(service_id=str(service_id)) == logging.build_statsd_line(extra_fields)
 
 
 def test_should_build_statsd_line_without_service_id_or_time_taken():
-    extra_fields = {
-        'method': "method",
-        'endpoint': "endpoint",
-        'status': 200
-    }
+    extra_fields = {"method": "method", "endpoint": "endpoint", "status": 200}
     assert "method.endpoint.200" == logging.build_statsd_line(extra_fields)
 
 
 def test_get_handlers_sets_up_logging_appropriately_with_debug(tmpdir):
     class App:
-        config = {
-            'NOTIFY_LOG_PATH': str(tmpdir / 'foo'),
-            'NOTIFY_APP_NAME': 'bar',
-            'NOTIFY_LOG_LEVEL': 'ERROR'
-        }
+        config = {"NOTIFY_LOG_PATH": str(tmpdir / "foo"), "NOTIFY_APP_NAME": "bar", "NOTIFY_LOG_LEVEL": "ERROR"}
         debug = True
 
     app = App()
@@ -111,16 +67,16 @@ def test_get_handlers_sets_up_logging_appropriately_with_debug(tmpdir):
     assert len(handlers) == 1
     assert type(handlers[0]) == builtin_logging.StreamHandler
     assert type(handlers[0].formatter) == logging.CustomLogFormatter
-    assert not (tmpdir / 'foo').exists()
+    assert not (tmpdir / "foo").exists()
 
 
 def test_get_handlers_sets_up_logging_appropriately_without_debug(tmpdir):
     class App:
         config = {
             # make a tempfile called foo
-            'NOTIFY_LOG_PATH': str(tmpdir / 'foo'),
-            'NOTIFY_APP_NAME': 'bar',
-            'NOTIFY_LOG_LEVEL': 'ERROR'
+            "NOTIFY_LOG_PATH": str(tmpdir / "foo"),
+            "NOTIFY_APP_NAME": "bar",
+            "NOTIFY_LOG_LEVEL": "ERROR",
         }
         debug = False
 
@@ -140,7 +96,7 @@ def test_get_handlers_sets_up_logging_appropriately_without_debug(tmpdir):
     # assert dir_contents[0].basename == 'foo.json'
 
 
-@pytest.mark.parametrize('service_id', ["fake-service_id", None])
+@pytest.mark.parametrize("service_id", ["fake-service_id", None])
 def test_logging_records_statsd_stats(app_with_statsd, service_id):
     app = app_with_statsd
     statsd = app_with_statsd.statsd_client
@@ -153,28 +109,28 @@ def test_logging_records_statsd_stats(app_with_statsd, service_id):
         if service_id:
             g.service_id = "fake-service_id"
 
-    @app.route('/')
+    @app.route("/")
     def homepage():
         return "ok"
 
     with app.app_context():
-        response = app.test_client().get('/')
+        response = app.test_client().get("/")
         assert response.status_code == 200
         if service_id:
             assert statsd.incr.call_args_list == [
-                call('service-id.fake-service_id.GET.homepage.200'),
-                call('GET.homepage.200'),
+                call("service-id.fake-service_id.GET.homepage.200"),
+                call("GET.homepage.200"),
             ]
             assert statsd.timing.call_count == 2
         else:
-            assert statsd.incr.call_args_list == [call('GET.homepage.200')]
+            assert statsd.incr.call_args_list == [call("GET.homepage.200")]
             assert statsd.timing.call_count == 1
             args, _ = statsd.timing.call_args_list[0]
             time_ms = args[1]
             assert time_ms >= 0.1
 
 
-@pytest.mark.parametrize('service_id', ["fake-service_id", None])
+@pytest.mark.parametrize("service_id", ["fake-service_id", None])
 def test_logging_records_statsd_stats_without_time(app_with_statsd, service_id):
     app = app_with_statsd
     statsd = app_with_statsd.statsd_client
@@ -186,19 +142,19 @@ def test_logging_records_statsd_stats_without_time(app_with_statsd, service_id):
         if service_id:
             g.service_id = "fake-service_id"
 
-    @app.route('/')
+    @app.route("/")
     def homepage():
         return "ok"
 
     with app.app_context():
-        response = app.test_client().get('/')
+        response = app.test_client().get("/")
         assert response.status_code == 200
         if service_id:
             assert statsd.incr.call_args_list == [
-                call('service-id.fake-service_id.GET.homepage.200'),
-                call('GET.homepage.200'),
+                call("service-id.fake-service_id.GET.homepage.200"),
+                call("GET.homepage.200"),
             ]
             statsd.timing.assert_not_called()
         else:
-            assert statsd.incr.call_args_list == [call('GET.homepage.200')]
+            assert statsd.incr.call_args_list == [call("GET.homepage.200")]
             statsd.timing.assert_not_called()

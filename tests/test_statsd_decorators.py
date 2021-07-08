@@ -9,7 +9,7 @@ class AnyStringWith(str):
 
 
 def test_should_call_statsd(app_with_statsd, mocker):
-    mock_logger = mocker.patch.object(app_with_statsd.logger, 'debug')
+    mock_logger = mocker.patch.object(app_with_statsd.logger, "debug")
 
     @statsd(namespace="test")
     def test_function():
@@ -25,13 +25,13 @@ def test_should_call_statsd_catch(app_with_statsd, mocker):
     class CustomException(BaseException):
         pass
 
-    class FooBar():
+    class FooBar:
         @statsd_catch(namespace="test", counter_name="rate.test", exception=CustomException)
         def test_function(self):
             return True
 
     fb = FooBar()
-    mocker.spy(fb, 'test_function')
+    mocker.spy(fb, "test_function")
 
     assert fb.test_function()
     fb.test_function.assert_called_once()
@@ -42,13 +42,13 @@ def test_should_incr_statsd_on_catch(app_with_statsd, mocker):
     class CustomException(BaseException):
         pass
 
-    class FooBar():
+    class FooBar:
         @statsd_catch(namespace="test", counter_name="rate.test", exception=CustomException)
         def test_function(self):
             raise CustomException("huh huh")
 
     fb = FooBar()
-    mocker.spy(fb, 'test_function')
+    mocker.spy(fb, "test_function")
 
     with pytest.raises(CustomException):
         fb.test_function()
@@ -60,13 +60,13 @@ def test_should_not_incr_statsd_on_catch_and_non_matching_exception(app_with_sta
     class CustomException(BaseException):
         pass
 
-    class FooBar():
+    class FooBar:
         @statsd_catch(namespace="test", counter_name="rate.test", exception=AssertionError)
         def test_function(self):
             raise CustomException("huh huh")
 
     fb = FooBar()
-    mocker.spy(fb, 'test_function')
+    mocker.spy(fb, "test_function")
 
     with pytest.raises(CustomException):
         fb.test_function()
