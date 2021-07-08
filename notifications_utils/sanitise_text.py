@@ -1,6 +1,7 @@
 import unicodedata
 from typing import Set
 
+
 class SanitiseText:
     ALLOWED_CHARACTERS: Set = set()
 
