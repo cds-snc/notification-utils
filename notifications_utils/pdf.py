@@ -28,10 +28,9 @@ def extract_page_from_pdf(src_pdf, page_number):
     pdf = PyPDF2.PdfFileReader(src_pdf)
 
     if pdf.numPages < page_number:
-        raise PdfReadError("Page number requested: {} of {} does not exist in document".format(
-            str(page_number),
-            str(pdf.numPages)
-        ))
+        raise PdfReadError(
+            "Page number requested: {} of {} does not exist in document".format(str(page_number), str(pdf.numPages))
+        )
 
     writer = PdfFileWriter()
     writer.addPage(pdf.getPage(page_number))
