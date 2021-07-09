@@ -4,4 +4,4 @@
 exclude = venv*,__pycache__,cache
 ignore = W503
 max-complexity = 8
-max-line-length = 120
+max-line-length = 130
