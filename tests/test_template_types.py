@@ -160,7 +160,7 @@ def test_alt_text_with_no_brand_text_and_fip_banner_english_shown(renderer):
             brand_name="Notify Logo",
         )
     )
-    assert 'alt=" "' in email
+    assert 'alt="Symbol of the Government of Canada / Symbole du gouvernement du Canada"' in email
     assert 'alt="Notify Logo"' in email
 
 
@@ -177,7 +177,7 @@ def test_alt_text_with_no_brand_text_and_fip_banner_french_shown(renderer):
             brand_name="Notify Logo",
         )
     )
-    assert 'alt=" "' in email
+    assert 'alt="Symbol of the Government of Canada / Symbole du gouvernement du Canada"' in email
     assert 'alt="Notify Logo"' in email
 
 
