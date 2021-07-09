@@ -22,6 +22,9 @@ function display_result {
   fi
 }
 
+black --check --config pyproject.toml .
+display_result $? 1 "Code style check (Black)"
+
 flake8 .
 display_result $? 1 "Code style check"
 

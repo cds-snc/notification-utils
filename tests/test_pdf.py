@@ -60,4 +60,4 @@ def test_extract_page_from_pdf_request_page_out_of_bounds():
         file_data = base64.b64decode(one_page_pdf)
         extract_page_from_pdf(BytesIO(file_data), 4)
 
-    assert 'Page number requested: 4 of 1 does not exist in document' in str(e.value)
+    assert "Page number requested: 4 of 1 does not exist in document" in str(e.value)
