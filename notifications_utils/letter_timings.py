@@ -8,20 +8,22 @@ from notifications_utils.timezones import convert_utc_to_est, utc_string_to_awar
 
 LETTER_PROCESSING_DEADLINE = time(17, 30)
 CANCELLABLE_JOB_LETTER_STATUSES = [
-    'created', 'cancelled', 'virus-scan-failed', 'validation-failed', 'technical-failure', 'pending-virus-check'
+    "created",
+    "cancelled",
+    "virus-scan-failed",
+    "validation-failed",
+    "technical-failure",
+    "pending-virus-check",
 ]
 
 
 def set_gmt_hour(day, hour):
-    return day.astimezone(pytz.timezone('America/Toronto')).replace(hour=hour, minute=0).astimezone(pytz.utc)
+    return day.astimezone(pytz.timezone("America/Toronto")).replace(hour=hour, minute=0).astimezone(pytz.utc)
 
 
-def get_letter_timings(upload_time, postage='second'):
+def get_letter_timings(upload_time, postage="second"):
 
-    LetterTimings = namedtuple(
-        'LetterTimings',
-        'printed_by, is_printed, earliest_delivery, latest_delivery'
-    )
+    LetterTimings = namedtuple("LetterTimings", "printed_by, is_printed, earliest_delivery, latest_delivery")
 
     # shift anything after 5:30pm to the next day
     processing_day = utc_string_to_aware_gmt_datetime(upload_time) + timedelta(hours=6, minutes=30)
@@ -57,7 +59,7 @@ def get_letter_timings(upload_time, postage='second'):
     # first class post is printed earlier in the day, so will actually transit on the printing day,
     # and be posted the next day
     transit_day = get_next_royal_mail_working_day(print_day)
-    if postage == 'first':
+    if postage == "first":
         earliest_delivery = latest_delivery = transit_day
     else:
         # second class has one day in transit, then a two day delivery window
@@ -66,7 +68,7 @@ def get_letter_timings(upload_time, postage='second'):
 
     # print deadline is 3pm EST
     printed_by = set_gmt_hour(print_day, hour=15)
-    now = datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('America/Toronto'))
+    now = datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone("America/Toronto"))
 
     return LetterTimings(
         printed_by=printed_by,
@@ -77,22 +79,23 @@ def get_letter_timings(upload_time, postage='second'):
 
 
 def letter_can_be_cancelled(notification_status, notification_created_at):
-    '''
+    """
     If letter does not have status of created or pending-virus-check
         => can't be cancelled (it has already been processed)
 
     If it's after 5.30pm local time and the notification was created today before 5.30pm local time
         => can't be cancelled (it will already be zipped up to be sent)
-    '''
-    if notification_status not in ('created', 'pending-virus-check'):
+    """
+    if notification_status not in ("created", "pending-virus-check"):
         return False
 
     if _after_letter_processing_deadline() and _notification_created_before_today_deadline(notification_created_at):
         return False
 
-    if _notification_created_before_that_day_deadline(
-        notification_created_at
-    ) and notification_created_at.date() < convert_utc_to_est(datetime.utcnow()).date():
+    if (
+        _notification_created_before_that_day_deadline(notification_created_at)
+        and notification_created_at.date() < convert_utc_to_est(datetime.utcnow()).date()
+    ):
         return False
     if (convert_utc_to_est(datetime.utcnow()).date() - notification_created_at.date()).days > 1:
         return False
