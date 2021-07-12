@@ -5,21 +5,21 @@ class SanitiseText:
     ALLOWED_CHARACTERS = set()
 
     REPLACEMENT_CHARACTERS = {
-        '–': '-',  # EN DASH (U+2013)
-        '—': '-',  # EM DASH (U+2014)
-        '…': '...',  # HORIZONTAL ELLIPSIS (U+2026)
-        '‘': '\'',  # LEFT SINGLE QUOTATION MARK (U+2018)
-        '’': '\'',  # RIGHT SINGLE QUOTATION MARK (U+2019)
-        '“': '"',  # LEFT DOUBLE QUOTATION MARK (U+201C)
-        '”': '"',  # RIGHT DOUBLE QUOTATION MARK (U+201D)
-        '\u200B': '',  # ZERO WIDTH SPACE (U+200B)
-        '\u00A0': '',  # NON BREAKING WHITE SPACE (U+200B)
-        '\t': ' ',  # TAB
+        "–": "-",  # EN DASH (U+2013)
+        "—": "-",  # EM DASH (U+2014)
+        "…": "...",  # HORIZONTAL ELLIPSIS (U+2026)
+        "‘": "'",  # LEFT SINGLE QUOTATION MARK (U+2018)
+        "’": "'",  # RIGHT SINGLE QUOTATION MARK (U+2019)
+        "“": '"',  # LEFT DOUBLE QUOTATION MARK (U+201C)
+        "”": '"',  # RIGHT DOUBLE QUOTATION MARK (U+201D)
+        "\u200B": "",  # ZERO WIDTH SPACE (U+200B)
+        "\u00A0": "",  # NON BREAKING WHITE SPACE (U+200B)
+        "\t": " ",  # TAB
     }
 
     @classmethod
     def encode(cls, content):
-        return ''.join(cls.encode_char(char) for char in content)
+        return "".join(cls.encode_char(char) for char in content)
 
     @classmethod
     def get_non_compatible_characters(cls, content):
@@ -38,8 +38,8 @@ class SanitiseText:
         unicodedata.decomposition returns strings containing codepoints, so we need to eval them ourselves
         """
         # lets just make sure we aren't evaling anything weird
-        if not set(codepoint) <= set('0123456789ABCDEF') or not len(codepoint) == 4:
-            raise ValueError('{} is not a valid unicode codepoint'.format(codepoint))
+        if not set(codepoint) <= set("0123456789ABCDEF") or not len(codepoint) == 4:
+            raise ValueError("{} is not a valid unicode codepoint".format(codepoint))
         return eval('"\\u{}"'.format(codepoint))
 
     @classmethod
@@ -51,7 +51,7 @@ class SanitiseText:
         Will return None if character is either already valid or has no known downgrade
         """
         decomposed = unicodedata.decomposition(c)
-        if decomposed != '' and '<' not in decomposed:
+        if decomposed != "" and "<" not in decomposed:
             # decomposition lists the unicode code points a character is made up of, if it's made up of multiple
             # points. For example the á character returns '0061 0301', as in, the character a, followed by a combining
             # acute accent. The decomposition might, however, also contain a decomposition mapping in angle brackets.
@@ -75,7 +75,7 @@ class SanitiseText:
             return c
         else:
             c = cls.downgrade_character(c)
-            return c if c is not None else '?'
+            return c if c is not None else "?"
 
 
 class SanitiseSMS(SanitiseText):
@@ -96,15 +96,20 @@ class SanitiseSMS(SanitiseText):
 
     * any remaining unicode characters (eg chinese/cyrillic/glyphs/emoji) are replaced with ?
     """
-    # Welsh characters not already included in GSM
-    WELSH_NON_GSM_CHARACTERS = set('ÂâÊêÎîÔôÛûŴŵŶŷ')
 
-    ALLOWED_CHARACTERS = set(
-        '@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ\x1bÆæßÉ !"#¤%&\'()*+,-./0123456789:;<=>?' +
-        '¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà' +
-        # character set extension
-        '^{}\\[~]|€'
-    ) | WELSH_NON_GSM_CHARACTERS
+    # Welsh characters not already included in GSM
+    WELSH_NON_GSM_CHARACTERS = set("ÂâÊêÎîÔôÛûŴŵŶŷ")
+
+    ALLOWED_CHARACTERS = (
+        set(
+            "@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ\x1bÆæßÉ !\"#¤%&'()*+,-./0123456789:;<=>?"
+            + "¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà"
+            +
+            # character set extension
+            "^{}\\[~]|€"
+        )
+        | WELSH_NON_GSM_CHARACTERS
+    )
 
 
 class SanitiseASCII(SanitiseText):
@@ -112,7 +117,7 @@ class SanitiseASCII(SanitiseText):
     As SMS above, but the allowed characters are printable ascii, from character range 32 to 126 inclusive.
     [chr(x) for x in range(32, 127)]
     """
+
     ALLOWED_CHARACTERS = set(
-        ' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
-        '[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
+        " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
     )
