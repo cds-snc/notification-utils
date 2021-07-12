@@ -1,6 +1,7 @@
 import numbers
 import uuid
 from time import time
+from typing import Any, Dict
 
 from flask_redis import FlaskRedis
 from flask import current_app
@@ -39,7 +40,7 @@ def prepare_value(val):
 class RedisClient:
     redis_store = FlaskRedis()
     active = False
-    scripts = {}
+    scripts: Dict[str, Any] = {}
 
     def init_app(self, app):
         self.active = app.config.get("REDIS_ENABLED")

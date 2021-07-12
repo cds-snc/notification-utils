@@ -336,7 +336,7 @@ def is_local_phone_number(number):
         return True
 
 
-international_phone_info = namedtuple(
+international_phone_info = namedtuple(  # type: ignore
     "PhoneNumber",
     [
         "international",

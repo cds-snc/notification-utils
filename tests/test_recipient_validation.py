@@ -40,55 +40,32 @@ valid_international_phone_numbers = [
 valid_phone_numbers = valid_local_phone_numbers + valid_international_phone_numbers
 
 
-invalid_local_phone_numbers = sum(
-    [
-        [(phone_number, error) for phone_number in group]
-        for error, group in [
-            (
-                "Not a valid local number",
-                (
-                    "712345678910",
-                    "0712345678910",
-                    "0044712345678910",
-                    "0044712345678910",
-                    "+44 (0)7123 456 789 10",
-                ),
-            ),
-            (
-                "Not a valid local number",
-                (
-                    "0712345678",
-                    "004471234567",
-                    "00447123456",
-                    "+44 (0)7123 456 78",
-                ),
-            ),
-            (
-                "Not a valid local number",
-                (
-                    "08081 570364",
-                    "+44 8081 570364",
-                    "0117 496 0860",
-                    "+44 117 496 0860",
-                    "020 7946 0991",
-                    "+44 20 7946 0991",
-                ),
-            ),
-            (
-                "Not a valid local number",
-                (
-                    "07890x32109",
-                    "07123 456789...",
-                    "07123 ☟☜⬇⬆☞☝",
-                    "07123☟☜⬇⬆☞☝",
-                    "+44 07ab cde fgh",
-                    "ALPHANUM3R1C",
-                ),
-            ),
-        ]
-    ],
-    [],
-)
+invalid_local_phone_numbers = [
+    (phone_number, "Not a valid local number")
+    for phone_number in (
+        "712345678910",
+        "0712345678910",
+        "0044712345678910",
+        "0044712345678910",
+        "+44 (0)7123 456 789 10",
+        "0712345678",
+        "004471234567",
+        "00447123456",
+        "+44 (0)7123 456 78",
+        "08081 570364",
+        "+44 8081 570364",
+        "0117 496 0860",
+        "+44 117 496 0860",
+        "020 7946 0991",
+        "+44 20 7946 0991",
+        "07890x32109",
+        "07123 456789...",
+        "07123 ☟☜⬇⬆☞☝",
+        "07123☟☜⬇⬆☞☝",
+        "+44 07ab cde fgh",
+        "ALPHANUM3R1C",
+    )
+]
 
 
 invalid_phone_numbers = [

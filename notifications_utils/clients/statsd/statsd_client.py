@@ -22,7 +22,7 @@ class NotifyStatsClient(StatsClientBase):
     def _resolve(self, addr):
         return gethostbyname(addr)
 
-    @cachetools.func.ttl_cache(maxsize=2, ttl=10, timer=time_monotonic_with_jitter)
+    @cachetools.func.ttl_cache(maxsize=2, ttl=10, timer=time_monotonic_with_jitter)  # type: ignore
     def _cached_host(self):
         try:
             return self._resolve(self._host)
