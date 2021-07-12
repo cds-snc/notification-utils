@@ -11,63 +11,52 @@ from time import monotonic
 import logging
 import logging.handlers
 
-LOG_FORMAT = '%(asctime)s %(app_name)s %(name)s %(levelname)s ' \
-             '%(request_id)s "%(message)s" [in %(pathname)s:%(lineno)d]'
-TIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
+LOG_FORMAT = "%(asctime)s %(app_name)s %(name)s %(levelname)s " '%(request_id)s "%(message)s" [in %(pathname)s:%(lineno)d]'
+TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
 logger = logging.getLogger(__name__)
 
 
 def build_log_line(extra_fields):
     fields = []
-    if 'service_id' in extra_fields:
-        fields.append(str(extra_fields.get('service_id')))
-    standard_fields = [extra_fields.get('method'), extra_fields.get('url'), extra_fields.get('status')]
+    if "service_id" in extra_fields:
+        fields.append(str(extra_fields.get("service_id")))
+    standard_fields = [extra_fields.get("method"), extra_fields.get("url"), extra_fields.get("status")]
     fields += [str(field) for field in standard_fields if field is not None]
-    if 'time_taken' in extra_fields:
-        fields.append(extra_fields.get('time_taken'))
-    return ' '.join(fields)
+    if "time_taken" in extra_fields:
+        fields.append(extra_fields.get("time_taken"))
+    return " ".join(fields)
 
 
 def build_statsd_line(extra_fields):
     fields = []
-    if 'service_id' in extra_fields:
-        if extra_fields.get('service_id') == 'notify-admin':
-            fields = [str(extra_fields.get('service_id'))]
+    if "service_id" in extra_fields:
+        if extra_fields.get("service_id") == "notify-admin":
+            fields = [str(extra_fields.get("service_id"))]
         else:
-            fields = ["service-id", str(extra_fields.get('service_id'))]
-    standard_fields = [extra_fields.get('method'), extra_fields.get('endpoint'), extra_fields.get('status')]
+            fields = ["service-id", str(extra_fields.get("service_id"))]
+    standard_fields = [extra_fields.get("method"), extra_fields.get("endpoint"), extra_fields.get("status")]
     fields += [str(field) for field in standard_fields if field is not None]
-    return '.'.join(fields)
+    return ".".join(fields)
 
 
 def init_app(app, statsd_client=None):
-    app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
-    app.config.setdefault('NOTIFY_APP_NAME', 'none')
-    app.config.setdefault('NOTIFY_LOG_PATH', './log/application.log')
+    app.config.setdefault("NOTIFY_LOG_LEVEL", "INFO")
+    app.config.setdefault("NOTIFY_APP_NAME", "none")
+    app.config.setdefault("NOTIFY_LOG_PATH", "./log/application.log")
 
     @app.after_request
     def after_request(response):
-        extra_fields = {
-            'method': request.method,
-            'url': request.url,
-            'status': response.status_code
-        }
+        extra_fields = {"method": request.method, "url": request.url, "status": response.status_code}
 
-        if 'service_id' in g:
-            extra_fields.update({
-                'service_id': g.service_id
-            })
+        if "service_id" in g:
+            extra_fields.update({"service_id": g.service_id})
 
-        if 'start' in g:
-            extra_fields.update({
-                'time_taken': (monotonic() - g.start) * 1000
-            })
+        if "start" in g:
+            extra_fields.update({"time_taken": (monotonic() - g.start) * 1000})
 
-        if 'endpoint' in g:
-            extra_fields.update({
-                'endpoint': g.endpoint
-            })
+        if "endpoint" in g:
+            extra_fields.update({"endpoint": g.endpoint})
 
         record_stats(statsd_client, extra_fields)
 
@@ -77,15 +66,15 @@ def init_app(app, statsd_client=None):
 
     del app.logger.handlers[:]
 
-    ensure_log_path_exists(app.config['NOTIFY_LOG_PATH'])
+    ensure_log_path_exists(app.config["NOTIFY_LOG_PATH"])
     handlers = get_handlers(app)
-    loglevel = logging.getLevelName(app.config['NOTIFY_LOG_LEVEL'])
-    loggers = [app.logger, logging.getLogger('utils')]
+    loglevel = logging.getLevelName(app.config["NOTIFY_LOG_LEVEL"])
+    loggers = [app.logger, logging.getLogger("utils")]
     for current_logger, handler in product(loggers, handlers):
         current_logger.addHandler(handler)
         current_logger.setLevel(loglevel)
-    logging.getLogger('boto3').setLevel(logging.WARNING)
-    logging.getLogger('s3transfer').setLevel(logging.WARNING)
+    logging.getLogger("boto3").setLevel(logging.WARNING)
+    logging.getLogger("s3transfer").setLevel(logging.WARNING)
     app.logger.info("Logging configured")
 
 
@@ -93,17 +82,15 @@ def record_stats(statsd_client, extra_fields):
     if not statsd_client:
         return
     stats = [build_statsd_line(extra_fields)]
-    if 'service_id' in g:
-        line_without_service_id = build_statsd_line(
-            {k: v for k, v in extra_fields.items() if k != 'service_id'}
-        )
+    if "service_id" in g:
+        line_without_service_id = build_statsd_line({k: v for k, v in extra_fields.items() if k != "service_id"})
         stats.append(line_without_service_id)
 
     for stat in stats:
         statsd_client.incr(stat)
 
-        if 'time_taken' in extra_fields:
-            statsd_client.timing(stat, extra_fields['time_taken'])
+        if "time_taken" in extra_fields:
+            statsd_client.timing(stat, extra_fields["time_taken"])
 
 
 def ensure_log_path_exists(path):
@@ -136,9 +123,9 @@ def get_handlers(app):
         # turn off 200 OK static logs in development
         def is_200_static_log(log):
             msg = log.getMessage()
-            return not ('GET /static/' in msg and ' 200 ' in msg)
+            return not ("GET /static/" in msg and " 200 " in msg)
 
-        logging.getLogger('werkzeug').addFilter(is_200_static_log)
+        logging.getLogger("werkzeug").addFilter(is_200_static_log)
 
         # human readable stdout logs
         handlers.append(configure_handler(stream_handler, app, standard_formatter))
@@ -147,9 +134,9 @@ def get_handlers(app):
 
 
 def configure_handler(handler, app, formatter):
-    handler.setLevel(logging.getLevelName(app.config['NOTIFY_LOG_LEVEL']))
+    handler.setLevel(logging.getLevelName(app.config["NOTIFY_LOG_LEVEL"]))
     handler.setFormatter(formatter)
-    handler.addFilter(AppNameFilter(app.config['NOTIFY_APP_NAME']))
+    handler.addFilter(AppNameFilter(app.config["NOTIFY_APP_NAME"]))
     handler.addFilter(RequestIdFilter())
 
     return handler
@@ -168,10 +155,10 @@ class AppNameFilter(logging.Filter):
 class RequestIdFilter(logging.Filter):
     @property
     def request_id(self):
-        if has_request_context() and hasattr(request, 'request_id'):
+        if has_request_context() and hasattr(request, "request_id"):
             return request.request_id
         else:
-            return 'no-request-id'
+            return "no-request-id"
 
     def filter(self, record):
         record.request_id = self.request_id
@@ -182,7 +169,7 @@ class RequestIdFilter(logging.Filter):
 class CustomLogFormatter(logging.Formatter):
     """Accepts a format string for the message and formats it with the extra fields"""
 
-    FORMAT_STRING_FIELDS_PATTERN = re.compile(r'\((.+?)\)', re.IGNORECASE)
+    FORMAT_STRING_FIELDS_PATTERN = re.compile(r"\((.+?)\)", re.IGNORECASE)
 
     def add_fields(self, record):
         for field in self.FORMAT_STRING_FIELDS_PATTERN.findall(self._fmt):
@@ -207,9 +194,9 @@ class JSONFormatter(BaseJSONFormatter):
         }
         for key, newkey in rename_map.items():
             log_record[newkey] = log_record.pop(key)
-        log_record['logType'] = "application"
+        log_record["logType"] = "application"
         try:
-            log_record['message'] = str(log_record['message'])
+            log_record["message"] = str(log_record["message"])
         except (KeyError, IndexError) as e:
             logger.exception("failed to format log message: {} not found".format(e))
         return log_record

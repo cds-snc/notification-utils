@@ -13,11 +13,9 @@ def statsd(namespace):
             try:
                 res = func(*args, **kwargs)
                 elapsed_time = monotonic() - start_time
-                current_app.statsd_client.incr('{namespace}.{func}'.format(
-                    namespace=namespace, func=func.__name__)
-                )
-                current_app.statsd_client.timing('{namespace}.{func}'.format(
-                    namespace=namespace, func=func.__name__), elapsed_time
+                current_app.statsd_client.incr("{namespace}.{func}".format(namespace=namespace, func=func.__name__))
+                current_app.statsd_client.timing(
+                    "{namespace}.{func}".format(namespace=namespace, func=func.__name__), elapsed_time
                 )
 
             except Exception as e:
@@ -29,6 +27,7 @@ def statsd(namespace):
                     )
                 )
                 return res
+
         wrapper.__wrapped__.__name__ = func.__name__
         return wrapper
 
@@ -62,14 +61,16 @@ def statsd_catch(namespace: str, counter_name: str, exception: Type[Exception]):
     BaseException
         Any parameter that is thrown by the decorated method.
     """
+
     def catch_function(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
             except exception as e:
-                current_app.statsd_client.incr(f'{namespace}.{counter_name}')
+                current_app.statsd_client.incr(f"{namespace}.{counter_name}")
                 raise e
+
         wrapper.__wrapped__.__name__ = func.__name__
         return wrapper
 
