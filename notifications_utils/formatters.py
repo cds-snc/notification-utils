@@ -48,7 +48,8 @@ mistune.InlineGrammar.url = re.compile(r"""^(https?:\/\/[^\s<]+[^<.,:"')\]\s])""
 govuk_not_a_link = re.compile(r"(?<!\.|\/)(GOV)\.(UK)(?!\/|\?)", re.IGNORECASE)
 
 dvla_markup_tags = re.compile(
-    str("|".join("<{}>".format(tag) for tag in {"cr", "h1", "h2", "p", "normal", "op", "np", "bul", "tab"})), re.IGNORECASE
+    str("|".join("<{}>".format(tag) for tag in {"cr", "h1", "h2", "p", "normal", "op", "np", "bul", "tab"})),
+    re.IGNORECASE,
 )
 
 smartypants.tags_to_skip = smartypants.tags_to_skip + ["a"]
@@ -129,7 +130,13 @@ def url_encode_full_stops(value):
 
 
 def unescaped_formatted_list(
-    items, conjunction="and", before_each="‘", after_each="’", separator=", ", prefix="", prefix_plural=""
+    items,
+    conjunction="and",
+    before_each="‘",
+    after_each="’",
+    separator=", ",
+    prefix="",
+    prefix_plural="",
 ):
     if prefix:
         prefix += " "
@@ -146,10 +153,24 @@ def unescaped_formatted_list(
         return ("{prefix_plural}{first_items} {conjunction} {last_item}").format(**locals())
 
 
-def formatted_list(items, conjunction="and", before_each="‘", after_each="’", separator=", ", prefix="", prefix_plural=""):
+def formatted_list(
+    items,
+    conjunction="and",
+    before_each="‘",
+    after_each="’",
+    separator=", ",
+    prefix="",
+    prefix_plural="",
+):
     return Markup(
         unescaped_formatted_list(
-            [escape_html(x) for x in items], conjunction, before_each, after_each, separator, prefix, prefix_plural
+            [escape_html(x) for x in items],
+            conjunction,
+            before_each,
+            after_each,
+            separator,
+            prefix,
+            prefix_plural,
         )
     )
 
@@ -388,7 +409,9 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         if is_email:
             return link
         return '<a style="{}" href="{}">{}</a>'.format(
-            LINK_STYLE, urllib.parse.quote(urllib.parse.unquote(link), safe=":/?#=&;"), link
+            LINK_STYLE,
+            urllib.parse.quote(urllib.parse.unquote(link), safe=":/?#=&;"),
+            link,
         )
 
     def double_emphasis(self, text):
@@ -495,6 +518,15 @@ class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer)
                 " ({})".format(title) if title else "",
             )
         )
+
+
+def add_language_divs(_content: str) -> str:
+    fr_regex = re.compile(r"\[\[fr\]\]([\s\S]*)\[\[/fr\]\]")  # matches [[fr]] xyz [[/fr]]
+    content = fr_regex.sub(r'<div lang="fr-ca">\1</div>', _content)  # \1 returns xyz from above
+
+    en_regex = re.compile(r"\[\[en\]\]([\s\S]*)\[\[/en\]\]")  # matches [[en]] xyz [[/en]]
+    content = en_regex.sub(r'<div lang="en-ca">\1</div>', content)  # \1 returns xyz from above
+    return content
 
 
 notify_email_markdown = mistune.Markdown(

@@ -14,6 +14,7 @@ from notifications_utils.formatters import (
     unlink_govuk_escaped,
     nl2br,
     nl2li,
+    add_language_divs,
     add_prefix,
     autolink_sms,
     notify_email_markdown,
@@ -698,6 +699,7 @@ def get_html_email_body(template_content, template_values, redact_missing_person
         .then(strip_unsupported_characters)
         .then(add_trailing_newline)
         .then(notify_email_markdown)
+        .then(add_language_divs)
         .then(do_nice_typography)
     )
 
