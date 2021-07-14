@@ -2,6 +2,7 @@ import pytest
 from flask import Markup
 
 from notifications_utils.formatters import (
+    add_language_divs,
     unlink_govuk_escaped,
     notify_email_markdown,
     notify_letter_preview_markdown,
@@ -947,3 +948,29 @@ def test_strip_unsupported_characters():
 
 def test_normalise_whitespace():
     assert normalise_whitespace("\u200C Your tax   is\ndue\n\n") == "Your tax is due"
+
+
+@pytest.mark.parametrize("lang", ("en", "fr"))
+def test_add_language_divs_fr_replaces(lang: str):
+    _content = (
+        f'<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[{lang}]]</p>'
+        '<h2 style="Margin: 0 0 20px 0; padding: 0; font-size: 27px; line-height: 35px; font-weight: bold; color: #0B0C0C;">'
+        "title</h2>"
+        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+        "Comment vas-tu aujourd'hui?</p>"
+        f'<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[/{lang}]]</p>'
+    )
+    content = (
+        f'<div lang="{lang}-ca">'
+        '<h2 style="Margin: 0 0 20px 0; padding: 0; font-size: 27px; line-height: 35px; font-weight: bold; color: #0B0C0C;">'
+        "title</h2>"
+        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+        "Comment vas-tu aujourd'hui?</p></div>"
+    )
+    assert add_language_divs(_content) == content
+
+
+@pytest.mark.parametrize("lang", ("en", "fr"))
+def test_add_language_divs_fr_does_not_replace(lang: str):
+    _content = f"[[{lang}]] asdf [[/{lang}]]"
+    assert add_language_divs(_content) == _content
