@@ -365,7 +365,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
 
     def paragraph(self, text):
         if text.strip():
-            return "{EMAIL_P_OPEN_TAG}{text}{EMAIL_P_CLOSE_TAG}"
+            return f"{EMAIL_P_OPEN_TAG}{text}{EMAIL_P_CLOSE_TAG}"
         return ""
 
     def block_quote(self, text):
