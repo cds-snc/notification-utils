@@ -521,23 +521,22 @@ notify_letter_preview_markdown = mistune.Markdown(
 
 def add_language_divs(_content: str) -> str:
     """
-    Custom parser to add the language divs. The regex is complicated here
-    because the mistune parser has already run and put our language tags inside
-    paragraphs. So we need to match on these paragraphs and remove them allong with the
-    [[lang]] tags.
+    Custom parser to add the language divs. We need to search for and remove the EMAIL_P_OPEN_TAG
+    and EMAIL_P_CLOSE_TAG because the mistune parser has already run and put our [[lang]] tags inside
+    paragraphs.
     """
-    fr_open = r"\[\[fr\]\]"
-    fr_close = r"\[\[/fr\]\]"
-    en_open = r"\[\[en\]\]"
-    en_close = r"\[\[/en\]\]"
+    fr_open = r"\[\[fr\]\]"  # matches [[fr]]
+    fr_close = r"\[\[/fr\]\]"  # matches [[/fr]]
+    en_open = r"\[\[en\]\]"  # matches [[en]]
+    en_close = r"\[\[/en\]\]"  # matches [[/en]]
     select_anything = r"([\s\S]*)"
     fr_regex = re.compile(
         f"{EMAIL_P_OPEN_TAG}{fr_open}{EMAIL_P_CLOSE_TAG}{select_anything}{EMAIL_P_OPEN_TAG}{fr_close}{EMAIL_P_CLOSE_TAG}"
-    )  # matches <p ...>[[fr]]</p> xyz <p ...>[[/fr]]</p>
-    content = fr_regex.sub(r'<div lang="fr-ca">\1</div>', _content)  # \1 returns selected content
+    )  # matches <p ...>[[fr]]</p>anything<p ...>[[/fr]]</p>
+    content = fr_regex.sub(r'<div lang="fr-ca">\1</div>', _content)  # \1 returns the "anything" content above
 
     en_regex = re.compile(
         f"{EMAIL_P_OPEN_TAG}{en_open}{EMAIL_P_CLOSE_TAG}{select_anything}{EMAIL_P_OPEN_TAG}{en_close}{EMAIL_P_CLOSE_TAG}"
-    )  # matches [[en]] xyz [[/en]]
-    content = en_regex.sub(r'<div lang="en-ca">\1</div>', content)  # \1 returns selected content
+    )  # matches <p ...>[[en]]</p>anything<p ...>[[/en]]</p>
+    content = en_regex.sub(r'<div lang="en-ca">\1</div>', content)  # \1 returns the "anything" content above
     return content
