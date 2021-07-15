@@ -25,6 +25,11 @@ OBSCURE_WHITESPACE = (
 EMAIL_P_OPEN_TAG = '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
 EMAIL_P_CLOSE_TAG = "</p>"
 
+FR_OPEN = r"\[\[fr\]\]"  # matches [[fr]]
+FR_CLOSE = r"\[\[/fr\]\]"  # matches [[/fr]]
+EN_OPEN = r"\[\[en\]\]"  # matches [[en]]
+EN_CLOSE = r"\[\[/en\]\]"  # matches [[/en]]
+
 mistune._block_quote_leading_pattern = re.compile(r"^ *\^ ?", flags=re.M)
 mistune.BlockGrammar.block_quote = re.compile(r"^( *\^[^\n]+(\n[^\n]+)*\n*)+")
 mistune.BlockGrammar.list_block = re.compile(
@@ -50,7 +55,8 @@ mistune.InlineGrammar.url = re.compile(r"""^(https?:\/\/[^\s<]+[^<.,:"')\]\s])""
 govuk_not_a_link = re.compile(r"(?<!\.|\/)(GOV)\.(UK)(?!\/|\?)", re.IGNORECASE)
 
 dvla_markup_tags = re.compile(
-    str("|".join("<{}>".format(tag) for tag in {"cr", "h1", "h2", "p", "normal", "op", "np", "bul", "tab"})), re.IGNORECASE
+    str("|".join("<{}>".format(tag) for tag in {"cr", "h1", "h2", "p", "normal", "op", "np", "bul", "tab"})),
+    re.IGNORECASE,
 )
 
 smartypants.tags_to_skip = smartypants.tags_to_skip + ["a"]
@@ -131,7 +137,13 @@ def url_encode_full_stops(value):
 
 
 def unescaped_formatted_list(
-    items, conjunction="and", before_each="‘", after_each="’", separator=", ", prefix="", prefix_plural=""
+    items,
+    conjunction="and",
+    before_each="‘",
+    after_each="’",
+    separator=", ",
+    prefix="",
+    prefix_plural="",
 ):
     if prefix:
         prefix += " "
@@ -148,10 +160,24 @@ def unescaped_formatted_list(
         return ("{prefix_plural}{first_items} {conjunction} {last_item}").format(**locals())
 
 
-def formatted_list(items, conjunction="and", before_each="‘", after_each="’", separator=", ", prefix="", prefix_plural=""):
+def formatted_list(
+    items,
+    conjunction="and",
+    before_each="‘",
+    after_each="’",
+    separator=", ",
+    prefix="",
+    prefix_plural="",
+):
     return Markup(
         unescaped_formatted_list(
-            [escape_html(x) for x in items], conjunction, before_each, after_each, separator, prefix, prefix_plural
+            [escape_html(x) for x in items],
+            conjunction,
+            before_each,
+            after_each,
+            separator,
+            prefix,
+            prefix_plural,
         )
     )
 
@@ -390,7 +416,9 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         if is_email:
             return link
         return '<a style="{}" href="{}">{}</a>'.format(
-            LINK_STYLE, urllib.parse.quote(urllib.parse.unquote(link), safe=":/?#=&;"), link
+            LINK_STYLE,
+            urllib.parse.quote(urllib.parse.unquote(link), safe=":/?#=&;"),
+            link,
         )
 
     def double_emphasis(self, text):
@@ -525,18 +553,24 @@ def add_language_divs(_content: str) -> str:
     and EMAIL_P_CLOSE_TAG because the mistune parser has already run and put our [[lang]] tags inside
     paragraphs.
     """
-    fr_open = r"\[\[fr\]\]"  # matches [[fr]]
-    fr_close = r"\[\[/fr\]\]"  # matches [[/fr]]
-    en_open = r"\[\[en\]\]"  # matches [[en]]
-    en_close = r"\[\[/en\]\]"  # matches [[/en]]
     select_anything = r"([\s\S]*)"
     fr_regex = re.compile(
-        f"{EMAIL_P_OPEN_TAG}{fr_open}{EMAIL_P_CLOSE_TAG}{select_anything}{EMAIL_P_OPEN_TAG}{fr_close}{EMAIL_P_CLOSE_TAG}"
+        f"{EMAIL_P_OPEN_TAG}{FR_OPEN}{EMAIL_P_CLOSE_TAG}{select_anything}{EMAIL_P_OPEN_TAG}{FR_CLOSE}{EMAIL_P_CLOSE_TAG}"
     )  # matches <p ...>[[fr]]</p>anything<p ...>[[/fr]]</p>
     content = fr_regex.sub(r'<div lang="fr-ca">\1</div>', _content)  # \1 returns the "anything" content above
 
     en_regex = re.compile(
-        f"{EMAIL_P_OPEN_TAG}{en_open}{EMAIL_P_CLOSE_TAG}{select_anything}{EMAIL_P_OPEN_TAG}{en_close}{EMAIL_P_CLOSE_TAG}"
+        f"{EMAIL_P_OPEN_TAG}{EN_OPEN}{EMAIL_P_CLOSE_TAG}{select_anything}{EMAIL_P_OPEN_TAG}{EN_CLOSE}{EMAIL_P_CLOSE_TAG}"
     )  # matches <p ...>[[en]]</p>anything<p ...>[[/en]]</p>
     content = en_regex.sub(r'<div lang="en-ca">\1</div>', content)  # \1 returns the "anything" content above
+    return content
+
+
+def remove_language_divs(_content: str) -> str:
+    """Remove the tags from content. This fn is for use in the email
+    preheader, since this is plain text not html"""
+    content = re.compile(FR_OPEN).sub("", _content)
+    content = re.compile(FR_CLOSE).sub("", content)
+    content = re.compile(EN_OPEN).sub("", content)
+    content = re.compile(EN_CLOSE).sub("", content)
     return content

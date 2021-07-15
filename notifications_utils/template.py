@@ -27,6 +27,7 @@ from notifications_utils.formatters import (
     strip_dvla_markup,
     strip_pipes,
     remove_whitespace_before_punctuation,
+    remove_language_divs,
     make_quotes_smart,
     replace_hyphens_with_en_dashes,
     replace_hyphens_with_non_breaking_hyphens,
@@ -58,7 +59,13 @@ class Template:
 
     encoding = "utf-8"
 
-    def __init__(self, template, values=None, redact_missing_personalisation=False, jinja_path=None):
+    def __init__(
+        self,
+        template,
+        values=None,
+        redact_missing_personalisation=False,
+        jinja_path=None,
+    ):
         if not isinstance(template, dict):
             raise TypeError("Template must be a dict")
         if values is not None and not isinstance(values, dict):
@@ -141,7 +148,15 @@ class Template:
 
 
 class SMSMessageTemplate(Template):
-    def __init__(self, template, values=None, prefix=None, show_prefix=True, sender=None, jinja_path=None):
+    def __init__(
+        self,
+        template,
+        values=None,
+        prefix=None,
+        show_prefix=True,
+        sender=None,
+        jinja_path=None,
+    ):
         self.prefix = prefix
         self.show_prefix = show_prefix
         self.sender = sender
@@ -223,7 +238,10 @@ class SMSPreviewTemplate(SMSMessageTemplate):
                             redact_missing_personalisation=self.redact_missing_personalisation,
                         )
                     )
-                    .then(add_prefix, (escape_html(self.prefix) or None) if self.show_prefix else None)
+                    .then(
+                        add_prefix,
+                        (escape_html(self.prefix) or None) if self.show_prefix else None,
+                    )
                     .then(sms_encode if self.downgrade_non_sms_characters else str)
                     .then(remove_whitespace_before_punctuation)
                     .then(nl2br)
@@ -242,7 +260,12 @@ class WithSubjectTemplate(Template):
         jinja_path=None,
     ):
         self._subject = template["subject"]
-        super().__init__(template, values, redact_missing_personalisation=redact_missing_personalisation, jinja_path=jinja_path)
+        super().__init__(
+            template,
+            values,
+            redact_missing_personalisation=redact_missing_personalisation,
+            jinja_path=jinja_path,
+        )
 
     def __str__(self):
         return str(
@@ -355,6 +378,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             .then(strip_unsupported_characters)
             .then(add_trailing_newline)
             .then(notify_email_preheader_markdown)
+            .then(remove_language_divs)
             .then(do_nice_typography)
             .split()
         )[: self.PREHEADER_LENGTH_IN_CHARACTERS].strip()
@@ -397,7 +421,12 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         logo_with_background_colour=None,
         asset_domain=None,
     ):
-        super().__init__(template, values, redact_missing_personalisation=redact_missing_personalisation, jinja_path=jinja_path)
+        super().__init__(
+            template,
+            values,
+            redact_missing_personalisation=redact_missing_personalisation,
+            jinja_path=jinja_path,
+        )
         self.from_name = from_name
         self.from_address = from_address
         self.reply_to = reply_to
@@ -416,7 +445,9 @@ class EmailPreviewTemplate(WithSubjectTemplate):
             self.jinja_template.render(
                 {
                     "body": get_html_email_body(
-                        self.content, self.values, redact_missing_personalisation=self.redact_missing_personalisation
+                        self.content,
+                        self.values,
+                        redact_missing_personalisation=self.redact_missing_personalisation,
                     ),
                     "subject": self.subject,
                     "from_name": escape_html(self.from_name),
@@ -440,7 +471,10 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         return (
             Take(
                 Field(
-                    self._subject, self.values, html="escape", redact_missing_personalisation=self.redact_missing_personalisation
+                    self._subject,
+                    self.values,
+                    html="escape",
+                    redact_missing_personalisation=self.redact_missing_personalisation,
                 )
             )
             .then(do_nice_typography)
@@ -475,7 +509,11 @@ class LetterPreviewTemplate(WithSubjectTemplate):
         date=None,
     ):
         self.contact_block = (contact_block or "").strip()
-        super().__init__(template, values, redact_missing_personalisation=redact_missing_personalisation)
+        super().__init__(
+            template,
+            values,
+            redact_missing_personalisation=redact_missing_personalisation,
+        )
         self.admin_base_url = admin_base_url
         self.logo_file_name = logo_file_name
         self.date = date or datetime.utcnow()
