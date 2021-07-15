@@ -3,6 +3,7 @@ from flask import Markup
 
 from notifications_utils.formatters import (
     add_language_divs,
+    remove_language_divs,
     unlink_govuk_escaped,
     notify_email_markdown,
     notify_letter_preview_markdown,
@@ -974,3 +975,16 @@ def test_add_language_divs_fr_replaces(lang: str):
 def test_add_language_divs_fr_does_not_replace(lang: str):
     _content = f"[[{lang}]] asdf [[/{lang}]]"
     assert add_language_divs(_content) == _content
+
+
+@pytest.mark.parametrize(
+    "input,output",
+    (
+        ("abc 123", "abc 123"),
+        ("[[fr]]\n\nabc\n\n[[/fr]]", "\n\nabc\n\n"),
+        ("[[en]]\n\nabc\n\n[[/en]]", "\n\nabc\n\n"),
+        ("[[en]]\n\nabc\n\n[[/en]]\n\n[[fr]]\n\n123\n\n[[/fr]]", "\n\nabc\n\n\n\n\n\n123\n\n"),
+    ),
+)
+def test_remove_language_divs(input: str, output: str):
+    assert remove_language_divs(input) == output
