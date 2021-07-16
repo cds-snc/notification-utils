@@ -228,45 +228,52 @@ def add_trailing_newline(value):
     return "{}\n".format(value)
 
 
-def is_valid_index(index: int, split_content: list):
-    return index >= 0 and index < len(split_content)
+def is_valid_index(index: int, lines: list):
+    return index >= 0 and index < len(lines)
 
 
-def insert_newline_after(split_content: list[str], tag_index: int):
+def insert_newline_after(lines: list[str], tag_index: int):
     # no need to insert newlines at the end of the file
-    if tag_index == len(split_content) - 1:
+    if tag_index == len(lines) - 1:
         return
-    if not is_valid_index(tag_index + 1, split_content):
+    if not is_valid_index(tag_index + 1, lines):
         return
-    if split_content[tag_index + 1] == "":
+    if lines[tag_index + 1] == "":
         return
 
-    split_content.insert(tag_index + 1, "")  # insert 1 newline
+    lines.insert(tag_index + 1, "")  # insert 1 newline
 
 
-def insert_newline_before(split_content: list[str], tag_index: int):
+def insert_newline_before(lines: list[str], tag_index: int):
     # no need to insert newlines at the beginning of the file
     if tag_index == 0:
         return
-    if not is_valid_index(tag_index - 1, split_content):
+    if not is_valid_index(tag_index - 1, lines):
         return
-    if split_content[tag_index - 1] == "":
+    if lines[tag_index - 1] == "":
         return
 
-    split_content.insert(tag_index, "")  # insert 1 newline
+    lines.insert(tag_index, "")  # insert 1 newline
 
 
 def add_newlines_around_lang_tags(content: str) -> str:
-    split_content = content.splitlines()
+    lines = content.splitlines()
     all_tags = ["[[fr]]", "[[/fr]]", "[[en]]", "[[/en]]"]
     for tag in all_tags:
-        if tag not in split_content:
+        # strip whitespace
+        for index, line in enumerate(lines):
+            if tag in line and line.strip() == tag:
+                lines[index] = line.strip()
+
+        if tag not in lines:
             continue
-        tag_index = split_content.index(tag)
-        insert_newline_before(split_content, tag_index)
-        new_tag_index = split_content.index(tag)
-        insert_newline_after(split_content, new_tag_index)
-    new_content = "\n".join(split_content)
+
+        tag_index = lines.index(tag)
+
+        insert_newline_before(lines, tag_index)
+        new_tag_index = lines.index(tag)
+        insert_newline_after(lines, new_tag_index)
+    new_content = "\n".join(lines)
     return new_content
 
 
