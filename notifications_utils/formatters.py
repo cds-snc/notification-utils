@@ -1,5 +1,6 @@
 import string
 import re
+from typing import List
 import urllib
 
 import mistune
@@ -228,11 +229,11 @@ def add_trailing_newline(value):
     return "{}\n".format(value)
 
 
-def is_valid_index(index: int, lines: list):
+def is_valid_index(index: int, lines: List[str]):
     return index >= 0 and index < len(lines)
 
 
-def insert_newline_after(lines: list[str], tag_index: int):
+def insert_newline_after(lines: List[str], tag_index: int):
     # no need to insert newlines at the end of the file
     if tag_index == len(lines) - 1:
         return
@@ -244,7 +245,7 @@ def insert_newline_after(lines: list[str], tag_index: int):
     lines.insert(tag_index + 1, "")  # insert 1 newline
 
 
-def insert_newline_before(lines: list[str], tag_index: int):
+def insert_newline_before(lines: List[str], tag_index: int):
     # no need to insert newlines at the beginning of the file
     if tag_index == 0:
         return
