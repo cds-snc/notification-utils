@@ -16,6 +16,7 @@ from notifications_utils.formatters import (
     nl2li,
     add_language_divs,
     add_prefix,
+    add_newlines_around_lang_tags,
     autolink_sms,
     notify_email_markdown,
     notify_email_preheader_markdown,
@@ -736,6 +737,7 @@ def get_html_email_body(template_content, template_values, redact_missing_person
         .then(unlink_govuk_escaped)
         .then(strip_unsupported_characters)
         .then(add_trailing_newline)
+        .then(add_newlines_around_lang_tags)
         .then(notify_email_markdown)
         .then(add_language_divs)
         .then(do_nice_typography)
