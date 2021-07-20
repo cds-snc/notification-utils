@@ -1,5 +1,6 @@
 import string
 import re
+from typing import List
 import urllib
 
 import mistune
@@ -22,6 +23,13 @@ OBSCURE_WHITESPACE = (
     "\uFEFF"  # zero width non-breaking space
 )
 
+EMAIL_P_OPEN_TAG = '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+EMAIL_P_CLOSE_TAG = "</p>"
+
+FR_OPEN = r"\[\[fr\]\]"  # matches [[fr]]
+FR_CLOSE = r"\[\[/fr\]\]"  # matches [[/fr]]
+EN_OPEN = r"\[\[en\]\]"  # matches [[en]]
+EN_CLOSE = r"\[\[/en\]\]"  # matches [[/en]]
 
 mistune._block_quote_leading_pattern = re.compile(r"^ *\^ ?", flags=re.M)
 mistune.BlockGrammar.block_quote = re.compile(r"^( *\^[^\n]+(\n[^\n]+)*\n*)+")
@@ -48,7 +56,8 @@ mistune.InlineGrammar.url = re.compile(r"""^(https?:\/\/[^\s<]+[^<.,:"')\]\s])""
 govuk_not_a_link = re.compile(r"(?<!\.|\/)(GOV)\.(UK)(?!\/|\?)", re.IGNORECASE)
 
 dvla_markup_tags = re.compile(
-    str("|".join("<{}>".format(tag) for tag in {"cr", "h1", "h2", "p", "normal", "op", "np", "bul", "tab"})), re.IGNORECASE
+    str("|".join("<{}>".format(tag) for tag in {"cr", "h1", "h2", "p", "normal", "op", "np", "bul", "tab"})),
+    re.IGNORECASE,
 )
 
 smartypants.tags_to_skip = smartypants.tags_to_skip + ["a"]
@@ -129,7 +138,13 @@ def url_encode_full_stops(value):
 
 
 def unescaped_formatted_list(
-    items, conjunction="and", before_each="‘", after_each="’", separator=", ", prefix="", prefix_plural=""
+    items,
+    conjunction="and",
+    before_each="‘",
+    after_each="’",
+    separator=", ",
+    prefix="",
+    prefix_plural="",
 ):
     if prefix:
         prefix += " "
@@ -146,10 +161,24 @@ def unescaped_formatted_list(
         return ("{prefix_plural}{first_items} {conjunction} {last_item}").format(**locals())
 
 
-def formatted_list(items, conjunction="and", before_each="‘", after_each="’", separator=", ", prefix="", prefix_plural=""):
+def formatted_list(
+    items,
+    conjunction="and",
+    before_each="‘",
+    after_each="’",
+    separator=", ",
+    prefix="",
+    prefix_plural="",
+):
     return Markup(
         unescaped_formatted_list(
-            [escape_html(x) for x in items], conjunction, before_each, after_each, separator, prefix, prefix_plural
+            [escape_html(x) for x in items],
+            conjunction,
+            before_each,
+            after_each,
+            separator,
+            prefix,
+            prefix_plural,
         )
     )
 
@@ -198,6 +227,55 @@ def strip_leading_whitespace(value):
 
 def add_trailing_newline(value):
     return "{}\n".format(value)
+
+
+def is_valid_index(index: int, lines: List[str]):
+    return index >= 0 and index < len(lines)
+
+
+def insert_newline_after(lines: List[str], tag_index: int):
+    # no need to insert newlines at the end of the file
+    if tag_index == len(lines) - 1:
+        return
+    if not is_valid_index(tag_index + 1, lines):
+        return
+    if lines[tag_index + 1] == "":
+        return
+
+    lines.insert(tag_index + 1, "")  # insert 1 newline
+
+
+def insert_newline_before(lines: List[str], tag_index: int):
+    # no need to insert newlines at the beginning of the file
+    if tag_index == 0:
+        return
+    if not is_valid_index(tag_index - 1, lines):
+        return
+    if lines[tag_index - 1] == "":
+        return
+
+    lines.insert(tag_index, "")  # insert 1 newline
+
+
+def add_newlines_around_lang_tags(content: str) -> str:
+    lines = content.splitlines()
+    all_tags = ["[[fr]]", "[[/fr]]", "[[en]]", "[[/en]]"]
+    for tag in all_tags:
+        # strip whitespace
+        for index, line in enumerate(lines):
+            if tag in line and line.strip() == tag:
+                lines[index] = line.strip()
+
+        if tag not in lines:
+            continue
+
+        tag_index = lines.index(tag)
+
+        insert_newline_before(lines, tag_index)
+        new_tag_index = lines.index(tag)
+        insert_newline_after(lines, new_tag_index)
+    new_content = "\n".join(lines)
+    return new_content
 
 
 def tweak_dvla_list_markup(value):
@@ -363,7 +441,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
 
     def paragraph(self, text):
         if text.strip():
-            return ('<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">{}</p>').format(text)
+            return f"{EMAIL_P_OPEN_TAG}{text}{EMAIL_P_CLOSE_TAG}"
         return ""
 
     def block_quote(self, text):
@@ -388,7 +466,9 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         if is_email:
             return link
         return '<a style="{}" href="{}">{}</a>'.format(
-            LINK_STYLE, urllib.parse.quote(urllib.parse.unquote(link), safe=":/?#=&;"), link
+            LINK_STYLE,
+            urllib.parse.quote(urllib.parse.unquote(link), safe=":/?#=&;"),
+            link,
         )
 
     def double_emphasis(self, text):
@@ -515,3 +595,32 @@ notify_letter_preview_markdown = mistune.Markdown(
     hard_wrap=True,
     use_xhtml=False,
 )
+
+
+def add_language_divs(_content: str) -> str:
+    """
+    Custom parser to add the language divs. We need to search for and remove the EMAIL_P_OPEN_TAG
+    and EMAIL_P_CLOSE_TAG because the mistune parser has already run and put our [[lang]] tags inside
+    paragraphs.
+    """
+    select_anything = r"([\s\S]*)"
+    fr_regex = re.compile(
+        f"{EMAIL_P_OPEN_TAG}{FR_OPEN}{EMAIL_P_CLOSE_TAG}{select_anything}{EMAIL_P_OPEN_TAG}{FR_CLOSE}{EMAIL_P_CLOSE_TAG}"
+    )  # matches <p ...>[[fr]]</p>anything<p ...>[[/fr]]</p>
+    content = fr_regex.sub(r'<div lang="fr-ca">\1</div>', _content)  # \1 returns the "anything" content above
+
+    en_regex = re.compile(
+        f"{EMAIL_P_OPEN_TAG}{EN_OPEN}{EMAIL_P_CLOSE_TAG}{select_anything}{EMAIL_P_OPEN_TAG}{EN_CLOSE}{EMAIL_P_CLOSE_TAG}"
+    )  # matches <p ...>[[en]]</p>anything<p ...>[[/en]]</p>
+    content = en_regex.sub(r'<div lang="en-ca">\1</div>', content)  # \1 returns the "anything" content above
+    return content
+
+
+def remove_language_divs(_content: str) -> str:
+    """Remove the tags from content. This fn is for use in the email
+    preheader, since this is plain text not html"""
+    content = re.compile(FR_OPEN).sub("", _content)
+    content = re.compile(FR_CLOSE).sub("", content)
+    content = re.compile(EN_OPEN).sub("", content)
+    content = re.compile(EN_CLOSE).sub("", content)
+    return content
