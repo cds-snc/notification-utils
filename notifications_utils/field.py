@@ -1,5 +1,5 @@
 import re
-from typing import Any, Callable, List
+from typing import Any, Callable, Dict, List
 
 from orderedset import OrderedSet
 from flask import Markup
@@ -80,15 +80,13 @@ class Field:
 
     @staticmethod
     def get_sanitizer(method: str) -> Callable:
-        if method == "strip":
-            return strip_html
-        elif method == "escape":
-            return escape_html
-        elif method == "passthrough":
-            return str
-        elif method == "strip_dvla_markup":
-            return strip_dvla_markup
-        raise Exception(f"Invalid sanitizer method specified: {method}")
+        sanitizers: Dict[str, Callable] = {
+            "strip": strip_html,
+            "escape": escape_html,
+            "passthrough": str,
+            "strip_dvla_markup": strip_dvla_markup,
+        }
+        return sanitizers[method]
 
     @property
     def values(self):

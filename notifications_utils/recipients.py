@@ -1,7 +1,6 @@
 import re
 import sys
 import csv
-from typing import Callable, List
 import phonenumbers
 import os
 from io import StringIO
@@ -10,6 +9,7 @@ from functools import lru_cache, partial
 from itertools import islice
 from collections import OrderedDict, namedtuple
 from orderedset import OrderedSet
+from typing import Callable, Dict, List
 
 from flask import current_app
 
@@ -473,19 +473,13 @@ def validate_address(address_line, column):
     return address_line
 
 
-def get_validator(template_type: str, international_sms: bool) -> Callable:
-    if template_type == "email":
-        return validate_email_address
-    elif template_type == "sms":
-        return partial(validate_phone_number, international=international_sms)
-    elif template_type == "letter":
-        return validate_address
-    raise Exception(f"invalid template type: {template_type}")
-
-
-def validate_recipient(recipient, template_type, column=None, international_sms=False):
-    validator = get_validator(template_type, international_sms)
-    return validator(recipient, column)
+def validate_recipient(recipient, template_type: str, column=None, international_sms=False):
+    validators: Dict[str, Callable] = {
+        "email": validate_email_address,
+        "sms": partial(validate_phone_number, international=international_sms),
+        "letter": validate_address,
+    }
+    return validators[template_type](recipient, column)
 
 
 @lru_cache(maxsize=32, typed=False)
