@@ -1,6 +1,7 @@
 import re
 import sys
 import csv
+from typing import Callable
 import phonenumbers
 import os
 from io import StringIO
@@ -472,12 +473,19 @@ def validate_address(address_line, column):
     return address_line
 
 
+def get_validator(template_type: str, international_sms: bool) -> Callable:
+    if template_type == "email":
+        return validate_email_address
+    elif template_type == "sms":
+        return partial(validate_phone_number, international=international_sms)
+    elif template_type == "letter":
+        return validate_address
+    raise Exception(f"invalid template type: {template_type}")
+
+
 def validate_recipient(recipient, template_type, column=None, international_sms=False):
-    return {
-        "email": validate_email_address,
-        "sms": partial(validate_phone_number, international=international_sms),
-        "letter": validate_address,
-    }[template_type](recipient, column)
+    validator = get_validator(template_type, international_sms)
+    return validator(recipient, column)
 
 
 @lru_cache(maxsize=32, typed=False)
