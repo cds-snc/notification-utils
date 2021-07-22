@@ -173,7 +173,7 @@ class CustomLogFormatter(logging.Formatter):
 
     def add_fields(self, record):
         if self._fmt is None:
-            raise Exception("self._fmt is None")
+            raise TypeError("self._fmt is None")
         for field in self.FORMAT_STRING_FIELDS_PATTERN.findall(self._fmt):
             record.__dict__[field] = record.__dict__.get(field)
         return record
