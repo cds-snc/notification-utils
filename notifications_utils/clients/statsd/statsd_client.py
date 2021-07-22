@@ -64,17 +64,17 @@ class StatsdClient:
 
     def incr(self, stat, count=1, rate=1):
         if self.active:
-            self.statsd_client.incr(self.format_stat_name(stat), count, rate)
+            self.statsd_client.incr(self.format_stat_name(stat), count, rate)  # type: ignore
 
     def gauge(self, stat, count):
         if self.active:
-            self.statsd_client.gauge(self.format_stat_name(stat), count)
+            self.statsd_client.gauge(self.format_stat_name(stat), count)  # type: ignore
 
     def timing(self, stat, delta, rate=1):
         if self.active:
-            self.statsd_client.timing(self.format_stat_name(stat), delta, rate)
+            self.statsd_client.timing(self.format_stat_name(stat), delta, rate)  # type: ignore
 
     def timing_with_dates(self, stat, end, start, rate=1):
         if self.active:
             delta = (end - start).total_seconds()
-            self.statsd_client.timing(self.format_stat_name(stat), delta, rate)
+            self.statsd_client.timing(self.format_stat_name(stat), delta, rate)  # type: ignore
