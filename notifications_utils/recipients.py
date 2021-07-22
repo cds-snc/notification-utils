@@ -1,7 +1,7 @@
 import re
 import sys
 import csv
-from typing import Callable
+from typing import Callable, List
 import phonenumbers
 import os
 from io import StringIO
@@ -10,7 +10,6 @@ from functools import lru_cache, partial
 from itertools import islice
 from collections import OrderedDict, namedtuple
 from orderedset import OrderedSet
-from typing import List
 
 from flask import current_app
 

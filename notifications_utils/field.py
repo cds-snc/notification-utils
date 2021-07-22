@@ -49,18 +49,6 @@ class Placeholder:
         return "Placeholder({})".format(self.body)
 
 
-def get_sanitizer(method) -> Callable:
-    if method == "strip":
-        return strip_html
-    elif method == "escape":
-        return escape_html
-    elif method == "passthrough":
-        return str
-    elif method == "strip_dvla_markup":
-        return strip_dvla_markup
-    raise Exception(f"Invalid sanitizer method specified: {method}")
-
-
 class Field:
     placeholder_pattern = re.compile(
         r"\({2}" r"([^()]+)" r"\){2}"  # opening ((  # body of placeholder - potentially standard or conditional.  # closing ))
@@ -79,7 +67,7 @@ class Field:
         if translated:
             self.placeholder_tag = self.placeholder_tag_translated
 
-        self.sanitizer = get_sanitizer(html)
+        self.sanitizer = self.get_sanitizer(html)
         self.redact_missing_personalisation = redact_missing_personalisation
 
     def __str__(self):
@@ -89,6 +77,18 @@ class Field:
 
     def __repr__(self):
         return '{}("{}", {})'.format(self.__class__.__name__, self.content, self.values)  # TODO: more real
+
+    @staticmethod
+    def get_sanitizer(method: str) -> Callable:
+        if method == "strip":
+            return strip_html
+        elif method == "escape":
+            return escape_html
+        elif method == "passthrough":
+            return str
+        elif method == "strip_dvla_markup":
+            return strip_dvla_markup
+        raise Exception(f"Invalid sanitizer method specified: {method}")
 
     @property
     def values(self):
