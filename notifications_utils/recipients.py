@@ -10,6 +10,7 @@ from functools import lru_cache, partial
 from itertools import islice
 from collections import OrderedDict, namedtuple
 from orderedset import OrderedSet
+from typing import List
 
 from flask import current_app
 
@@ -99,7 +100,7 @@ class RecipientCSV:
     @placeholders.setter
     def placeholders(self, value):
         try:
-            self._placeholders = list(value) + self.recipient_column_headers
+            self._placeholders: List[str] = list(value) + self.recipient_column_headers
         except TypeError:
             self._placeholders = self.recipient_column_headers
         self.placeholders_as_column_keys = [Columns.make_key(placeholder) for placeholder in self._placeholders]

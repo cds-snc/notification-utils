@@ -1,4 +1,5 @@
 import re
+from typing import Any, Callable, List
 
 from orderedset import OrderedSet
 from flask import Markup
@@ -48,6 +49,18 @@ class Placeholder:
         return "Placeholder({})".format(self.body)
 
 
+def get_sanitizer(method) -> Callable:
+    if method == "strip":
+        return strip_html
+    elif method == "escape":
+        return escape_html
+    elif method == "passthrough":
+        return str
+    elif method == "strip_dvla_markup":
+        return strip_dvla_markup
+    raise Exception(f"Invalid sanitizer method specified: {method}")
+
+
 class Field:
     placeholder_pattern = re.compile(
         r"\({2}" r"([^()]+)" r"\){2}"  # opening ((  # body of placeholder - potentially standard or conditional.  # closing ))
@@ -65,12 +78,8 @@ class Field:
         self.markdown_lists = markdown_lists
         if translated:
             self.placeholder_tag = self.placeholder_tag_translated
-        self.sanitizer = {
-            "strip": strip_html,
-            "escape": escape_html,
-            "passthrough": str,
-            "strip_dvla_markup": strip_dvla_markup,
-        }[html]
+
+        self.sanitizer = get_sanitizer(html)
         self.redact_missing_personalisation = redact_missing_personalisation
 
     def __str__(self):
@@ -121,7 +130,7 @@ class Field:
             return None
 
         if isinstance(replacement, list):
-            vals = list(filter(None, replacement))
+            vals: List[Any] = list(filter(None, replacement))
             if not vals:
                 return None
             return self.sanitizer(self.get_replacement_as_list(vals))
