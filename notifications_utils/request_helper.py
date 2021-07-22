@@ -64,10 +64,10 @@ class ResponseHeaderMiddleware(object):
             lower_existing_header_names = frozenset(name.lower() for name, value in headers)
 
             if self.trace_id_header not in lower_existing_header_names:
-                headers.append((self.trace_id_header, str(request.trace_id)))
+                headers.append((self.trace_id_header, str(request.trace_id)))  # type: ignore
 
             if self.span_id_header not in lower_existing_header_names:
-                headers.append((self.span_id_header, str(request.span_id)))
+                headers.append((self.span_id_header, str(request.span_id)))  # type: ignore
 
             return start_response(status, headers, exc_info)
 

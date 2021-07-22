@@ -22,7 +22,7 @@ def test_should_call_statsd(app_with_statsd, mocker):
 
 
 def test_should_call_statsd_catch(app_with_statsd, mocker):
-    class CustomException(BaseException):
+    class CustomException(Exception):
         pass
 
     class FooBar:
@@ -39,7 +39,7 @@ def test_should_call_statsd_catch(app_with_statsd, mocker):
 
 
 def test_should_incr_statsd_on_catch(app_with_statsd, mocker):
-    class CustomException(BaseException):
+    class CustomException(Exception):
         pass
 
     class FooBar:

@@ -1,7 +1,7 @@
 import numbers
 import uuid
 from time import time
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from flask_redis import FlaskRedis
 from flask import current_app
