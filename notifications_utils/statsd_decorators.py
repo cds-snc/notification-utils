@@ -28,7 +28,7 @@ def statsd(namespace):
                 )
                 return res
 
-        wrapper.__wrapped__.__name__ = func.__name__
+        wrapper.__wrapped__.__name__ = func.__name__  # type: ignore
         return wrapper
 
     return time_function
@@ -71,7 +71,7 @@ def statsd_catch(namespace: str, counter_name: str, exception: Type[Exception]):
                 current_app.statsd_client.incr(f"{namespace}.{counter_name}")
                 raise e
 
-        wrapper.__wrapped__.__name__ = func.__name__
+        wrapper.__wrapped__.__name__ = func.__name__  # type: ignore
         return wrapper
 
     return catch_function

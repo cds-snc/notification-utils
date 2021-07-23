@@ -9,6 +9,7 @@ from functools import lru_cache, partial
 from itertools import islice
 from collections import OrderedDict, namedtuple
 from orderedset import OrderedSet
+from typing import Callable, Dict, List
 
 from flask import current_app
 
@@ -98,7 +99,7 @@ class RecipientCSV:
     @placeholders.setter
     def placeholders(self, value):
         try:
-            self._placeholders = list(value) + self.recipient_column_headers
+            self._placeholders: List[str] = list(value) + self.recipient_column_headers
         except TypeError:
             self._placeholders = self.recipient_column_headers
         self.placeholders_as_column_keys = [Columns.make_key(placeholder) for placeholder in self._placeholders]
@@ -472,12 +473,13 @@ def validate_address(address_line, column):
     return address_line
 
 
-def validate_recipient(recipient, template_type, column=None, international_sms=False):
-    return {
+def validate_recipient(recipient, template_type: str, column=None, international_sms=False):
+    validators: Dict[str, Callable] = {
         "email": validate_email_address,
         "sms": partial(validate_phone_number, international=international_sms),
         "letter": validate_address,
-    }[template_type](recipient, column)
+    }
+    return validators[template_type](recipient, column)
 
 
 @lru_cache(maxsize=32, typed=False)

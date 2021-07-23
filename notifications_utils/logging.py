@@ -156,7 +156,7 @@ class RequestIdFilter(logging.Filter):
     @property
     def request_id(self):
         if has_request_context() and hasattr(request, "request_id"):
-            return request.request_id
+            return request.request_id  # type: ignore
         else:
             return "no-request-id"
 
@@ -172,6 +172,8 @@ class CustomLogFormatter(logging.Formatter):
     FORMAT_STRING_FIELDS_PATTERN = re.compile(r"\((.+?)\)", re.IGNORECASE)
 
     def add_fields(self, record):
+        if self._fmt is None:
+            raise TypeError("self._fmt is None")
         for field in self.FORMAT_STRING_FIELDS_PATTERN.findall(self._fmt):
             record.__dict__[field] = record.__dict__.get(field)
         return record
