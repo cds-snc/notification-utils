@@ -27,6 +27,7 @@ def build_redis_client(app, mocked_redis_pipeline, mocker):
     redis_client.init_app(app)
     mocker.patch.object(redis_client.redis_store, "get", return_value=100)
     mocker.patch.object(redis_client.redis_store, "set")
+    mocker.patch.object(redis_client.redis_store, "keys", return_value=[b'test-1243', b'test-23423423'])
     mocker.patch.object(redis_client.redis_store, "hincrby")
     mocker.patch.object(redis_client.redis_store, "hgetall", return_value={b"template-1111": b"8", b"template-2222": b"8"})
     mocker.patch.object(redis_client.redis_store, "hmset")
@@ -106,6 +107,17 @@ def test_should_not_call_set_if_not_enabled(mocked_redis_client):
 def test_should_call_set_if_enabled(mocked_redis_client):
     mocked_redis_client.set("key", "value")
     mocked_redis_client.redis_store.set.assert_called_with("key", "value", None, None, False, False)
+
+
+def test_should_not_call_get_cache_keys_by_pattern_if_not_enabled(mocked_redis_client):
+    mocked_redis_client.active = False
+    assert not mocked_redis_client.get_cache_keys_by_pattern("test-key-*")
+    mocked_redis_client.redis_store.keys.assert_not_called()
+
+
+def test_should_call_get_cache_keys_by_pattern_if_enabled(mocked_redis_client):
+    assert mocked_redis_client.get_cache_keys_by_pattern("test-key-*") == [b'test-1243', b'test-23423423']
+    mocked_redis_client.redis_store.keys.assert_called_with("test-key-*")
 
 
 def test_should_not_call_get_if_not_enabled(mocked_redis_client):

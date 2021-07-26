@@ -9,6 +9,14 @@ def near_daily_limit_cache_key(service_id):
     return f"nearing-{daily_limit_cache_key(service_id)}"
 
 
+def template_version(template_id, version=None):
+    return f"template-{template_id}-version-{version}"
+
+
+def service(service_id):
+    return f"service-{service_id}"
+
+
 def over_daily_limit_cache_key(service_id):
     return f"over-{daily_limit_cache_key(service_id)}"
 
