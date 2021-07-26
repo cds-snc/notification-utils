@@ -9,11 +9,11 @@ def near_daily_limit_cache_key(service_id):
     return f"nearing-{daily_limit_cache_key(service_id)}"
 
 
-def template_version(template_id, version=None):
+def template_version_cache_key(template_id, version=None):
     return f"template-{template_id}-version-{version}"
 
 
-def service(service_id):
+def service_cache_key(service_id):
     return f"service-{service_id}"
 
 
