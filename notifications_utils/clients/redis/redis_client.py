@@ -148,7 +148,7 @@ class RedisClient:
                 self.__handle_exception(e, raise_exception, "incr", key)
 
     def get_cache_keys_by_pattern(self, key_pattern, raise_exception=False):
-        """ Get all keys in redis via a regular expression pattern
+        """Get all keys in redis via a regular expression pattern
 
         Parameters
         ----------
