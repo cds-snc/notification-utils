@@ -147,24 +147,6 @@ class RedisClient:
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "incr", key)
 
-    def get_cache_keys_by_pattern(self, key_pattern, raise_exception=False):
-        """Get all keys in redis via a regular expression pattern
-
-        Parameters
-        ----------
-            key_pattern: str
-                The regular expression pattern you want to retrieve all matching keys for
-            raise_exception: bool
-                Whether or not to raise an exception or silently fail
-
-        """
-        key_pattern = prepare_value(key_pattern)
-        if self.active:
-            try:
-                return self.redis_store.keys(key_pattern)
-            except Exception as e:
-                self.__handle_exception(e, raise_exception, "get_all_by_pattern", key_pattern)
-
     def get(self, key, raise_exception=False):
         key = prepare_value(key)
         if self.active:
