@@ -1,0 +1,5 @@
+# ignore all files in the this (log) folder
+*
+
+# don't ignore the .gitignore file
+!.gitignore
