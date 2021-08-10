@@ -1,4 +1,5 @@
 import pytest
+from typing import Any, Dict
 from notifications_utils.field import Field, str2bool
 
 
@@ -74,7 +75,7 @@ def test_returns_a_string_without_placeholders(content):
         ("((warning??This is a conditional warning))", {"warning": False}, ""),
     ],
 )
-def test_replacement_of_placeholders(template_content, data, expected):
+def test_replacement_of_placeholders(template_content: str, data: Dict[str, Any], expected: str):
     assert str(Field(template_content, data)) == expected
 
 
