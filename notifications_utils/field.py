@@ -59,7 +59,13 @@ class Field:
     placeholder_tag_redacted = "<span class='placeholder-redacted'>[hidden]</span>"
 
     def __init__(
-        self, content, values=None, html="strip", markdown_lists=False, redact_missing_personalisation=False, translated=False
+        self,
+        content: str,
+        values: Dict[str, Any] = None,
+        html: str = "strip",
+        markdown_lists: bool = False,
+        redact_missing_personalisation: bool = False,
+        translated: bool = False,
     ):
         self.content = content
         self.values = values

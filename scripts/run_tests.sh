@@ -28,6 +28,9 @@ display_result $? 1 "Code style check (Black)"
 flake8 .
 display_result $? 1 "Code style check"
 
+mypy .
+display_result $? 1 "Static type check"
+
 ## Code coverage
 #py.test --cov=client tests/
 #display_result $? 2 "Code coverage"
