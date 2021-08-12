@@ -863,11 +863,13 @@ def test_subject_line_gets_replaced():
         mock.call('content', {}, html='passthrough', markdown_lists=True)
     ]),
     (HTMLEmailTemplate, {}, [
-        mock.call('content', {}, highlight_placeholder_text=False, html='escape', markdown_lists=True, redact_missing_personalisation=False),
+        mock.call('content', {}, highlight_placeholder_text=False, html='escape', markdown_lists=True,
+                  redact_missing_personalisation=False),
         mock.call('content', {}, html='escape', markdown_lists=True),
     ]),
     (EmailPreviewTemplate, {}, [
-        mock.call('content', {}, highlight_placeholder_text=False, html='escape', markdown_lists=True, redact_missing_personalisation=False),
+        mock.call('content', {}, highlight_placeholder_text=False, html='escape', markdown_lists=True,
+                  redact_missing_personalisation=False),
         mock.call('subject', {}, html='escape', redact_missing_personalisation=False),
         mock.call('((email address))', {}, with_brackets=False),
     ]),
@@ -915,7 +917,8 @@ def test_subject_line_gets_replaced():
         mock.call('content', {}, html='passthrough', redact_missing_personalisation=True, markdown_lists=True),
     ]),
     (EmailPreviewTemplate, {'redact_missing_personalisation': True}, [
-        mock.call('content', {}, highlight_placeholder_text=False, html='escape', markdown_lists=True, redact_missing_personalisation=True),
+        mock.call('content', {}, highlight_placeholder_text=False, html='escape', markdown_lists=True,
+                  redact_missing_personalisation=True),
         mock.call('subject', {}, html='escape', redact_missing_personalisation=True),
         mock.call('((email address))', {}, with_brackets=False),
     ]),
