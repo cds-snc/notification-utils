@@ -339,6 +339,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         values=None,
         default_banner=True,
         complete_html=True,
+        use_preheader=True,
         brand_logo=None,
         brand_text=None,
         brand_colour=None,
@@ -356,6 +357,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.brand_banner = brand_banner
         self.brand_name = brand_name
         self.ga_pixel_url = ga_pixel_url
+        self.use_preheader = use_preheader
         # set this again to make sure the correct either utils / downstream local jinja is used
         # however, don't set if we are in a test environment (to preserve the above mock)
         if("pytest" not in sys.modules):
@@ -386,7 +388,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             'body': get_html_email_body(
                 self.content, self.values
             ),
-            'preheader': self.preheader,
+            'preheader': self.preheader if self.use_preheader else '',
             'default_banner': self.default_banner,
             'complete_html': self.complete_html,
             'brand_logo': self.brand_logo,
