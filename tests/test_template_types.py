@@ -864,7 +864,7 @@ def test_subject_line_gets_replaced():
     ]),
     (HTMLEmailTemplate, {}, [
         mock.call('content', {}, html='escape', markdown_lists=True, redact_missing_personalisation=False),
-        mock.call('content', {}, html='escape', markdown_lists=True),
+        mock.call('content', {}, highlight_placeholder_text=False, html='escape', markdown_lists=True),
     ]),
     (EmailPreviewTemplate, {}, [
         mock.call('content', {}, html='escape', markdown_lists=True, redact_missing_personalisation=False),
