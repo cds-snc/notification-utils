@@ -71,6 +71,7 @@ class Field:
         r'(\{\})'  # look for just '{}' inside conditional block
     )
     placeholder_tag = "<span class='placeholder'>(({}))</span>"
+    placeholder_tag_with_highlight = "<span class='placeholder'><mark>(({}))</mark></span>"
     conditional_placeholder_tag = "<span class='placeholder-conditional'>(({}??</span>{}))"
     placeholder_tag_no_brackets = "<span class='placeholder-no-brackets'>{}</span>"
     placeholder_tag_redacted = "<span class='placeholder-redacted'>hidden</span>"
@@ -83,12 +84,15 @@ class Field:
         html='strip',
         markdown_lists=False,
         redact_missing_personalisation=False,
+        highlight_placeholder_text=False
     ):
         self.content = content
         self.values = values
         self.markdown_lists = markdown_lists
         if not with_brackets:
             self.placeholder_tag = self.placeholder_tag_no_brackets
+        if highlight_placeholder_text:
+            self.placeholder_tag = self.placeholder_tag_with_highlight
         self.sanitizer = {
             'strip': strip_html,
             'escape': escape_html,

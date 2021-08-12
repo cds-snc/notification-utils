@@ -346,7 +346,8 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         brand_banner=False,
         brand_name=None,
         jinja_path=None,
-        ga_pixel_url=None
+        ga_pixel_url=None,
+        highlight_placeholder_text=False
     ):
         super().__init__(template, values, jinja_path=jinja_path)
         self.default_banner = default_banner
@@ -358,6 +359,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.brand_name = brand_name
         self.ga_pixel_url = ga_pixel_url
         self.use_preheader = use_preheader
+        self.highlight_placeholder_text = highlight_placeholder_text
         # set this again to make sure the correct either utils / downstream local jinja is used
         # however, don't set if we are in a test environment (to preserve the above mock)
         if("pytest" not in sys.modules):
@@ -370,6 +372,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             self.values,
             html='escape',
             markdown_lists=True,
+            highlight_placeholder_text=self.highlight_placeholder_text
         )).then(
             unlink_govuk_escaped
         ).then(
