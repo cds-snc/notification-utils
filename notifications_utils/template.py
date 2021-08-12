@@ -371,8 +371,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             self.content,
             self.values,
             html='escape',
-            markdown_lists=True,
-            highlight_placeholder_text=self.highlight_placeholder_text
+            markdown_lists=True
         )).then(
             unlink_govuk_escaped
         ).then(
@@ -389,7 +388,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
 
         return self.jinja_template.render({
             'body': get_html_email_body(
-                self.content, self.values
+                self.content, self.values, highlight_placeholder_text=self.highlight_placeholder_text
             ),
             'preheader': self.preheader if self.use_preheader else '',
             'default_banner': self.default_banner,
@@ -680,7 +679,9 @@ def is_unicode(content):
     return set(content) & set(SanitiseSMS.WELSH_NON_GSM_CHARACTERS)
 
 
-def get_html_email_body(template_content, template_values, redact_missing_personalisation=False):
+def get_html_email_body(
+        template_content, template_values, redact_missing_personalisation=False, highlight_placeholder_text=False
+):
 
     return Take(Field(
         template_content,
@@ -688,6 +689,7 @@ def get_html_email_body(template_content, template_values, redact_missing_person
         html='escape',
         markdown_lists=True,
         redact_missing_personalisation=redact_missing_personalisation,
+        highlight_placeholder_text=highlight_placeholder_text
     )).then(
         unlink_govuk_escaped
     ).then(
