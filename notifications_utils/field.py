@@ -84,14 +84,15 @@ class Field:
         html='strip',
         markdown_lists=False,
         redact_missing_personalisation=False,
-        highlight_placeholder_text=False
+        preview_mode=False
     ):
         self.content = content
         self.values = values
         self.markdown_lists = markdown_lists
+        self.preview_mode = preview_mode
         if not with_brackets:
             self.placeholder_tag = self.placeholder_tag_no_brackets
-        if highlight_placeholder_text:
+        if preview_mode:
             self.placeholder_tag = self.placeholder_tag_with_highlight
         self.sanitizer = {
             'strip': strip_html,
@@ -144,9 +145,10 @@ class Field:
                 placeholder.get_conditional_body(replacement)
             )
 
-        replaced_value = self.get_replacement(placeholder)
-        if replaced_value is not None:
-            return self.get_replacement(placeholder)
+        if not self.preview_mode:
+            replaced_value = self.get_replacement(placeholder)
+            if replaced_value is not None:
+                return self.get_replacement(placeholder)
 # TODO: invesitgate why this fallback is necessary and potentially remove to enable truly conditional placeholders
         return self.format_match(match)
 

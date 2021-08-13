@@ -339,7 +339,6 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         values=None,
         default_banner=True,
         complete_html=True,
-        use_preheader=True,
         brand_logo=None,
         brand_text=None,
         brand_colour=None,
@@ -347,7 +346,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         brand_name=None,
         jinja_path=None,
         ga_pixel_url=None,
-        highlight_placeholder_text=False
+        preview_mode=False
     ):
         super().__init__(template, values, jinja_path=jinja_path)
         self.default_banner = default_banner
@@ -358,8 +357,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.brand_banner = brand_banner
         self.brand_name = brand_name
         self.ga_pixel_url = ga_pixel_url
-        self.use_preheader = use_preheader
-        self.highlight_placeholder_text = highlight_placeholder_text
+        self.preview_mode = preview_mode
         # set this again to make sure the correct either utils / downstream local jinja is used
         # however, don't set if we are in a test environment (to preserve the above mock)
         if("pytest" not in sys.modules):
@@ -388,9 +386,9 @@ class HTMLEmailTemplate(WithSubjectTemplate):
 
         return self.jinja_template.render({
             'body': get_html_email_body(
-                self.content, self.values, highlight_placeholder_text=self.highlight_placeholder_text
+                self.content, self.values, preview_mode=self.preview_mode
             ),
-            'preheader': self.preheader if self.use_preheader else '',
+            'preheader': self.preheader if not self.preview_mode else '',
             'default_banner': self.default_banner,
             'complete_html': self.complete_html,
             'brand_logo': self.brand_logo,
@@ -680,7 +678,7 @@ def is_unicode(content):
 
 
 def get_html_email_body(
-        template_content, template_values, redact_missing_personalisation=False, highlight_placeholder_text=False
+        template_content, template_values, redact_missing_personalisation=False, preview_mode=False
 ):
 
     return Take(Field(
@@ -689,7 +687,7 @@ def get_html_email_body(
         html='escape',
         markdown_lists=True,
         redact_missing_personalisation=redact_missing_personalisation,
-        highlight_placeholder_text=highlight_placeholder_text
+        preview_mode=preview_mode
     )).then(
         unlink_govuk_escaped
     ).then(
