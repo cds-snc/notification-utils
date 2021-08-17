@@ -1,3 +1,3 @@
-__version__ = '1.0.39'
+__version__ = '1.0.40'
 # GDS version '34.0.1'
 # CDS version '41.0.0'
