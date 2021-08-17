@@ -396,7 +396,8 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             'brand_colour': self.brand_colour,
             'brand_banner': self.brand_banner,
             'brand_name': self.brand_name,
-            'ga_pixel_url': self.ga_pixel_url
+            'ga_pixel_url': self.ga_pixel_url,
+            'preview_mode': self.preview_mode
         })
 
 
