@@ -397,7 +397,8 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             'brand_banner': self.brand_banner,
             'brand_name': self.brand_name,
             'ga_pixel_url': self.ga_pixel_url,
-            'preview_mode': self.preview_mode
+            'preview_mode': self.preview_mode,
+            'path_to_js_script': self.template_env + '/frameresizer.js'
         })
 
 
