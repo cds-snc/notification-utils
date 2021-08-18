@@ -398,7 +398,10 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             'brand_name': self.brand_name,
             'ga_pixel_url': self.ga_pixel_url,
             'preview_mode': self.preview_mode,
-            'path_to_js_script': self.template_env + '/frameresizer.js'
+            'path_to_js_script': path.join(
+                    path.dirname(path.abspath(__file__)),
+                    'jinja_templates',
+                ) + '/frameresizer.js'
         })
 
 
