@@ -9,9 +9,10 @@
   <meta name="x-apple-disable-message-reformatting" />
 
   {% if preview_mode %}
-  {% block javascript %}
-  <script type="text/javascript">{% include path_to_js_script %}</script>
-  {% endblock %}
+{#  {% block javascript %}#}
+{#  <script type="text/javascript">{% include path_to_js_script %}</script>#}
+{#  {% endblock %}#}
+  <script src="{{url_for('static', filename='frameresizer.js')}}"></script>
   {% endif %}
   <title>Page title</title>
 
