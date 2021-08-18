@@ -7,8 +7,11 @@
   <meta content="telephone=no" name="format-detection" /> <!-- need to add formatting for real phone numbers -->
   <meta name="viewport" content="width=device-width" />
   <meta name="x-apple-disable-message-reformatting" />
+
   {% if preview_mode %}
+  {% block javascript %}
   <script type="text/javascript">{% include "frameresizer.js" %}</script>
+  {% endblock %}
   {% endif %}
   <title>Page title</title>
 
