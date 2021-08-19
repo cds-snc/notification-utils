@@ -504,6 +504,7 @@ class LetterPreviewTemplate(WithSubjectTemplate):
             self.values,
             redact_missing_personalisation=self.redact_missing_personalisation,
             html='escape',
+            is_letter_template=True
         )).then(
             do_nice_typography
         ).then(
@@ -516,7 +517,7 @@ class LetterPreviewTemplate(WithSubjectTemplate):
 
     @property
     def placeholders(self):
-        return super().placeholders | Field(self.contact_block).placeholder_names
+        return super().placeholders | Field(self.contact_block, is_letter_template=True).placeholder_names
 
     @property
     def values_with_default_optional_address_lines(self):
@@ -547,7 +548,8 @@ class LetterPreviewTemplate(WithSubjectTemplate):
                 }) else self.values
             ),
             html='escape',
-            with_brackets=False
+            with_brackets=False,
+            is_letter_template=True
         )).then(
             strip_pipes
         ).then(

@@ -881,7 +881,7 @@ def test_subject_line_gets_replaced():
         mock.call('content', {}, html='escape', redact_missing_personalisation=False),
     ]),
     (LetterPreviewTemplate, {'contact_block': 'www.gov.uk'}, [
-        mock.call('subject', {}, html='escape', redact_missing_personalisation=False),
+        mock.call('subject', {}, html='escape', is_letter_template=True, redact_missing_personalisation=False),
         mock.call('content', {}, html='escape', markdown_lists=True, redact_missing_personalisation=False),
         mock.call((
             '((address line 1))\n'
@@ -891,7 +891,7 @@ def test_subject_line_gets_replaced():
             '((address line 5))\n'
             '((address line 6))\n'
             '((postcode))'
-        ), {}, with_brackets=False, html='escape'),
+        ), {}, with_brackets=False, html='escape', is_letter_template=True),
         mock.call('www.gov.uk', {}, html='escape', redact_missing_personalisation=False),
     ]),
     (LetterImageTemplate, {
@@ -905,9 +905,9 @@ def test_subject_line_gets_replaced():
             '((address line 5))\n'
             '((address line 6))\n'
             '((postcode))'
-        ), {}, with_brackets=False, html='escape'),
+        ), {}, with_brackets=False, html='escape', is_letter_template=True),
         mock.call('www.gov.uk', {}, html='escape', redact_missing_personalisation=False),
-        mock.call('subject', {}, html='escape', redact_missing_personalisation=False),
+        mock.call('subject', {}, html='escape', redact_missing_personalisation=False, is_letter_template=True),
         mock.call('content', {}, html='escape', markdown_lists=True, redact_missing_personalisation=False),
     ]),
     (Template, {'redact_missing_personalisation': True}, [
@@ -927,7 +927,7 @@ def test_subject_line_gets_replaced():
         mock.call('content', {}, html='escape', redact_missing_personalisation=True),
     ]),
     (LetterPreviewTemplate, {'contact_block': 'www.gov.uk', 'redact_missing_personalisation': True}, [
-        mock.call('subject', {}, html='escape', redact_missing_personalisation=True),
+        mock.call('subject', {}, html='escape', redact_missing_personalisation=True, is_letter_template=True),
         mock.call('content', {}, html='escape', markdown_lists=True, redact_missing_personalisation=True),
         mock.call((
             '((address line 1))\n'
@@ -937,7 +937,7 @@ def test_subject_line_gets_replaced():
             '((address line 5))\n'
             '((address line 6))\n'
             '((postcode))'
-        ), {}, with_brackets=False, html='escape'),
+        ), {}, with_brackets=False, html='escape', is_letter_template=True),
         mock.call('www.gov.uk', {}, html='escape', redact_missing_personalisation=True),
     ]),
 ])

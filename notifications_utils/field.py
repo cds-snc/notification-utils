@@ -84,12 +84,14 @@ class Field:
         html='strip',
         markdown_lists=False,
         redact_missing_personalisation=False,
-        preview_mode=False
+        preview_mode=False,
+        is_letter_template=False
     ):
         self.content = content
         self.values = values
         self.markdown_lists = markdown_lists
         self.preview_mode = preview_mode
+        self.is_letter_template = is_letter_template
         if not with_brackets:
             self.placeholder_tag = self.placeholder_tag_no_brackets
         if preview_mode:
@@ -147,10 +149,16 @@ class Field:
 
         if not self.preview_mode:
             replaced_value = self.get_replacement(placeholder)
-            if replaced_value is not None:
+            if replaced_value is None and not self.is_okay_to_have_null_values(placeholder):
+                raise NullValueForNonConditionalPlaceholderException
+            elif replaced_value is not None:
                 return self.get_replacement(placeholder)
-# TODO: invesitgate why this fallback is necessary and potentially remove to enable truly conditional placeholders
+
+# TODO: investigate why this fallback is necessary and potentially remove to enable truly conditional placeholders
         return self.format_match(match)
+
+    def is_okay_to_have_null_values(self, placeholder) -> bool:
+        return self.redact_missing_personalisation or placeholder.is_conditional() or self.is_letter_template
 
     def get_replacement(self, placeholder):
         replacement = self.values.get(placeholder.name)
@@ -199,3 +207,7 @@ class Field:
         return re.sub(
             self.placeholder_pattern, self.replace_match, self.sanitizer(self.content)
         )
+
+
+class NullValueForNonConditionalPlaceholderException(Exception):
+    pass

@@ -1,5 +1,5 @@
 import pytest
-from notifications_utils.field import Field
+from notifications_utils.field import Field, NullValueForNonConditionalPlaceholderException
 
 
 @pytest.mark.parametrize("content", [
@@ -219,40 +219,15 @@ def test_formatting_of_placeholders(content, expected):
     assert str(Field(content)) == expected
 
 
-@pytest.mark.parametrize(
-    "content, values, expected", [
-        (
-            "((name)) ((colour))",
-            {'name': 'Jo'},
-            "Jo <span class='placeholder'>((colour))</span>",
-        ),
-        (
-            "((name)) ((colour))",
-            {'name': 'Jo', 'colour': None},
-            "Jo <span class='placeholder'>((colour))</span>",
-        ),
-        (
-            "((show_thing??thing)) ((colour))",
-            {'colour': 'red'},
-            "<span class='placeholder-conditional'>((show_thing??</span>thing)) red",
-        ),
-    ]
-)
-def test_handling_of_missing_values(content, values, expected):
+def test_handling_of_missing_values():
+    content = "((show_thing??thing)) ((colour))"
+    values = {'colour': 'red'}
+    expected = "<span class='placeholder-conditional'>((show_thing??</span>thing)) red"
+
     assert str(Field(content, values)) == expected
 
 
 @pytest.mark.parametrize("values, expected, expected_as_markdown", [
-    (
-        {'placeholder': []},
-        'list: <span class=\'placeholder\'>((placeholder))</span>',
-        'list: <span class=\'placeholder\'>((placeholder))</span>',
-    ),
-    (
-        {'placeholder': ['', '']},
-        'list: <span class=\'placeholder\'>((placeholder))</span>',
-        'list: <span class=\'placeholder\'>((placeholder))</span>',
-    ),
     (
         {'placeholder': ['one']},
         'list: one',
@@ -292,3 +267,27 @@ def test_handling_of_missing_values(content, values, expected):
 def test_field_renders_lists_as_strings(values, expected, expected_as_markdown):
     assert str(Field("list: ((placeholder))", values, markdown_lists=True)) == expected_as_markdown
     assert str(Field("list: ((placeholder))", values)) == expected
+
+
+def test_that_field_renders_fine_if_in_preview_mode_and_null_values_for_placeholder():
+    template_content = "this is ((some_non_conditional_field)) to test"
+    data = {"some_non_conditional_field": None}
+    expected_value = "this is <span class='placeholder'><mark>((some_non_conditional_field))</mark></span> to test"
+
+    assert str(Field(template_content, data, preview_mode=True)) == expected_value
+
+
+def test_that_field_renders_fine_if_not_in_preview_mode_and_null_values_for_conditional_placeholders():
+    template_content = "this is ((some_non_conditional_field??)) to test"
+    data = {"some_non_conditional_field": None}
+    expected_value = "this is <span class='placeholder-conditional'>((some_non_conditional_field??</span>)) to test"
+
+    assert str(Field(template_content, data, preview_mode=False)) == expected_value
+
+
+def test_that_error_is_thrown_if_not_in_preview_mode_and_null_values_for_placeholder():
+    template_content = "this is ((some_non_conditional_field)) to test"
+    data = {"some_non_conditional_field": None}
+
+    with pytest.raises(NullValueForNonConditionalPlaceholderException):
+        str(Field(template_content, data, preview_mode=False))
