@@ -10,7 +10,7 @@
 
   {% if preview_mode %}
   {% block javascript %}
-  <script type="text/javascript">{% include path_to_js_script %}</script>
+  <script type="text/javascript">{% include "iframeResizer.contentWindow.min.js" %}</script>
   {% endblock %}
   {% endif %}
   <title>Page title</title>
