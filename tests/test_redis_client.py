@@ -3,7 +3,6 @@ import pytest
 from datetime import datetime
 from unittest.mock import Mock, call
 from freezegun import freeze_time
-
 from notifications_utils.clients.redis import (
     daily_limit_cache_key,
     rate_limit_cache_key,
@@ -36,6 +35,39 @@ def build_redis_client(app, mocked_redis_pipeline, mocker):
     mocker.patch.object(redis_client.redis_store, 'pipeline', return_value=mocked_redis_pipeline)
 
     return redis_client
+
+
+def test_should_initialize_redis_client_with_timeouts_by_default(app):
+    redis_client = RedisClient()
+    redis_client.redis_store = Mock()
+    app.config['REDIS_ENABLED'] = True
+
+    redis_client.init_app(app)
+    actual = redis_client.redis_store.init_app.call_args[1]
+
+    assert actual == redis_client.default_kwargs
+    assert actual['socket_connect_timeout'] is not None
+    assert actual['socket_timeout'] is not None
+
+
+def test_should_initialize_redis_client_with_passed_config(app):
+    redis_client = RedisClient()
+    redis_client.redis_store = Mock()
+    app.config['REDIS_ENABLED'] = True
+
+    redis_client.init_app(app, foo='bar', baz='boo', socket_timeout=10)
+    actual = redis_client.redis_store.init_app.call_args[1]
+
+    assert {'foo': 'bar', 'baz': 'boo', 'socket_timeout': 10}.items() <= actual.items()
+
+
+def test_should_not_initialize_redis_client_when_not_enabled(app):
+    redis_client = RedisClient()
+    redis_client.redis_store = Mock()
+    app.config['REDIS_ENABLED'] = False
+
+    redis_client.init_app(app)
+    redis_client.redis_store.init_app.assert_not_called()
 
 
 def test_should_not_raise_exception_if_raise_set_to_false(app, caplog, mocker):

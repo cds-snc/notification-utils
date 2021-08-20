@@ -39,12 +39,16 @@ class RedisClient:
     redis_store = FlaskRedis()
     active = False
     scripts = {}
+    default_kwargs = {
+        'socket_timeout': 3,
+        'socket_connect_timeout': 3
+    }
 
-    def init_app(self, app):
+    def init_app(self, app, **kwargs):
         self.active = app.config.get('REDIS_ENABLED')
         if self.active:
-            self.redis_store.init_app(app)
-
+            self.default_kwargs.update(kwargs)
+            self.redis_store.init_app(app, **self.default_kwargs)
             self.register_scripts()
 
     def register_scripts(self):
