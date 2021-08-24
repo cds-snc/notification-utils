@@ -1019,11 +1019,11 @@ def test_add_ga_seal(input: str, output_dict: List[Dict]):
     (
         ("abc 123", [{"string": "abc 123", "occurances": 1}]),
         (
-            "Hi,\n[[ircc-armory]]\nBye",
+            "Hi,\n[[ircc-coat-arms]]\nBye",
             [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 1}, {"string": "Bye", "occurances": 1}],
         ),
         (
-            "Hi,\n[[ircc-armory]]\nBye[[ircc-armory]]",
+            "Hi,\n[[ircc-coat-arms]]\nBye[[ircc-coat-arms]]",
             [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 2}, {"string": "Bye", "occurances": 1}],
         ),
     ),

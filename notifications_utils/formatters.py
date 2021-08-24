@@ -31,7 +31,7 @@ FR_CLOSE = r"\[\[/fr\]\]"  # matches [[/fr]]
 EN_OPEN = r"\[\[en\]\]"  # matches [[en]]
 EN_CLOSE = r"\[\[/en\]\]"  # matches [[/en]]
 
-TAG_IMG_IRCC_COAT_OF_ARMS = r"\[\[ircc-armory\]\]"  # matches [[ircc-armory]]
+TAG_IMG_IRCC_COAT_OF_ARMS = r"\[\[ircc-coat-arms\]\]"  # matches [[ircc-coat-arms]]
 TAG_IMG_IRCC_GLOBAL_AFFAIRS = r"\[\[ircc-ga-seal\]\]"  # matches [[ircc-ga-seal]]
 
 mistune._block_quote_leading_pattern = re.compile(r"^ *\^ ?", flags=re.M)

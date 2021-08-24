@@ -48,8 +48,8 @@ def test_lang_tags_in_templates_good_content(good_content: str):
     [
         "[[ircc-ga-seal]",  # missing bracket
         "[ircc-ga-seal]",  # missing brackets
-        "[[ircc-armory]",  # missing bracket
-        "[ircc-armory]",  # missing brackets
+        "[[ircc-coat-arms]",  # missing bracket
+        "[ircc-coat-arms]",  # missing brackets
     ],
 )
 def test_ircc_ga_tags_in_templates_bad_content(bad_content: str):
@@ -65,7 +65,7 @@ def test_ircc_ga_tags_in_templates_bad_content(bad_content: str):
         "Hi,\n[[ircc-ga-seal]]\nBye",
         "Hi,\n\n[[ircc-ga-seal]]\n\nBye",
         "Hi,\n\n[[ircc-ga-seal]]\n\n# Title\nBye",
-        "Hi,\n\n[[ircc-armory]]\n\n# Title\nBye",
+        "Hi,\n\n[[ircc-coat-arms]]\n\n# Title\nBye",
     ],
 )
 def test_ircc_ga_tags_in_templates_good_content(good_content: str):
