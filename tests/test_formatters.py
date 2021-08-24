@@ -1019,3 +1019,4 @@ def test_add_ircc_coat_of_arms(input: str, output_contains: List[str]):
     parsed_input = add_ircc_coat_of_arms(input)
     for output in output_contains:
         assert output in parsed_input
+        assert "[[ircc-" not in parsed_input
