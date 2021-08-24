@@ -48,11 +48,14 @@ def test_lang_tags_in_templates_good_content(good_content: str):
     [
         "[[ircc-ga-seal]",  # missing bracket
         "[ircc-ga-seal]",  # missing brackets
+        "[[ircc-armory]",  # missing bracket
+        "[ircc-armory]",  # missing brackets
     ],
 )
 def test_ircc_ga_tags_in_templates_bad_content(bad_content: str):
     html = get_html_email_body(bad_content, {})
     assert "<img" not in html
+    assert "[ircc-" in html
 
 
 @pytest.mark.parametrize(
@@ -62,8 +65,10 @@ def test_ircc_ga_tags_in_templates_bad_content(bad_content: str):
         "Hi,\n[[ircc-ga-seal]]\nBye",
         "Hi,\n\n[[ircc-ga-seal]]\n\nBye",
         "Hi,\n\n[[ircc-ga-seal]]\n\n# Title\nBye",
+        "Hi,\n\n[[ircc-armory]]\n\n# Title\nBye",
     ],
 )
 def test_ircc_ga_tags_in_templates_good_content(good_content: str):
     html = get_html_email_body(good_content, {})
     assert "<img" in html
+    assert "[[ircc" not in html
