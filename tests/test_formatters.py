@@ -3,6 +3,7 @@ import pytest
 from flask import Markup
 
 from notifications_utils.formatters import (
+    add_ircc_coat_of_arms,
     add_ircc_ga_seal,
     add_language_divs,
     remove_language_divs,
@@ -998,11 +999,23 @@ def test_remove_language_divs(input: str, output: str):
         ("abc 123", ["abc 123"]),
         ("Hi,\n[[ircc-ga-seal]]\nBye", ["Hi,", "<img", "Bye"]),
         ("Hi,\n[[ircc-ga-seal]]\nBye[[ircc-ga-seal]]", ["Hi,", "<img", "Bye"]),
-        ("Hi,\n[[ircc-armory]]\nBye", ["Hi,", "<img", "Bye"]),
-        ("Hi,\n[[ircc-armory]]\nBye[[ircc-armory]]", ["Hi,", "<img", "Bye"]),
     ),
 )
 def test_add_ga_seal(input: str, output_contains: List[str]):
     parsed_input = add_ircc_ga_seal(input)
+    for output in output_contains:
+        assert output in parsed_input
+
+
+@pytest.mark.parametrize(
+    "input,output_contains",
+    (
+        ("abc 123", ["abc 123"]),
+        ("Hi,\n[[ircc-armory]]\nBye", ["Hi,", "<img", "Bye"]),
+        ("Hi,\n[[ircc-armory]]\nBye[[ircc-armory]]", ["Hi,", "<img", "Bye"]),
+    ),
+)
+def test_add_ircc_coat_of_arms(input: str, output_contains: List[str]):
+    parsed_input = add_ircc_coat_of_arms(input)
     for output in output_contains:
         assert output in parsed_input
