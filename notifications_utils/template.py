@@ -14,6 +14,7 @@ from notifications_utils.formatters import (
     unlink_govuk_escaped,
     nl2br,
     nl2li,
+    add_ga_seal,
     add_language_divs,
     add_prefix,
     add_newlines_around_lang_tags,
@@ -27,6 +28,7 @@ from notifications_utils.formatters import (
     escape_html,
     strip_dvla_markup,
     strip_pipes,
+    remove_ga_seal,
     remove_whitespace_before_punctuation,
     remove_language_divs,
     make_quotes_smart,
@@ -379,6 +381,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             .then(strip_unsupported_characters)
             .then(add_trailing_newline)
             .then(notify_email_preheader_markdown)
+            .then(remove_ga_seal)
             .then(remove_language_divs)
             .then(do_nice_typography)
             .split()
@@ -740,6 +743,7 @@ def get_html_email_body(template_content, template_values, redact_missing_person
         .then(add_trailing_newline)
         .then(notify_email_markdown)
         .then(add_language_divs)
+        .then(add_ga_seal)
         .then(do_nice_typography)
     )
 
