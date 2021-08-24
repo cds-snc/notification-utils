@@ -381,8 +381,6 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             .then(strip_unsupported_characters)
             .then(add_trailing_newline)
             .then(notify_email_preheader_markdown)
-            .then(remove_ircc_ga_seal)
-            .then(remove_language_divs)
             .then(do_nice_typography)
             .split()
         )[: self.PREHEADER_LENGTH_IN_CHARACTERS].strip()

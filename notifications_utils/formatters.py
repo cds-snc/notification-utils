@@ -685,14 +685,6 @@ def add_ircc_coat_of_arms(_content: str) -> str:
     return add_img_tag(_content, TAG_IMG_IRCC_COAT_OF_ARMS, img_loc, alt_text, 400, 200)
 
 
-def remove_ircc_ga_seal(_content: str):
-    return remove_tags(_content, TAG_IMG_IRCC_GLOBAL_AFFAIRS)
-
-
-def remove_ircc_coat_of_arms(_content: str):
-    return remove_tags(_content, TAG_IMG_IRCC_COAT_OF_ARMS)
-
-
 def remove_tags(_content: str, *tags) -> str:
     """Remove the tags in parameters from content.
 
