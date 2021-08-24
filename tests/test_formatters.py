@@ -3,7 +3,7 @@ import pytest
 from flask import Markup
 
 from notifications_utils.formatters import (
-    add_ga_seal,
+    add_ircc_ga_seal,
     add_language_divs,
     remove_language_divs,
     unlink_govuk_escaped,
@@ -996,11 +996,11 @@ def test_remove_language_divs(input: str, output: str):
     "input,output_contains",
     (
         ("abc 123", ["abc 123"]),
-        ("Hi,\n[[ga-seal]]\nBye", ["Hi,", "<img", "Bye"]),
-        ("Hi,\n[[ga-seal]]\nBye[[ga-seal]]", ["Hi,", "<img", "Bye"]),
+        ("Hi,\n[[ircc-ga-seal]]\nBye", ["Hi,", "<img", "Bye"]),
+        ("Hi,\n[[ircc-ga-seal]]\nBye[[ga-seal]]", ["Hi,", "<img", "Bye"]),
     ),
 )
 def test_add_ga_seal(input: str, output_contains: List[str]):
-    parsed_input = add_ga_seal(input)
+    parsed_input = add_ircc_ga_seal(input)
     for output in output_contains:
         assert output in parsed_input

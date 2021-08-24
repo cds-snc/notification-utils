@@ -31,7 +31,8 @@ FR_CLOSE = r"\[\[/fr\]\]"  # matches [[/fr]]
 EN_OPEN = r"\[\[en\]\]"  # matches [[en]]
 EN_CLOSE = r"\[\[/en\]\]"  # matches [[/en]]
 
-IMG_GLOBAL_AFFAIRS = r"\[\[ga-seal\]\]"  # matches [[ga-seal]]
+TAG_IMG_IRCC_COAT_OF_ARMS = r"\[\[ircc-armory\]\]"  # matches [[ircc-armory]]
+TAG_IMG_IRCC_GLOBAL_AFFAIRS = r"\[\[ircc-ga-seal\]\]"  # matches [[ga-seal]]
 
 mistune._block_quote_leading_pattern = re.compile(r"^ *\^ ?", flags=re.M)
 mistune.BlockGrammar.block_quote = re.compile(r"^( *\^[^\n]+(\n[^\n]+)*\n*)+")
@@ -626,9 +627,9 @@ def remove_language_divs(_content: str) -> str:
     return remove_tags(_content, FR_OPEN, FR_CLOSE, EN_OPEN, EN_CLOSE)
 
 
-def add_ga_seal(_content: str) -> str:
+def add_img_tag(_content: str, tag, img_location, alt_text="", height=300, width=300) -> str:
     """
-    Custom parser to add Global Affairs seal logo.
+    Custom parser to add custom img in the email.
 
     This is a custom temporary change not meant to exist for more than a few
     weeks. This should either be removed or upgraded into a full-fledged
@@ -636,24 +637,60 @@ def add_ga_seal(_content: str) -> str:
 
     TODO: Review, remove/upgrade this functionality.
     """
-    ga_seal_regex = re.compile(f"{IMG_GLOBAL_AFFAIRS}")  # matches [[ga-seal]]
+    ga_seal_regex = re.compile(f"{tag}")  # matches [[tag]]
     content = ga_seal_regex.sub(
         r"""<div style="margin: 20px auto 30px auto;">
           <img
-            src="https://assets.notification.canada.ca/gc-ga-seal.png"
-            alt="Global Affairs Canada / Affaires mondiales Canada"
-            height="339"
-            width="322"
+            src="{img_loc}"
+            alt="{alt}"
+            height="{h}"
+            width="{w}"
           />
-        </div>""",
+        </div>""".format(
+            img_loc=img_location, alt=alt_text, h=str(height), w=str(width)
+        ),
         _content,
     )
 
     return content
 
 
-def remove_ga_seal(_content: str):
-    return remove_tags(_content, IMG_GLOBAL_AFFAIRS)
+def add_ircc_ga_seal(_content: str) -> str:
+    """
+    Custom parser to add IRCC Global Affairs seal logo.
+
+    This is a custom temporary change not meant to exist for more than a few
+    weeks. This should either be removed or upgraded into a full-fledged
+    feature.
+
+    TODO: Review, remove/upgrade this functionality.
+    """
+    img_loc = "https://assets.notification.canada.ca/gc-ircc-ga-seal.png"
+    alt_text = "Global Affairs Canada / Affaires mondiales Canada"
+    return add_img_tag(_content, TAG_IMG_IRCC_GLOBAL_AFFAIRS, img_loc, alt_text, 339, 322)
+
+
+def add_ircc_coat_of_arms(_content: str) -> str:
+    """
+    Custom parser to add IRCC coat of arms logo.
+
+    This is a custom temporary change not meant to exist for more than a few
+    weeks. This should either be removed or upgraded into a full-fledged
+    feature.
+
+    TODO: Review, remove/upgrade this functionality.
+    """
+    img_loc = "https://assets.notification.canada.ca/gc-ircc-coat-of-arms.png"
+    alt_text = "Arms of Her Majesty The Queen in Right of Canada / Armoiries de Sa Majesté la reine du Canada"
+    return add_img_tag(_content, TAG_IMG_IRCC_COAT_OF_ARMS, img_loc, alt_text, 400, 200)
+
+
+def remove_ircc_ga_seal(_content: str):
+    return remove_tags(_content, TAG_IMG_IRCC_GLOBAL_AFFAIRS)
+
+
+def remove_ircc_coat_of_arms(_content: str):
+    return remove_tags(_content, TAG_IMG_IRCC_COAT_OF_ARMS)
 
 
 def remove_tags(_content: str, *tags) -> str:
