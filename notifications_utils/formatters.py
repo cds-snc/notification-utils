@@ -636,9 +636,7 @@ def add_ga_seal(_content: str) -> str:
 
     TODO: Review, remove/upgrade this functionality.
     """
-    ga_seal_regex = re.compile(
-        f"{IMG_GLOBAL_AFFAIRS}"
-    )  # matches [[ga-seal]]
+    ga_seal_regex = re.compile(f"{IMG_GLOBAL_AFFAIRS}")  # matches [[ga-seal]]
     content = ga_seal_regex.sub(
         r"""<div style="margin: 20px auto 30px auto;">
           <img
