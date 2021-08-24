@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 import pytest
 from flask import Markup
 
@@ -994,29 +994,42 @@ def test_remove_language_divs(input: str, output: str):
 
 
 @pytest.mark.parametrize(
-    "input,output_contains",
+    "input,output_dict",
     (
-        ("abc 123", ["abc 123"]),
-        ("Hi,\n[[ircc-ga-seal]]\nBye", ["Hi,", "<img", "Bye"]),
-        ("Hi,\n[[ircc-ga-seal]]\nBye[[ircc-ga-seal]]", ["Hi,", "<img", "Bye"]),
+        ("abc 123", [{"string": "abc 123", "occurances": 1}]),
+        (
+            "Hi,\n[[ircc-ga-seal]]\nBye",
+            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 1}, {"string": "Bye", "occurances": 1}],
+        ),
+        (
+            "Hi,\n[[ircc-ga-seal]]\nBye[[ircc-ga-seal]]",
+            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 2}, {"string": "Bye", "occurances": 1}],
+        ),
     ),
 )
-def test_add_ga_seal(input: str, output_contains: List[str]):
+def test_add_ga_seal(input: str, output_dict: List[Dict]):
     parsed_input = add_ircc_ga_seal(input)
-    for output in output_contains:
-        assert output in parsed_input
+    for output in output_dict:
+        assert parsed_input.count(output["string"]) == output["occurances"]
+        assert "[[ircc-" not in parsed_input
 
 
 @pytest.mark.parametrize(
-    "input,output_contains",
+    "input,output_dict",
     (
-        ("abc 123", ["abc 123"]),
-        ("Hi,\n[[ircc-armory]]\nBye", ["Hi,", "<img", "Bye"]),
-        ("Hi,\n[[ircc-armory]]\nBye[[ircc-armory]]", ["Hi,", "<img", "Bye"]),
+        ("abc 123", [{"string": "abc 123", "occurances": 1}]),
+        (
+            "Hi,\n[[ircc-armory]]\nBye",
+            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 1}, {"string": "Bye", "occurances": 1}],
+        ),
+        (
+            "Hi,\n[[ircc-armory]]\nBye[[ircc-armory]]",
+            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 2}, {"string": "Bye", "occurances": 1}],
+        ),
     ),
 )
-def test_add_ircc_coat_of_arms(input: str, output_contains: List[str]):
+def test_add_ircc_coat_of_arms(input: str, output_dict: List[Dict]):
     parsed_input = add_ircc_coat_of_arms(input)
-    for output in output_contains:
-        assert output in parsed_input
+    for output in output_dict:
+        assert parsed_input.count(output["string"]) == output["occurances"]
         assert "[[ircc-" not in parsed_input
