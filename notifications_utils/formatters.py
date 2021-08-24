@@ -637,8 +637,8 @@ def add_img_tag(_content: str, tag, img_location, alt_text="", height=300, width
 
     TODO: Review, remove/upgrade this functionality.
     """
-    ga_seal_regex = re.compile(f"{tag}")  # matches tag
-    content = ga_seal_regex.sub(
+    tag_regex = re.compile(f"{tag}")  # matches tag
+    content = tag_regex.sub(
         r"""<div style="margin: 20px auto 30px auto;">
           <img
             src="{img_loc}"
