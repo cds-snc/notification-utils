@@ -997,7 +997,9 @@ def test_remove_language_divs(input: str, output: str):
     (
         ("abc 123", ["abc 123"]),
         ("Hi,\n[[ircc-ga-seal]]\nBye", ["Hi,", "<img", "Bye"]),
-        ("Hi,\n[[ircc-ga-seal]]\nBye[[ga-seal]]", ["Hi,", "<img", "Bye"]),
+        ("Hi,\n[[ircc-ga-seal]]\nBye[[ircc-ga-seal]]", ["Hi,", "<img", "Bye"]),
+        ("Hi,\n[[ircc-armory]]\nBye", ["Hi,", "<img", "Bye"]),
+        ("Hi,\n[[ircc-armory]]\nBye[[ircc-armory]]", ["Hi,", "<img", "Bye"]),
     ),
 )
 def test_add_ga_seal(input: str, output_contains: List[str]):

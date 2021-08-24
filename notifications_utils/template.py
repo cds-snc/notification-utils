@@ -29,8 +29,6 @@ from notifications_utils.formatters import (
     escape_html,
     strip_dvla_markup,
     strip_pipes,
-    remove_ircc_coat_of_arms,
-    remove_ircc_ga_seal,
     remove_whitespace_before_punctuation,
     remove_language_divs,
     make_quotes_smart,
@@ -745,6 +743,7 @@ def get_html_email_body(template_content, template_values, redact_missing_person
         .then(add_trailing_newline)
         .then(notify_email_markdown)
         .then(add_language_divs)
+        .then(add_ircc_coat_of_arms)
         .then(add_ircc_ga_seal)
         .then(do_nice_typography)
     )
