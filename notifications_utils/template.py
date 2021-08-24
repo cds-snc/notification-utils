@@ -30,7 +30,6 @@ from notifications_utils.formatters import (
     strip_dvla_markup,
     strip_pipes,
     remove_whitespace_before_punctuation,
-    remove_language_divs,
     make_quotes_smart,
     replace_hyphens_with_en_dashes,
     replace_hyphens_with_non_breaking_hyphens,
