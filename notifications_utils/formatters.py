@@ -667,7 +667,7 @@ def add_ircc_ga_seal(_content: str) -> str:
     """
     img_loc = "https://assets.notification.canada.ca/gc-ircc-ga-seal.png"
     alt_text = "Global Affairs Canada / Affaires mondiales Canada"
-    return add_img_tag(_content, TAG_IMG_IRCC_GLOBAL_AFFAIRS, img_loc, alt_text, 339, 322)
+    return add_img_tag(_content, TAG_IMG_IRCC_GLOBAL_AFFAIRS, img_loc, alt_text, 295, 281)
 
 
 def add_ircc_coat_of_arms(_content: str) -> str:
@@ -682,7 +682,7 @@ def add_ircc_coat_of_arms(_content: str) -> str:
     """
     img_loc = "https://assets.notification.canada.ca/gc-ircc-coat-of-arms.png"
     alt_text = "Arms of Her Majesty The Queen in Right of Canada / Armoiries de Sa Majesté la reine du Canada"
-    return add_img_tag(_content, TAG_IMG_IRCC_COAT_OF_ARMS, img_loc, alt_text, 400, 200)
+    return add_img_tag(_content, TAG_IMG_IRCC_COAT_OF_ARMS, img_loc, alt_text, 201, 200)
 
 
 def remove_tags(_content: str, *tags) -> str:
