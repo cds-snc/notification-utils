@@ -41,3 +41,34 @@ def test_lang_tags_in_templates_bad_content(bad_content: str):
 def test_lang_tags_in_templates_good_content(good_content: str):
     html = get_html_email_body(good_content, {})
     assert '<div lang="fr-ca">' in html
+
+
+@pytest.mark.parametrize(
+    "bad_content",
+    [
+        "[[ircc-ga-seal]",  # missing bracket
+        "[ircc-ga-seal]",  # missing brackets
+        "[[ircc-coat-arms]",  # missing bracket
+        "[ircc-coat-arms]",  # missing brackets
+    ],
+)
+def test_ircc_ga_tags_in_templates_bad_content(bad_content: str):
+    html = get_html_email_body(bad_content, {})
+    assert "<img" not in html
+    assert "[ircc-" in html
+
+
+@pytest.mark.parametrize(
+    "good_content",
+    [
+        "[[ircc-ga-seal]]\nEmail Body",
+        "Hi,\n[[ircc-ga-seal]]\nBye",
+        "Hi,\n\n[[ircc-ga-seal]]\n\nBye",
+        "Hi,\n\n[[ircc-ga-seal]]\n\n# Title\nBye",
+        "Hi,\n\n[[ircc-coat-arms]]\n\n# Title\nBye",
+    ],
+)
+def test_ircc_ga_tags_in_templates_good_content(good_content: str):
+    html = get_html_email_body(good_content, {})
+    assert "<img" in html
+    assert "[[ircc" not in html

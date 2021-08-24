@@ -31,6 +31,9 @@ FR_CLOSE = r"\[\[/fr\]\]"  # matches [[/fr]]
 EN_OPEN = r"\[\[en\]\]"  # matches [[en]]
 EN_CLOSE = r"\[\[/en\]\]"  # matches [[/en]]
 
+TAG_IMG_IRCC_COAT_OF_ARMS = r"\[\[ircc-coat-arms\]\]"  # matches [[ircc-coat-arms]]
+TAG_IMG_IRCC_GLOBAL_AFFAIRS = r"\[\[ircc-ga-seal\]\]"  # matches [[ircc-ga-seal]]
+
 mistune._block_quote_leading_pattern = re.compile(r"^ *\^ ?", flags=re.M)
 mistune.BlockGrammar.block_quote = re.compile(r"^( *\^[^\n]+(\n[^\n]+)*\n*)+")
 mistune.BlockGrammar.list_block = re.compile(
@@ -599,8 +602,10 @@ notify_letter_preview_markdown = mistune.Markdown(
 
 def add_language_divs(_content: str) -> str:
     """
-    Custom parser to add the language divs. We need to search for and remove the EMAIL_P_OPEN_TAG
-    and EMAIL_P_CLOSE_TAG because the mistune parser has already run and put our [[lang]] tags inside
+    Custom parser to add the language divs.
+
+    We need to search for and remove the EMAIL_P_OPEN_TAG and EMAIL_P_CLOSE_TAG
+    because the mistune parser has already run and put our [[lang]] tags inside
     paragraphs.
     """
     select_anything = r"([\s\S]*)"
@@ -619,8 +624,73 @@ def add_language_divs(_content: str) -> str:
 def remove_language_divs(_content: str) -> str:
     """Remove the tags from content. This fn is for use in the email
     preheader, since this is plain text not html"""
-    content = re.compile(FR_OPEN).sub("", _content)
-    content = re.compile(FR_CLOSE).sub("", content)
-    content = re.compile(EN_OPEN).sub("", content)
-    content = re.compile(EN_CLOSE).sub("", content)
+    return remove_tags(_content, FR_OPEN, FR_CLOSE, EN_OPEN, EN_CLOSE)
+
+
+def add_img_tag(_content: str, tag, img_location, alt_text="", height=300, width=300) -> str:
+    """
+    Custom parser to add custom img in the email.
+
+    This is a custom temporary change not meant to exist for more than a few
+    weeks. This should either be removed or upgraded into a full-fledged
+    feature.
+
+    TODO: Review, remove/upgrade this functionality.
+    """
+    tag_regex = re.compile(f"{tag}")  # matches tag
+    content = tag_regex.sub(
+        r"""<div style="margin: 20px auto 30px auto;">
+          <img
+            src="{img_loc}"
+            alt="{alt}"
+            height="{h}"
+            width="{w}"
+          />
+        </div>""".format(
+            img_loc=img_location, alt=alt_text, h=str(height), w=str(width)
+        ),
+        _content,
+    )
+
+    return content
+
+
+def add_ircc_ga_seal(_content: str) -> str:
+    """
+    Custom parser to add IRCC Global Affairs seal logo.
+
+    This is a custom temporary change not meant to exist for more than a few
+    weeks. This should either be removed or upgraded into a full-fledged
+    feature.
+
+    TODO: Review, remove/upgrade this functionality.
+    """
+    img_loc = "https://assets.notification.canada.ca/gc-ircc-ga-seal.png"
+    alt_text = "Global Affairs Canada / Affaires mondiales Canada"
+    return add_img_tag(_content, TAG_IMG_IRCC_GLOBAL_AFFAIRS, img_loc, alt_text, 295, 281)
+
+
+def add_ircc_coat_of_arms(_content: str) -> str:
+    """
+    Custom parser to add IRCC coat of arms logo.
+
+    This is a custom temporary change not meant to exist for more than a few
+    weeks. This should either be removed or upgraded into a full-fledged
+    feature.
+
+    TODO: Review, remove/upgrade this functionality.
+    """
+    img_loc = "https://assets.notification.canada.ca/gc-ircc-coat-of-arms.png"
+    alt_text = "Arms of Her Majesty The Queen in Right of Canada / Armoiries de Sa Majesté la reine du Canada"
+    return add_img_tag(_content, TAG_IMG_IRCC_COAT_OF_ARMS, img_loc, alt_text, 201, 200)
+
+
+def remove_tags(_content: str, *tags) -> str:
+    """Remove the tags in parameters from content.
+
+    This function is for use in the email preheader, since this is plain text
+    not html."""
+    content = _content
+    for tag in tags:
+        content = re.compile(tag).sub("", content)
     return content
