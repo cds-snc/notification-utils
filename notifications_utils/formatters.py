@@ -661,6 +661,7 @@ def remove_tags(_content: str, *tags) -> str:
 
     This function is for use in the email preheader, since this is plain text
     not html."""
+    content = _content
     for tag in tags:
-        content = re.compile(tag).sub("", _content)
+        content = re.compile(tag).sub("", content)
     return content
