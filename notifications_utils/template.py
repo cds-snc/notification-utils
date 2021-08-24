@@ -30,6 +30,7 @@ from notifications_utils.formatters import (
     strip_dvla_markup,
     strip_pipes,
     remove_whitespace_before_punctuation,
+    remove_language_divs,
     make_quotes_smart,
     replace_hyphens_with_en_dashes,
     replace_hyphens_with_non_breaking_hyphens,
@@ -380,6 +381,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             .then(strip_unsupported_characters)
             .then(add_trailing_newline)
             .then(notify_email_preheader_markdown)
+            .then(remove_language_divs)
             .then(do_nice_typography)
             .split()
         )[: self.PREHEADER_LENGTH_IN_CHARACTERS].strip()

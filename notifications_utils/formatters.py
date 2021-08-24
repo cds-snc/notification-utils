@@ -32,7 +32,7 @@ EN_OPEN = r"\[\[en\]\]"  # matches [[en]]
 EN_CLOSE = r"\[\[/en\]\]"  # matches [[/en]]
 
 TAG_IMG_IRCC_COAT_OF_ARMS = r"\[\[ircc-armory\]\]"  # matches [[ircc-armory]]
-TAG_IMG_IRCC_GLOBAL_AFFAIRS = r"\[\[ircc-ga-seal\]\]"  # matches [[ga-seal]]
+TAG_IMG_IRCC_GLOBAL_AFFAIRS = r"\[\[ircc-ga-seal\]\]"  # matches [[ircc-ga-seal]]
 
 mistune._block_quote_leading_pattern = re.compile(r"^ *\^ ?", flags=re.M)
 mistune.BlockGrammar.block_quote = re.compile(r"^( *\^[^\n]+(\n[^\n]+)*\n*)+")
@@ -637,7 +637,7 @@ def add_img_tag(_content: str, tag, img_location, alt_text="", height=300, width
 
     TODO: Review, remove/upgrade this functionality.
     """
-    ga_seal_regex = re.compile(f"{tag}")  # matches [[tag]]
+    ga_seal_regex = re.compile(f"{tag}")  # matches tag
     content = ga_seal_regex.sub(
         r"""<div style="margin: 20px auto 30px auto;">
           <img
