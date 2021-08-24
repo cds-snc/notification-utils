@@ -349,6 +349,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         logo_with_background_colour=False,
         brand_name=None,
         jinja_path=None,
+        allow_html=False,
     ):
         super().__init__(template, values, jinja_path=jinja_path)
         self.fip_banner_english = fip_banner_english
@@ -359,6 +360,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.brand_colour = brand_colour
         self.logo_with_background_colour = logo_with_background_colour
         self.brand_name = brand_name
+        self.allow_html = allow_html
         # set this again to make sure the correct either utils / downstream local jinja is used
         # however, don't set if we are in a test environment (to preserve the above mock)
         if "pytest" not in sys.modules:
@@ -388,7 +390,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
 
         return self.jinja_template.render(
             {
-                "body": get_html_email_body(self.content, self.values),
+                "body": get_html_email_body(self.content, self.values, html="passthrough" if self.allow_html else "escape"),
                 "preheader": self.preheader,
                 "fip_banner_english": self.fip_banner_english,
                 "fip_banner_french": self.fip_banner_french,
@@ -421,6 +423,7 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         brand_name=None,
         logo_with_background_colour=None,
         asset_domain=None,
+        allow_html=False,
     ):
         super().__init__(
             template,
@@ -440,6 +443,7 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         self.brand_text = brand_text
         self.brand_name = brand_name
         self.asset_domain = asset_domain or "assets.notification.canada.ca"
+        self.allow_html = allow_html
 
     def __str__(self):
         return Markup(
@@ -449,6 +453,7 @@ class EmailPreviewTemplate(WithSubjectTemplate):
                         self.content,
                         self.values,
                         redact_missing_personalisation=self.redact_missing_personalisation,
+                        html="passthrough" if self.allow_html else "escape",
                     ),
                     "subject": self.subject,
                     "from_name": escape_html(self.from_name),
@@ -722,14 +727,14 @@ def is_unicode(content):
     return set(content) & set(SanitiseSMS.WELSH_NON_GSM_CHARACTERS)
 
 
-def get_html_email_body(template_content, template_values, redact_missing_personalisation=False):
+def get_html_email_body(template_content, template_values, redact_missing_personalisation=False, html="escape"):
 
     return (
         Take(
             Field(
                 template_content,
                 template_values,
-                html="escape",
+                html=html,
                 markdown_lists=True,
                 redact_missing_personalisation=redact_missing_personalisation,
             )
