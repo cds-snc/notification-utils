@@ -1,7 +1,10 @@
+from typing import Dict, List
 import pytest
 from flask import Markup
 
 from notifications_utils.formatters import (
+    add_ircc_coat_of_arms,
+    add_ircc_ga_seal,
     add_language_divs,
     remove_language_divs,
     unlink_govuk_escaped,
@@ -988,3 +991,45 @@ def test_add_language_divs_fr_does_not_replace(lang: str):
 )
 def test_remove_language_divs(input: str, output: str):
     assert remove_language_divs(input) == output
+
+
+@pytest.mark.parametrize(
+    "input,output_dict",
+    (
+        ("abc 123", [{"string": "abc 123", "occurances": 1}]),
+        (
+            "Hi,\n[[ircc-ga-seal]]\nBye",
+            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 1}, {"string": "Bye", "occurances": 1}],
+        ),
+        (
+            "Hi,\n[[ircc-ga-seal]]\nBye[[ircc-ga-seal]]",
+            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 2}, {"string": "Bye", "occurances": 1}],
+        ),
+    ),
+)
+def test_add_ga_seal(input: str, output_dict: List[Dict]):
+    parsed_input = add_ircc_ga_seal(input)
+    for output in output_dict:
+        assert parsed_input.count(output["string"]) == output["occurances"]
+        assert "[[ircc-" not in parsed_input
+
+
+@pytest.mark.parametrize(
+    "input,output_dict",
+    (
+        ("abc 123", [{"string": "abc 123", "occurances": 1}]),
+        (
+            "Hi,\n[[ircc-coat-arms]]\nBye",
+            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 1}, {"string": "Bye", "occurances": 1}],
+        ),
+        (
+            "Hi,\n[[ircc-coat-arms]]\nBye[[ircc-coat-arms]]",
+            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 2}, {"string": "Bye", "occurances": 1}],
+        ),
+    ),
+)
+def test_add_ircc_coat_of_arms(input: str, output_dict: List[Dict]):
+    parsed_input = add_ircc_coat_of_arms(input)
+    for output in output_dict:
+        assert parsed_input.count(output["string"]) == output["occurances"]
+        assert "[[ircc-" not in parsed_input
