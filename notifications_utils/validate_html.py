@@ -1,5 +1,4 @@
-from tidylib import tidy_document
-from typing import Dict
+from py_w3c.validators.html.validator import HTMLValidator
 
 
 def check_if_string_contains_valid_html(content: str) -> list:
@@ -9,23 +8,20 @@ def check_if_string_contains_valid_html(content: str) -> list:
     """
 
     allowed_errors = [
-        "Warning: missing <!DOCTYPE> declaration",
-        "Warning: inserting missing 'title' element",
+        "Start tag seen without seeing a doctype first. Expected “<!DOCTYPE html>”.",
+        "Element “head” is missing a required instance of child element “title”.",
     ]
 
     # the content can contain markdown as well as html - wrap the content in a div so it has a chance of being valid html
     content_in_div = f"<div>{content}</div>"
-    document, errors = tidy_document(content_in_div, options={"numeric-entities": 1})
 
-    # tidy_document returns errors that are concatenated together in a string, but we need them as a list
-    error_list = errors.split("\n")[:-1]
+    val = HTMLValidator()
+    val.validate_fragment(content_in_div)
 
-    allowed_error_dict: Dict[str, bool] = {}
-    for error in error_list:
-        allowed_error_dict[error] = False
-        for allowed_error in allowed_errors:
-            if allowed_error in error:
-                allowed_error_dict[error] = True
+    significant_errors = []
+    for error in val.errors:
+        if error["message"] in allowed_errors:
+            continue
+        significant_errors.append(error)
 
-    significant_errors = [error for error, allowed in allowed_error_dict.items() if not allowed]
     return significant_errors

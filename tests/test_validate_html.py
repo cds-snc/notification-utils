@@ -7,7 +7,7 @@ from notifications_utils.validate_html import check_if_string_contains_valid_htm
     "good_content",
     (
         "<div>abc</div>",
-        '<div style="xyz">abc</div>',
+        '<div style="display: none;">abc</div>',
         """<div style="margin: 20px auto 30px auto;">
   <img
     src="http://google.com"
