@@ -206,6 +206,28 @@ def test_alt_text_with_no_fip_banner(logo_with_background_colour, brand_text, ex
     assert expected_alt_text in email
 
 
+@pytest.mark.parametrize("renderer", [HTMLEmailTemplate, EmailPreviewTemplate])
+@pytest.mark.parametrize(
+    "content, allow_html, expected",
+    [
+        ("Hello World", True, "Hello World"),
+        ("Hello World", False, "Hello World"),
+        ("<div>Hello World</div>", True, "<div>Hello World</div>"),
+        ("<div>Hello World</div>", False, "&lt;div&gt;Hello World&lt;/div&gt;"),
+    ],
+)
+def test_allow_html_works(content: str, allow_html: bool, expected: str, renderer):
+    email = str(
+        renderer(
+            {"content": content, "subject": ""},
+            fip_banner_english=True,
+            allow_html=allow_html,
+        )
+    )
+
+    assert expected in email
+
+
 @pytest.mark.parametrize("complete_html", (True, False))
 @pytest.mark.parametrize(
     "branding_should_be_present, brand_logo, brand_text, brand_colour",
