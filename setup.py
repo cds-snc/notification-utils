@@ -37,6 +37,7 @@ setup(
         "pytz==2021.1",
         "smartypants==2.0.1",
         "pypdf2==1.26.0",
+        "pytidylib==0.3.2",
         # required by both api and admin
         "awscli==1.19.58",
         "boto3==1.17.58",
