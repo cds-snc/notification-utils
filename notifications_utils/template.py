@@ -44,6 +44,7 @@ from notifications_utils.strftime_codes import no_pad_day
 from notifications_utils.take import Take
 from notifications_utils.template_change import TemplateChange
 from notifications_utils.sanitise_text import SanitiseSMS
+from notifications_utils.validate_html import check_if_string_contains_valid_html
 
 
 template_env = Environment(
@@ -728,6 +729,9 @@ def is_unicode(content):
 
 
 def get_html_email_body(template_content, template_values, redact_missing_personalisation=False, html="escape"):
+    if html == "passthrough" and check_if_string_contains_valid_html(template_content) != []:
+        # template_content contains invalid html, so escape it
+        html = "escape"
 
     return (
         Take(
