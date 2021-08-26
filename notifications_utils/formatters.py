@@ -33,6 +33,8 @@ EN_CLOSE = r"\[\[/en\]\]"  # matches [[/en]]
 
 TAG_IMG_IRCC_COAT_OF_ARMS = r"\[\[ircc-coat-arms\]\]"  # matches [[ircc-coat-arms]]
 TAG_IMG_IRCC_GLOBAL_AFFAIRS = r"\[\[ircc-ga-seal\]\]"  # matches [[ircc-ga-seal]]
+TAG_IMG_IRCC_IRCC_SEAL = r"\[\[ircc-ircc-seal\]\]"  # matches [[ircc-ircc-seal]]
+TAG_IMG_IRCC_GC_SEAL = r"\[\[ircc-gc-seal\]\]"  # matches [[ircc-gc-seal]]
 
 mistune._block_quote_leading_pattern = re.compile(r"^ *\^ ?", flags=re.M)
 mistune.BlockGrammar.block_quote = re.compile(r"^( *\^[^\n]+(\n[^\n]+)*\n*)+")
@@ -668,6 +670,36 @@ def add_ircc_ga_seal(_content: str) -> str:
     img_loc = "https://assets.notification.canada.ca/gc-ircc-ga-seal.png"
     alt_text = "Global Affairs Canada / Affaires mondiales Canada"
     return add_img_tag(_content, TAG_IMG_IRCC_GLOBAL_AFFAIRS, img_loc, alt_text, 295, 281)
+
+
+def add_ircc_ircc_seal(_content: str) -> str:
+    """
+    Custom parser to add IRCC seal logo.
+
+    This is a custom temporary change not meant to exist for more than a few
+    weeks. This should either be removed or upgraded into a full-fledged
+    feature.
+
+    TODO: Review, remove/upgrade this functionality.
+    """
+    img_loc = "https://assets.notification.canada.ca/gc-ircc-ircc-seal.png"
+    alt_text = "Immigration, Refugees and Citizenship Canada / Immigration, Réfugiés et Citoyenneté Canada"
+    return add_img_tag(_content, TAG_IMG_IRCC_IRCC_SEAL, img_loc, alt_text, 295, 281)
+
+
+def add_ircc_gc_seal(_content: str) -> str:
+    """
+    Custom parser to add Government of Canada seal logo.
+
+    This is a custom temporary change not meant to exist for more than a few
+    weeks. This should either be removed or upgraded into a full-fledged
+    feature.
+
+    TODO: Review, remove/upgrade this functionality.
+    """
+    img_loc = "https://assets.notification.canada.ca/gc-ircc-gc-seal.png"
+    alt_text = "Government of Canada / Gouvernement du Canada"
+    return add_img_tag(_content, TAG_IMG_IRCC_GC_SEAL, img_loc, alt_text, 295, 281)
 
 
 def add_ircc_coat_of_arms(_content: str) -> str:
