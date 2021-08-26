@@ -61,6 +61,29 @@ def test_should_initialize_redis_client_with_passed_config(app):
     assert {'foo': 'bar', 'baz': 'boo', 'socket_timeout': 10}.items() <= actual.items()
 
 
+def test_use_ssl_cert_reqs_none_when_using_ssl(app):
+    redis_client = RedisClient()
+    redis_client.redis_store = Mock()
+    app.config['REDIS_ENABLED'] = True
+    app.config['REDIS_URL'] = 'rediss://localhost:5678'
+
+    redis_client.init_app(app)
+    actual = redis_client.redis_store.init_app.call_args[1]
+
+    assert actual['ssl_cert_reqs'] is None
+
+
+def test_does_not_set_use_ssl_cert_reqs_when_not_using_ssl(app):
+    redis_client = RedisClient()
+    redis_client.redis_store = Mock()
+    app.config['REDIS_ENABLED'] = True
+    app.config['REDIS_URL'] = 'redis://localhost:5678'
+
+    redis_client.init_app(app)
+    actual = redis_client.redis_store.init_app.call_args[1]
+
+    assert 'ssl_cert_reqs' not in actual
+
 def test_should_not_initialize_redis_client_when_not_enabled(app):
     redis_client = RedisClient()
     redis_client.redis_store = Mock()

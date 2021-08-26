@@ -1,4 +1,5 @@
 import numbers
+from urllib.parse import urlparse
 import uuid
 from time import time
 
@@ -47,8 +48,12 @@ class RedisClient:
     def init_app(self, app, **kwargs):
         self.active = app.config.get('REDIS_ENABLED')
         if self.active:
-            self.default_kwargs.update(kwargs)
-            self.redis_store.init_app(app, **self.default_kwargs)
+            _kwargs = self.default_kwargs.copy()
+            redis_url = urlparse(app.config.get("REDIS_URL"))
+            if redis_url.scheme == 'rediss':
+                _kwargs['ssl_cert_reqs'] = None
+            _kwargs.update(kwargs)
+            self.redis_store.init_app(app, **_kwargs)
             self.register_scripts()
 
     def register_scripts(self):
