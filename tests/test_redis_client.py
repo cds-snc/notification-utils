@@ -84,6 +84,7 @@ def test_does_not_set_use_ssl_cert_reqs_when_not_using_ssl(app):
 
     assert 'ssl_cert_reqs' not in actual
 
+
 def test_should_not_initialize_redis_client_when_not_enabled(app):
     redis_client = RedisClient()
     redis_client.redis_store = Mock()
