@@ -5,6 +5,8 @@ from flask import Markup
 from notifications_utils.formatters import (
     add_ircc_coat_of_arms,
     add_ircc_ga_seal,
+    add_ircc_seal,
+    add_ircc_gc_seal,
     add_language_divs,
     remove_language_divs,
     unlink_govuk_escaped,
@@ -1009,6 +1011,48 @@ def test_remove_language_divs(input: str, output: str):
 )
 def test_add_ga_seal(input: str, output_dict: List[Dict]):
     parsed_input = add_ircc_ga_seal(input)
+    for output in output_dict:
+        assert parsed_input.count(output["string"]) == output["occurances"]
+        assert "[[ircc-" not in parsed_input
+
+
+@pytest.mark.parametrize(
+    "input,output_dict",
+    (
+        ("abc 123", [{"string": "abc 123", "occurances": 1}]),
+        (
+            "Hi,\n[[ircc-seal]]\nBye",
+            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 1}, {"string": "Bye", "occurances": 1}],
+        ),
+        (
+            "Hi,\n[[ircc-seal]]\nBye[[ircc-seal]]",
+            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 2}, {"string": "Bye", "occurances": 1}],
+        ),
+    ),
+)
+def test_add_ircc_seal(input: str, output_dict: List[Dict]):
+    parsed_input = add_ircc_seal(input)
+    for output in output_dict:
+        assert parsed_input.count(output["string"]) == output["occurances"]
+        assert "[[ircc-" not in parsed_input
+
+
+@pytest.mark.parametrize(
+    "input,output_dict",
+    (
+        ("abc 123", [{"string": "abc 123", "occurances": 1}]),
+        (
+            "Hi,\n[[ircc-gc-seal]]\nBye",
+            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 1}, {"string": "Bye", "occurances": 1}],
+        ),
+        (
+            "Hi,\n[[ircc-gc-seal]]\nBye[[ircc-gc-seal]]",
+            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 2}, {"string": "Bye", "occurances": 1}],
+        ),
+    ),
+)
+def test_add_gc_seal(input: str, output_dict: List[Dict]):
+    parsed_input = add_ircc_gc_seal(input)
     for output in output_dict:
         assert parsed_input.count(output["string"]) == output["occurances"]
         assert "[[ircc-" not in parsed_input

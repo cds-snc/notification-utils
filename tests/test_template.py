@@ -50,9 +50,13 @@ def test_lang_tags_in_templates_good_content(good_content: str):
         "[ircc-ga-seal]",  # missing brackets
         "[[ircc-coat-arms]",  # missing bracket
         "[ircc-coat-arms]",  # missing brackets
+        "[[ircc-seal]",  # missing bracket
+        "[ircc-seal]",  # missing brackets
+        "[[ircc-gc-seal]",  # missing bracket
+        "[ircc-gc-seal]",  # missing brackets
     ],
 )
-def test_ircc_ga_tags_in_templates_bad_content(bad_content: str):
+def test_ircc_tags_in_templates_bad_content(bad_content: str):
     html = get_html_email_body(bad_content, {})
     assert "<img" not in html
     assert "[ircc-" in html
@@ -64,11 +68,13 @@ def test_ircc_ga_tags_in_templates_bad_content(bad_content: str):
         "[[ircc-ga-seal]]\nEmail Body",
         "Hi,\n[[ircc-ga-seal]]\nBye",
         "Hi,\n\n[[ircc-ga-seal]]\n\nBye",
+        "Hi,\n\n[[ircc-seal]]\n\nBye",
+        "Hi,\n\n[[ircc-gc-seal]]\n\nBye",
         "Hi,\n\n[[ircc-ga-seal]]\n\n# Title\nBye",
         "Hi,\n\n[[ircc-coat-arms]]\n\n# Title\nBye",
     ],
 )
-def test_ircc_ga_tags_in_templates_good_content(good_content: str):
+def test_ircc_tags_in_templates_good_content(good_content: str):
     html = get_html_email_body(good_content, {})
     assert "<img" in html
     assert "[[ircc" not in html
