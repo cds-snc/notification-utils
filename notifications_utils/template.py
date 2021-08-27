@@ -16,6 +16,8 @@ from notifications_utils.formatters import (
     nl2li,
     add_ircc_coat_of_arms,
     add_ircc_ga_seal,
+    add_ircc_seal,
+    add_ircc_gc_seal,
     add_language_divs,
     add_prefix,
     add_newlines_around_lang_tags,
@@ -753,6 +755,8 @@ def get_html_email_body(template_content, template_values, redact_missing_person
         .then(add_language_divs)
         .then(add_ircc_coat_of_arms)
         .then(add_ircc_ga_seal)
+        .then(add_ircc_seal)
+        .then(add_ircc_gc_seal)
         .then(do_nice_typography)
     )
 
