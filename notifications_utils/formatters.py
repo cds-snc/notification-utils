@@ -33,7 +33,7 @@ EN_CLOSE = r"\[\[/en\]\]"  # matches [[/en]]
 
 TAG_IMG_IRCC_COAT_OF_ARMS = r"\[\[ircc-coat-arms\]\]"  # matches [[ircc-coat-arms]]
 TAG_IMG_IRCC_GLOBAL_AFFAIRS = r"\[\[ircc-ga-seal\]\]"  # matches [[ircc-ga-seal]]
-TAG_IMG_IRCC_IRCC_SEAL = r"\[\[ircc-ircc-seal\]\]"  # matches [[ircc-ircc-seal]]
+TAG_IMG_IRCC_IRCC_SEAL = r"\[\[ircc-seal\]\]"  # matches [[ircc-seal]]
 TAG_IMG_IRCC_GC_SEAL = r"\[\[ircc-gc-seal\]\]"  # matches [[ircc-gc-seal]]
 
 mistune._block_quote_leading_pattern = re.compile(r"^ *\^ ?", flags=re.M)
@@ -672,7 +672,7 @@ def add_ircc_ga_seal(_content: str) -> str:
     return add_img_tag(_content, TAG_IMG_IRCC_GLOBAL_AFFAIRS, img_loc, alt_text, 295, 281)
 
 
-def add_ircc_ircc_seal(_content: str) -> str:
+def add_ircc_seal(_content: str) -> str:
     """
     Custom parser to add IRCC seal logo.
 
@@ -682,7 +682,7 @@ def add_ircc_ircc_seal(_content: str) -> str:
 
     TODO: Review, remove/upgrade this functionality.
     """
-    img_loc = "https://assets.notification.canada.ca/gc-ircc-ircc-seal.png"
+    img_loc = "https://assets.notification.canada.ca/gc-ircc-seal.png"
     alt_text = "Immigration, Refugees and Citizenship Canada / Immigration, Réfugiés et Citoyenneté Canada"
     return add_img_tag(_content, TAG_IMG_IRCC_IRCC_SEAL, img_loc, alt_text, 295, 281)
 
