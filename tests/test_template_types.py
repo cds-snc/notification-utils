@@ -339,6 +339,28 @@ def test_content_of_preheader_in_html_emails(
 
 
 @pytest.mark.parametrize(
+    "allow_html, content, expected_preheader",
+    [
+        (True, "Hello World", "Hello World"),
+        (False, "Hello World", "Hello World"),
+        (True, "<div>Hello World</div>", "Hello World"),
+        (False, "<div>Hello World</div>", "&lt;div&gt;Hello World&lt;/div&gt;"),
+        (True, '<div><img src="file.png" />Hello World</div>', "Hello World"),
+        (False, '<div><img src="file.png" />Hello World</div>', "&lt;div&gt;&lt;img src=”file.png” /&gt;Hello World&lt;/div&gt;"),
+    ],
+)
+@mock.patch("notifications_utils.template.HTMLEmailTemplate.jinja_template.render", return_value="mocked")
+def test_content_of_preheader_in_html_emails_with_allow_html(
+    mock_jinja_template,
+    allow_html: bool,
+    content: str,
+    expected_preheader: str,
+):
+    assert str(HTMLEmailTemplate({"content": content, "subject": "subject"}, allow_html=allow_html)) == "mocked"
+    assert mock_jinja_template.call_args[0][0]["preheader"] == expected_preheader
+
+
+@pytest.mark.parametrize(
     "template_class, extra_args, result, markdown_renderer",
     [
         [

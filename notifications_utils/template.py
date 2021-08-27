@@ -378,7 +378,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
                 Field(
                     self.content,
                     self.values,
-                    html="escape",
+                    html="strip" if self.allow_html else "escape",
                     markdown_lists=True,
                 )
             )
