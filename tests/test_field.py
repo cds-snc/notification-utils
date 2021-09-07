@@ -73,6 +73,7 @@ def test_returns_a_string_without_placeholders(content):
         ("((warning?warning))", {"warning?warning": "This is not a conditional"}, "This is not a conditional"),
         ("((warning??This is a conditional warning))", {"warning": True}, "This is a conditional warning"),
         ("((warning??This is a conditional warning))", {"warning": False}, ""),
+        ("((alert??Its up (yes)))", {"alert": True}, "Its up (yes)"),
     ],
 )
 def test_replacement_of_placeholders(template_content: str, data: Dict[str, Any], expected: str):
@@ -124,6 +125,8 @@ def test_optional_redacting_of_missing_values(template_content, data, expected):
         ("((warning?))", "<span class='placeholder'>((warning?))</span>"),
         ("((warning? This is not a conditional))", "<span class='placeholder'>((warning? This is not a conditional))</span>"),
         ("((warning?? This is a warning))", "<span class='placeholder-conditional'>((warning??</span> This is a warning))"),
+        ("((alert??Missing (i.e. Virtual Machine) ))",
+         "<span class='placeholder-conditional'>((alert??</span>Missing (i.e. Virtual Machine) ))"),
     ],
 )
 def test_formatting_of_placeholders(content, expected):

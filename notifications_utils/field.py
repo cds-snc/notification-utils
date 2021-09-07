@@ -55,7 +55,7 @@ HtmlSanitizers = Literal["strip", "escape", "passthrough", "strip_dvla_markup"]
 class Field:
     # this needs to be made conditional so it works in the (((colour))) -> (blue) case
     placeholder_pattern = re.compile(
-        r"\({2}([\s\S]+?)\){2}"  # opening ((, body of placeholder - potentially standard or conditional, closing ))
+        r"\({2}" r"([^()]+)" r"\){2}"  # opening ((, body of placeholder - potentially standard or conditional, closing ))
     )
     placeholder_tag = "<span class='placeholder'>(({}))</span>"
     conditional_placeholder_tag = "<span class='placeholder-conditional'>(({}??</span>{}))"
@@ -79,6 +79,8 @@ class Field:
 
         self.sanitizer = self.get_sanitizer(html)
         self.redact_missing_personalisation = redact_missing_personalisation
+        if '??' in self.content:
+            self.placeholder_pattern = re.compile(r"\({2}([\s\S]+?)\){2}")
 
     def __str__(self):
         if self.values:
