@@ -125,8 +125,10 @@ def test_optional_redacting_of_missing_values(template_content, data, expected):
         ("((warning?))", "<span class='placeholder'>((warning?))</span>"),
         ("((warning? This is not a conditional))", "<span class='placeholder'>((warning? This is not a conditional))</span>"),
         ("((warning?? This is a warning))", "<span class='placeholder-conditional'>((warning??</span> This is a warning))"),
-        ("((alert??Missing (i.e. Virtual Machine) ))",
-         "<span class='placeholder-conditional'>((alert??</span>Missing (i.e. Virtual Machine) ))"),
+        (
+            "((alert??Missing (i.e. Virtual Machine) ))",
+            "<span class='placeholder-conditional'>((alert??</span>Missing (i.e. Virtual Machine) ))",
+        ),
     ],
 )
 def test_formatting_of_placeholders(content, expected):

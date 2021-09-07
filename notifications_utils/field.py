@@ -79,7 +79,7 @@ class Field:
 
         self.sanitizer = self.get_sanitizer(html)
         self.redact_missing_personalisation = redact_missing_personalisation
-        if '??' in self.content:
+        if "??" in self.content:
             self.placeholder_pattern = re.compile(r"\({2}([\s\S]+?)\){2}")
 
     def __str__(self):
