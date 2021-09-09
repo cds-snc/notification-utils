@@ -137,6 +137,10 @@ def test_optional_redacting_of_missing_values(template_content, data, expected):
             "((alert??Missing left parenthesis) ))",
             "<span class='placeholder-conditional'>((alert??</span>Missing left parenthesis) ))",
         ),
+        (
+            "((warning?)) and ((alert?? alert!))",
+            "<span class='placeholder'>((warning?))</span> and <span class='placeholder-conditional'>((alert??</span> alert!))",
+        ),
     ],
 )
 def test_formatting_of_placeholders(content, expected):
