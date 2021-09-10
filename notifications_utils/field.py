@@ -54,6 +54,11 @@ HtmlSanitizers = Literal["strip", "escape", "passthrough", "strip_dvla_markup"]
 
 class Field:
     # this needs to be made conditional so it works in the (((colour))) -> (blue) case
+    # Deconstructed regular expression segments in order:
+    # * First segment: opening ((,
+    # * negative lookahead assertion to enforce consumption of late parenthesis and not early ones,
+    # * body of placeholder - potentially standard or conditional,
+    # * closing ))
     placeholder_pattern = re.compile(
         r"\({2}" r"([^()]+)" r"\){2}"  # opening ((, body of placeholder - potentially standard or conditional, closing ))
     )
