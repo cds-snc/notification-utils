@@ -74,14 +74,7 @@ def test_returns_a_string_without_placeholders(content):
         ("((warning??This is a conditional warning))", {"warning": True}, "This is a conditional warning"),
         ("((warning??This is a conditional warning))", {"warning": False}, ""),
         ("((alert??Its up (yes)))", {"alert": True}, "Its up (yes)"),
-        ("((ifvar?? ((ifyes))))", {"ifvar": True}, " ((ifyes))"),
-        ("((ifvar?? ((ifyes))))", {"ifvar": False}, ""),
-        ("((ifvar?? five (5) ))", {"ifvar": True}, " five (5) "),
-        ("((ifvar?? five (5) ))", {"ifvar": False}, ""),
-        ("((ifvar??five(5)))", {"ifvar": True}, "five(5)"),
-        ("((ifvar??five(5)))", {"ifvar": False}, ""),
-        ("((ifvar??(five)-(5)))", {"ifvar": True}, "(five)-(5)"),
-        ("((ifvar??(five)-(5)))", {"ifvar": False}, ""),
+        ("((ifvar?? (5) ))", {"ifvar": False}, ""),
     ],
 )
 def test_replacement_of_placeholders(template_content: str, data: Dict[str, Any], expected: str):
