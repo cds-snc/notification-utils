@@ -73,6 +73,8 @@ def test_returns_a_string_without_placeholders(content):
         ("((warning?warning))", {"warning?warning": "This is not a conditional"}, "This is not a conditional"),
         ("((warning??This is a conditional warning))", {"warning": True}, "This is a conditional warning"),
         ("((warning??This is a conditional warning))", {"warning": False}, ""),
+        ("((alert??Its up (yes)))", {"alert": True}, "Its up (yes)"),
+        ("((ifvar?? (5) ))", {"ifvar": False}, ""),
     ],
 )
 def test_replacement_of_placeholders(template_content: str, data: Dict[str, Any], expected: str):
@@ -124,6 +126,26 @@ def test_optional_redacting_of_missing_values(template_content, data, expected):
         ("((warning?))", "<span class='placeholder'>((warning?))</span>"),
         ("((warning? This is not a conditional))", "<span class='placeholder'>((warning? This is not a conditional))</span>"),
         ("((warning?? This is a warning))", "<span class='placeholder-conditional'>((warning??</span> This is a warning))"),
+        (
+            "((alert??With both (parenthesis) ))",
+            "<span class='placeholder-conditional'>((alert??</span>With both (parenthesis) ))",
+        ),
+        (
+            "((alert??Missing (right parenthesis ))",
+            "<span class='placeholder-conditional'>((alert??</span>Missing (right parenthesis ))",
+        ),
+        (
+            "((alert??Missing left parenthesis) ))",
+            "<span class='placeholder-conditional'>((alert??</span>Missing left parenthesis) ))",
+        ),
+        (
+            "((warning?)) and ((alert?? alert!))",
+            "<span class='placeholder'>((warning?))</span> and <span class='placeholder-conditional'>((alert??</span> alert!))",
+        ),
+        (
+            "(((warning))) and ((alert?? alert!))",
+            "(<span class='placeholder'>((warning))</span>) and <span class='placeholder-conditional'>((alert??</span> alert!))",
+        ),
     ],
 )
 def test_formatting_of_placeholders(content, expected):

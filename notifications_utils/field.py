@@ -1,5 +1,5 @@
 import re
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Literal
 
 from orderedset import OrderedSet
 from flask import Markup
@@ -49,10 +49,17 @@ class Placeholder:
         return "Placeholder({})".format(self.body)
 
 
+HtmlSanitizers = Literal["strip", "escape", "passthrough", "strip_dvla_markup"]
+
+
 class Field:
-    placeholder_pattern = re.compile(
-        r"\({2}" r"([^()]+)" r"\){2}"  # opening ((  # body of placeholder - potentially standard or conditional.  # closing ))
-    )
+    # this needs to be made conditional so it works in the (((colour))) -> (blue) case
+    # Deconstructed regular expression segments in order:
+    # * First segment: opening ((,
+    # * negative lookahead assertion to enforce consumption of late parenthesis and not early ones,
+    # * body of placeholder - potentially standard or conditional,
+    # * closing ))
+    placeholder_pattern = re.compile(r"\({2}" r"(?!\()" r"([\s\S]+?)" r"\){2}")
     placeholder_tag = "<span class='placeholder'>(({}))</span>"
     conditional_placeholder_tag = "<span class='placeholder-conditional'>(({}??</span>{}))"
     placeholder_tag_translated = "<span class='placeholder-no-brackets'>[{}]</span>"
@@ -62,7 +69,7 @@ class Field:
         self,
         content: str,
         values: Dict[str, Any] = None,
-        html: str = "strip",
+        html: HtmlSanitizers = "strip",
         markdown_lists: bool = False,
         redact_missing_personalisation: bool = False,
         translated: bool = False,
@@ -85,14 +92,14 @@ class Field:
         return '{}("{}", {})'.format(self.__class__.__name__, self.content, self.values)  # TODO: more real
 
     @staticmethod
-    def get_sanitizer(method: str) -> Callable:
+    def get_sanitizer(html: HtmlSanitizers) -> Callable:
         sanitizers: Dict[str, Callable] = {
             "strip": strip_html,
             "escape": escape_html,
             "passthrough": str,
             "strip_dvla_markup": strip_dvla_markup,
         }
-        return sanitizers[method]
+        return sanitizers[html]
 
     @property
     def values(self):
