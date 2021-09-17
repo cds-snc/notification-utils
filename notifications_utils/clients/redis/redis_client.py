@@ -112,7 +112,6 @@ class RedisClient:
         else:
             return False
 
-
     def exceeded_rate_limit(self, cache_key, limit, interval, raise_exception=False):
         """
         Rate limiting.
