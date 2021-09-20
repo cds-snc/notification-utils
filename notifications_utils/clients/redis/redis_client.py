@@ -105,6 +105,7 @@ class RedisClient:
 
                 if is_rate_limit_exceeded:
                     pipe.zpopmax(cache_key, count=1)
+                    pipe.execute()
                 return is_rate_limit_exceeded
             except Exception as e:
                 self.__handle_exception(e, raise_exception, 'rate-limit-pipeline', cache_key)
