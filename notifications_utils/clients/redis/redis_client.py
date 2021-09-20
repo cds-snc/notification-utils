@@ -85,35 +85,7 @@ class RedisClient:
             return self.scripts['delete-keys-by-pattern'](args=[pattern])
         return 0
 
-    def exceeded_sending_rate_limit(self, cache_key, limit, interval, raise_exception=False):
-        """
-        This method is very similar to exceeded_rate_limit() but removes the latest event if the rate limit is
-        exceeded since we are automatically retrying when sending. This will be refactored into exceeded_rate_limit()
-        once confirmed that it works properly.
-        """
-        cache_key = prepare_value(cache_key)
-        if self.active:
-            try:
-                pipe = self.redis_store.pipeline()
-                when = time()
-                pipe.zadd(cache_key, {when: when})
-                pipe.zremrangebyscore(cache_key, '-inf', when - interval)
-                pipe.zcard(cache_key)
-                pipe.expire(cache_key, interval)
-                result = pipe.execute()
-                is_rate_limit_exceeded = result[2] > limit
-
-                if is_rate_limit_exceeded:
-                    pipe.zpopmax(cache_key, count=1)
-                    pipe.execute()
-                return is_rate_limit_exceeded
-            except Exception as e:
-                self.__handle_exception(e, raise_exception, 'rate-limit-pipeline', cache_key)
-                return False
-        else:
-            return False
-
-    def exceeded_rate_limit(self, cache_key, limit, interval, raise_exception=False):
+    def exceeded_rate_limit(self, cache_key, limit, interval, raise_exception=False, keep_latest_time_in_cache=True):
         """
         Rate limiting.
         - Uses Redis sorted sets
@@ -142,6 +114,7 @@ class RedisClient:
         :param limit: Number of requests permitted within interval
         :param interval: Interval we measure requests in
         :param raise_exception: Should throw exception
+        :param keep_latest_time_in_cache: Should keep the latest timestamp in cache for given key
         :return:
         """
         cache_key = prepare_value(cache_key)
@@ -154,7 +127,13 @@ class RedisClient:
                 pipe.zcard(cache_key)
                 pipe.expire(cache_key, interval)
                 result = pipe.execute()
-                return result[2] > limit
+
+                is_rate_limit_exceeded = result[2] > limit
+
+                if is_rate_limit_exceeded and not keep_latest_time_in_cache:
+                    pipe.zpopmax(cache_key, count=1)
+                    pipe.execute()
+                return is_rate_limit_exceeded
             except Exception as e:
                 self.__handle_exception(e, raise_exception, 'rate-limit-pipeline', cache_key)
                 return False

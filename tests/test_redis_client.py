@@ -217,19 +217,41 @@ def test_should_add_correct_calls_to_the_pipe(mocked_redis_client, mocked_redis_
 
 
 @freeze_time('2001-01-01 12:00:00.000000')
-def test_should_remove_most_recent_event_if_sending_rate_limit_exceeded(mocked_redis_client, mocked_redis_pipeline):
+def test_should_remove_most_recent_event_if_rate_limit_exceeded_and_remove_timestamp_from_cache(
+        mocked_redis_client, mocked_redis_pipeline
+):
     mocked_redis_pipeline.execute.return_value = [True, True, 100, True]
-    mocked_redis_client.exceeded_sending_rate_limit('key', 99, 100)
+    mocked_redis_client.exceeded_rate_limit('key', 99, 100, keep_latest_time_in_cache=False)
     assert mocked_redis_client.redis_store.pipeline.called
     mocked_redis_pipeline.zpopmax.assert_called_with('key', count=1)
 
 
 @freeze_time('2001-01-01 12:00:00.000000')
-def test_should_not_remove_most_recent_event_if_sending_rate_limit_not_exceeded(
+def test_should_not_remove_most_recent_event_if_rate_limit_exceeded_and_keep_timestamp_in_cache(
         mocked_redis_client, mocked_redis_pipeline
 ):
     mocked_redis_pipeline.execute.return_value = [True, True, 100, True]
-    mocked_redis_client.exceeded_sending_rate_limit('key', 100, 100)
+    mocked_redis_client.exceeded_rate_limit('key', 99, 100, keep_latest_time_in_cache=True)
+    assert mocked_redis_client.redis_store.pipeline.called
+    mocked_redis_pipeline.zpopmax.assert_not_called()
+
+
+@freeze_time('2001-01-01 12:00:00.000000')
+def test_should_not_remove_most_recent_event_if_rate_limit_not_exceeded_and_remove_timestamp_from_cache(
+        mocked_redis_client, mocked_redis_pipeline
+):
+    mocked_redis_pipeline.execute.return_value = [True, True, 100, True]
+    mocked_redis_client.exceeded_rate_limit('key', 100, 100, keep_latest_time_in_cache=False)
+    assert mocked_redis_client.redis_store.pipeline.called
+    mocked_redis_pipeline.zpopmax.assert_not_called()
+
+
+@freeze_time('2001-01-01 12:00:00.000000')
+def test_should_not_remove_most_recent_event_if_rate_limit_not_exceeded_and_keep_timestamp_in_cache(
+        mocked_redis_client, mocked_redis_pipeline
+):
+    mocked_redis_pipeline.execute.return_value = [True, True, 100, True]
+    mocked_redis_client.exceeded_rate_limit('key', 100, 100, keep_latest_time_in_cache=True)
     assert mocked_redis_client.redis_store.pipeline.called
     mocked_redis_pipeline.zpopmax.assert_not_called()
 
