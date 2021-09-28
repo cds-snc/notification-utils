@@ -64,7 +64,7 @@
         <img
           src="https://{{ asset_domain }}/{{ brand_logo }}"
           style="padding-left:0; display: block; border: 0; height:{% if brand_text -%} 27 {%- else -%} 108 {%- endif %}px"
-          alt="{% if brand_text %} {% else -%}{{ brand_name }}{%- endif %}"
+          alt="{% if brand_text %}{{ brand_text }}{% else -%}{{ brand_name }}{%- endif %}"
         />
         </div>
 

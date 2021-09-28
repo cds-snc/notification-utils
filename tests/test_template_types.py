@@ -144,7 +144,7 @@ def test_alt_text_with_brand_text_and_fip_banner_english_shown(renderer):
             brand_name="Notify Logo",
         )
     )
-    assert 'alt=" "' in email
+    assert 'alt="Example"' in email
     assert 'alt="Notify Logo"' not in email
 
 
@@ -186,8 +186,8 @@ def test_alt_text_with_no_brand_text_and_fip_banner_french_shown(renderer):
     "logo_with_background_colour, brand_text, expected_alt_text",
     [
         (True, None, 'alt="Notify Logo"'),
-        (True, "Example", 'alt=" "'),
-        (False, "Example", 'alt=" "'),
+        (True, "Example", 'alt="Example"'),
+        (False, "Example", 'alt="Example"'),
         (False, None, 'alt="Notify Logo"'),
     ],
 )
