@@ -68,6 +68,17 @@ class RedisClient:
             """
         )
 
+        self.scripts['check_exceeded_rate_limit'] = self.redis_store.register_script(
+            """
+            local keys = redis.call('keys', ARGV[1])
+            local when = os.time()
+            redis.call("ZADD", cache_key, {when: when})
+            redis.call("ZERMRANGEBYSCORE", cache_key, '-inf', when - interval)
+            redis.call("ZCARD", cache_key)
+            return ARGV[2] > limit
+            """
+        )
+
     def delete_cache_keys_by_pattern(self, pattern):
         r"""
         Deletes all keys matching a given pattern, and returns how many keys were deleted.
