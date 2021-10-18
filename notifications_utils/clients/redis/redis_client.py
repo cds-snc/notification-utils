@@ -86,7 +86,6 @@ class RedisClient:
             """
         )
 
-
     def delete_cache_keys_by_pattern(self, pattern):
         r"""
         Deletes all keys matching a given pattern, and returns how many keys were deleted.
@@ -127,7 +126,7 @@ class RedisClient:
                 return True
         return False
 
-    def exceeded_rate_limit(self, cache_key, limit, interval, raise_exception=False, keep_latest_time_in_cache=True):
+    def exceeded_rate_limit(self, cache_key, limit, interval, raise_exception=False):
         """
         Rate limiting.
         - Uses Redis sorted sets
@@ -156,7 +155,6 @@ class RedisClient:
         :param limit: Number of requests permitted within interval
         :param interval: Interval we measure requests in
         :param raise_exception: Should throw exception
-        :param keep_latest_time_in_cache: Should keep the latest timestamp in cache for given key
         :return:
         """
         cache_key = prepare_value(cache_key)
@@ -169,13 +167,7 @@ class RedisClient:
                 pipe.zcard(cache_key)
                 pipe.expire(cache_key, interval)
                 result = pipe.execute()
-
-                is_rate_limit_exceeded = result[2] > limit
-
-                if is_rate_limit_exceeded and not keep_latest_time_in_cache:
-                    pipe.zpopmax(cache_key, count=1)
-                    pipe.execute()
-                return is_rate_limit_exceeded
+                return result[2] > limit
             except Exception as e:
                 self.__handle_exception(e, raise_exception, 'rate-limit-pipeline', cache_key)
                 return False
