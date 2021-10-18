@@ -1,7 +1,6 @@
 import numbers
 import uuid
 from time import time
-
 from flask_redis import FlaskRedis
 from flask import current_app
 
@@ -68,16 +67,25 @@ class RedisClient:
             """
         )
 
-        self.scripts['check_exceeded_rate_limit'] = self.redis_store.register_script(
+        self.scripts['should-throttle'] = self.redis_store.register_script(
             """
-            local keys = redis.call('keys', ARGV[1])
-            local when = os.time()
-            redis.call("ZADD", cache_key, {when: when})
-            redis.call("ZERMRANGEBYSCORE", cache_key, '-inf', when - interval)
-            redis.call("ZCARD", cache_key)
-            return ARGV[2] > limit
+            local cache_key = KEYS[1]
+            local timestamp = tonumber(ARGV[1])
+            local rate_limit = tonumber(ARGV[2])
+            local interval = tonumber(ARGV[3])
+            redis.call('zremrangebyscore', cache_key, '-inf', timestamp - interval)
+            redis.call('zadd', cache_key, timestamp, timestamp)
+            local count = redis.call('zcard', cache_key)
+            redis.call('expire', cache_key, interval)
+            if count > rate_limit then
+                redis.call('zrem', cache_key, timestamp)
+                return true
+            else
+                return false
+            end
             """
         )
+
 
     def delete_cache_keys_by_pattern(self, pattern):
         r"""
@@ -95,6 +103,29 @@ class RedisClient:
         if self.active:
             return self.scripts['delete-keys-by-pattern'](args=[pattern])
         return 0
+
+    def should_throttle(self, cache_key: str, limit: int, interval: int) -> bool:
+        """
+        Does not keep the new item in the set if it would go over the limit threshold (contrast with exceeded_rate_limit).
+        Implements a rolling time window algorithm.
+        Implemented as a Lua script to guarantee atomic operations.
+
+        Method:
+        (1) Use zremrangebyscore to delete all set members that are outside of current rolling window:
+            - Earliest entry (lowest score == earliest timestamp) - represented as '-inf'
+                and
+            - Current timestamp minus the interval
+        (2) Add event, scored by timestamp (zadd). The score determines order in set.
+        (3) Count the set
+        (4) Ensure we expire the set key to preserve space
+        (5) If count > limit fail request, remove the event (zrem), and return true.
+        (6) Otherwise, keep the event, and return false.
+        """
+        cache_key = prepare_value(cache_key)
+        if self.active:
+            if self.scripts['should-throttle'](keys=[cache_key], args=[time(), limit, interval]):
+                return True
+        return False
 
     def exceeded_rate_limit(self, cache_key, limit, interval, raise_exception=False, keep_latest_time_in_cache=True):
         """
