@@ -105,7 +105,8 @@ class RedisClient:
 
     def should_throttle(self, cache_key: str, limit: int, interval: int) -> bool:
         """
-        Does not keep the new item in the set if it would go over the limit threshold (contrast with exceeded_rate_limit).
+        Does not keep the new item in the set if it would go over the limit threshold.
+        Contrast with exceeded_rate_limit.
         Implements a rolling time window algorithm.
         Implemented as a Lua script to guarantee atomic operations.
 
