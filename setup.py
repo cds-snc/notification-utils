@@ -22,6 +22,8 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
+        "awscli==1.19.58", # required by api and admin
+        "boto3==1.17.58",  # required by api and admin
         "bleach==3.3.0",
         "cachetools==4.2.1",
         "mistune==0.8.4",
@@ -35,12 +37,15 @@ setup(
         "PyYAML==5.4.1",
         "phonenumbers==8.12.21",
         "pytz==2021.1",
-        "types-pytz==2021.1.1",
         "smartypants==2.0.1",
         "pypdf2==1.26.0",
         "py_w3c==0.3.1",
-        # required by both api and admin
-        "awscli==1.19.58",
-        "boto3==1.17.58",
+        "types-bleach==3.3.0",
+        "types-cachetools==4.2.1",
+        "types-PyYAML==5.4.1",
+        "types-python-dateutil==2.8.2",
+        "types-pytz==2021.1.1",
+        "types-redis==3.5.3",
+        "types-requests==2.25.1"
     ],
 )
