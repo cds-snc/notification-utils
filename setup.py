@@ -22,7 +22,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        "awscli==1.19.58", # required by api and admin
+        "awscli==1.19.58",  # required by api and admin
         "boto3==1.17.58",  # required by api and admin
         "bleach==3.3.0",
         "cachetools==4.2.1",
@@ -46,6 +46,6 @@ setup(
         "types-python-dateutil==2.8.2",
         "types-pytz==2021.1.1",
         "types-redis==3.5.3",
-        "types-requests==2.25.1"
+        "types-requests==2.25.1",
     ],
 )
