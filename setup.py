@@ -35,6 +35,7 @@ setup(
         "PyYAML==5.4.1",
         "phonenumbers==8.12.21",
         "pytz==2021.1",
+        "types-pytz==2021.1.1",
         "smartypants==2.0.1",
         "pypdf2==1.26.0",
         "py_w3c==0.3.1",
