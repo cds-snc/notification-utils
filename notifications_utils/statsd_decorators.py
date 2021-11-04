@@ -7,7 +7,7 @@ from typing import Type, no_type_check
 
 def statsd(namespace):
     def time_function(func):
-        @no_type_check #noqa
+        @no_type_check  # noqa
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             start_time = monotonic()
