@@ -2,12 +2,12 @@ import functools
 
 from flask import current_app
 from time import monotonic
-from typing import Type
+from typing import Type, no_type_check
 
 
 def statsd(namespace):
     def time_function(func):
-        @no_type_check
+        @no_type_check #noqa
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             start_time = monotonic()
