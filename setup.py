@@ -24,6 +24,7 @@ setup(
     install_requires=[
         "bleach==3.3.0",
         "cachetools==4.2.1",
+        "docopt==0.6.2",
         "mistune==0.8.4",
         "requests==2.25.1",
         "python-json-logger==2.0.1",
