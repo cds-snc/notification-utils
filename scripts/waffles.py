@@ -237,8 +237,8 @@ def _load_sys(path: Path) -> None:
     """Loads a system path into the current Python environment.
 
     To add the Flask modules and its library dependencies, this function
-    will add necessary paths into the current environment for Python to
-    properly load dependent modules.
+    can be used to add necessary paths into the current environment for
+    Python to properly load dependent modules.
 
     Args:
         path (Path): The system path to load.
