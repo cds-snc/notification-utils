@@ -19,7 +19,8 @@ Usage:
     --base-url=<url>:       Hits the Flask endpoints and verify reachability.
 
 Example:
-        scripts/waffles.py iron --base-url=api.document.notification.canada.ca --flask-app=./app.py
+        waffles.py list --app-loc /Projects/cds/notification-document-download-api --app-lib doc-api-env/Lib/site-packages --flask-mod application --flask-prop application
+        waffles.py iron --base-url=https://api.document.notification.canada.ca --app-loc /Projects/cds/notification-document-download-api --app-lib doc-api-env/Lib/site-packages --flask-mod application --flask-prop application
 """
 
 import importlib
