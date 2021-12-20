@@ -177,9 +177,7 @@ def _load_sys(path: Path) -> None:
 
 
 def _request(endpoint: URL) -> ValidationResult:
-    endpoint = re.sub(r"<uuid:[^>]*>", create_uuid(), endpoint)
-    endpoint = endpoint.replace("<path:filename>", "filename.txt")
-
+    endpoint = _transform_endpoint(endpoint)
     print(f"Hitting endpoint '{endpoint}'... ", end="")
     req = request.Request(endpoint, method="HEAD")
     try:
@@ -193,7 +191,14 @@ def _request(endpoint: URL) -> ValidationResult:
             return OkValidationResult(endpoint)
     except URLError as error:
         print("OK.")
-        return OkValidationResult(endpoint)  # totally ok to get a bad request or something here. We don't have a JWT or api key
+        # Totally ok to get a bad request or something here. We don't have a JWT or api key.
+        return OkValidationResult(endpoint)
+
+
+def _transform_endpoint(endpoint: URL) -> URL:
+    endpoint = URL(re.sub(r"<uuid:[^>]*>", create_uuid(), endpoint))
+    endpoint = URL(endpoint.replace("<path:filename>", "filename.txt"))
+    return endpoint
 
 
 def iron(opts: OptionsIron) -> None:
