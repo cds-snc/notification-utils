@@ -44,8 +44,8 @@ None other than the log output and system exit code.
 
 uses: actions/waffles@v1
 with:
-  app-libs: '/Projects/cds/notification-document-download-api'
   app-loc: '/doc-api-env/Lib/site-packages'
+  app-libs: '/Projects/cds/notification-document-download-api'
   flask-mod: 'application'
   flask-prop: 'application'
   base-url: 'https://api.document.staging.notification.cdssandbox.xyz'

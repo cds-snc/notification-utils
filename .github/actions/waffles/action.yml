@@ -2,11 +2,11 @@ name: 'Waffles'
 description: 'Verifies reachability of Flask self-discovered endpoints against AWS WAF environment.'
 author: 'CDS cooks'
 inputs:
-  app-libs:
-    description: "Project's libs directory location."
-    required: true
   app-loc:
     description: "Project's directory location."
+    required: true
+  app-libs:
+    description: "Project's libs directory location."
     required: true
   flask-mod:
     description: "Flask app module to execute."
@@ -21,8 +21,8 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ inputs.app-libs }}
     - ${{ inputs.app-loc }}
+    - ${{ inputs.app-libs }}
     - ${{ inputs.flask-mod }}
     - ${{ inputs.flask-prop }}
     - ${{ inputs.base-url }}
