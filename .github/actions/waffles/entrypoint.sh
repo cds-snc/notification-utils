@@ -1,2 +1,2 @@
 #!/bin/sh
-python waffles.py iron --app-loc /Projects/cds/notification-document-download-api --app-lib doc-api-env/Lib/site-packages --flask-mod application --flask-prop application --base-url=https://api.document.staging.notification.cdssandbox.xyz
+python waffles.py iron --app-lib $1 --app-loc $2 --flask-mod $3 --flask-prop $4 --base-url $5
