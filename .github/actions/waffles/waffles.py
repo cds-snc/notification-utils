@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-# fmt: off
 """
 Script to run reachability tests on AWS WAF using the project's endpoints.
 
@@ -23,7 +22,6 @@ Example:
         waffles.py list --app-loc /Projects/cds/notification-document-download-api --app-lib doc-api-env/Lib/site-packages --flask-mod application --flask-prop application
         waffles.py iron --base-url=https://api.document.notification.canada.ca --app-loc /Projects/cds/notification-document-download-api --app-lib doc-api-env/Lib/site-packages --flask-mod application --flask-prop application
 """
-# fmt: on
 
 import importlib
 import importlib.util
