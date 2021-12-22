@@ -5,3 +5,6 @@ exclude = venv*,__pycache__,cache
 ignore = W503
 max-complexity = 8
 max-line-length = 130
+per-file-ignores =
+    # line too long + print statement usage
+    .github/actions/waffles/waffles.py: E501, T001
