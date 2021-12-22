@@ -10,13 +10,13 @@ Usage:
     scripts/waffles.py iron [options] [iron-option]
 
     Options:
-    --app-libs=<libs_location>:  Project's libs directory location.
-    --app-loc=<location>:        Project's directory location.
-    --flask-mod=<mod>:           Flask app module to execute.
-    --flask-prop=<prop>:         Flask app property in the module.
+    --app-libs=<libs_location>: Project's libs directory location.
+    --app-loc=<location>:       Project's directory location.
+    --flask-mod=<mod>:          Flask app module to execute.
+    --flask-prop=<prop>:        Flask app property in the module.
 
     iron-option:
-    --base-url=<url>:       Hits the Flask endpoints and verify reachability.
+    --base-url=<url>:           Base URL used to hit the application with discovered Flask endpoints.
 
 Example:
         waffles.py list --app-loc /Projects/cds/notification-document-download-api --app-lib doc-api-env/Lib/site-packages --flask-mod application --flask-prop application
@@ -25,23 +25,20 @@ Example:
 
 import importlib
 import importlib.util
-import os
 import sys
 import urllib.parse
+import uuid
 
 from dataclasses import dataclass
 from docopt import docopt
 from flask import Flask
-from inspect import isclass
-from pathlib import Path
-from pkgutil import iter_modules
 from os.path import join
+from pathlib import Path
+import re
 from types import ModuleType
-from typing import Any, List, NewType, Optional
+from typing import Any, List, NewType
 from urllib import request
 from urllib.error import URLError
-import uuid
-import re
 
 
 ModuleName = NewType("ModuleName", str)
