@@ -6,15 +6,15 @@ production environment.
 
 ## Inputs
 
-## `app-libs`
-
-**Required** Project's libs directory location.
-
-**Example**: `/Projects/cds/notification-document-download-api`
-
 ## `app-loc`
 
 **Required** Project's directory location.
+
+**Example**: `/Projects/cds/notification-document-download-api`
+
+## `app-libs`
+
+**Required** Project's libs directory location.
 
 **Example**: `/doc-api-env/Lib/site-packages`
 
@@ -42,6 +42,7 @@ None other than the log output and system exit code.
 
 ## Example usage
 
+```yaml
 uses: actions/waffles@v1
 with:
   app-loc: '/doc-api-env/Lib/site-packages'
@@ -49,3 +50,4 @@ with:
   flask-mod: 'application'
   flask-prop: 'application'
   base-url: 'https://api.document.staging.notification.cdssandbox.xyz'
+```
