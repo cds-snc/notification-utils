@@ -37,7 +37,7 @@ if __name__ == "__main__":
             output = process.stdout
             validate_response = json.loads(output)["NumberValidateResponse"]
             phoneType = validate_response["PhoneType"]
-        except:
+        except ValueError:
             phoneType = "--- validation error ---"
-        print(f"{number}, {phoneType}")
+        print(f"{number}, {phoneType}")  # noqa: T001
     file.close()
