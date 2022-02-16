@@ -80,8 +80,8 @@ class SanitiseText:
 
 class SanitiseSMS(SanitiseText):
     """
-    Given an input string, makes it GSM, French and Welsh character compatible. This involves removing all non-gsm characters by
-    applying the following rules
+    Given an input string, makes it GSM, French and Welsh character compatible.
+    This involves removing all non-gsm characters by applying the following rules
     * characters within the GSM character set (https://en.wikipedia.org/wiki/GSM_03.38)
       and extension character set are kept
 

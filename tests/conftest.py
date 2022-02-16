@@ -29,6 +29,7 @@ def rmock():
     with requests_mock.mock() as rmock:
         yield rmock
 
+
 # https://superorbital.io/journal/focusing-on-pytest/
 def pytest_configure(config):
     """
@@ -55,6 +56,5 @@ def pytest_collection_modifyitems(items, config):
             deselected_items.append(item)
 
     if focused:
-        print("\nOnly running @pytest.mark.focus tests")
         config.hook.pytest_deselected(items=deselected_items)
         items[:] = selected_items

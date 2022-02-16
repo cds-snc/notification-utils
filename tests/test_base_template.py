@@ -185,6 +185,7 @@ def test_sms_fragment_count_unicode_encoding(char_count, expected_sms_fragment_c
         template = SMSMessageTemplate({'content': 'This is â mêssâgê with Ŵêlsh chârâctêrs', 'template_type': 'sms'})
         assert template.fragment_count == expected_sms_fragment_count
 
+
 @pytest.mark.parametrize(
     "char_count, expected_sms_fragment_count",
     [
@@ -205,9 +206,9 @@ def test_french_sms_fragment_count_unicode_encoding(char_count, expected_sms_fra
         new_callable=PropertyMock
     ) as mocked:
         mocked.return_value = char_count
-        template = SMSMessageTemplate({'content': 'Ceci est un message avec caractère français', 'template_type': 'sms'})
+        template = SMSMessageTemplate({'content': 'Ceci est un message avec caractère français',
+                                       'template_type': 'sms'})
         assert template.fragment_count == expected_sms_fragment_count
-
 
 
 def test_random_variable_retrieve():
