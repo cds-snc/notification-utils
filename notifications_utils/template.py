@@ -672,7 +672,7 @@ def get_sms_fragment_count(character_count, is_unicode):
 
 
 def is_unicode(content):
-    return set(content) & set(SanitiseSMS.WELSH_NON_GSM_CHARACTERS)
+    return set(content) & set(SanitiseSMS.NON_GSM_CHARACTERS)
 
 
 def get_html_email_body(template_content, template_values, redact_missing_personalisation=False):

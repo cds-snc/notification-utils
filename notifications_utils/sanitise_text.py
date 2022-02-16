@@ -80,7 +80,7 @@ class SanitiseText:
 
 class SanitiseSMS(SanitiseText):
     """
-    Given an input string, makes it GSM and Welsh character compatible. This involves removing all non-gsm characters by
+    Given an input string, makes it GSM, French and Welsh character compatible. This involves removing all non-gsm characters by
     applying the following rules
     * characters within the GSM character set (https://en.wikipedia.org/wiki/GSM_03.38)
       and extension character set are kept
@@ -97,7 +97,9 @@ class SanitiseSMS(SanitiseText):
     * any remaining unicode characters (eg chinese/cyrillic/glyphs/emoji) are replaced with ?
     """
     # Welsh characters not already included in GSM
+    FRENCH_NON_GSM_CHARACTERS = set('çëïâêîôû')
     WELSH_NON_GSM_CHARACTERS = set('ÂâÊêÎîÔôÛûŴŵŶŷ')
+    NON_GSM_CHARACTERS = FRENCH_NON_GSM_CHARACTERS.union(WELSH_NON_GSM_CHARACTERS)
 
     ALLOWED_CHARACTERS = set(
         '@£$¥èéùìòçÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ\x1bÆæßÉ !"#¤%&\'()*+,-./0123456789:;<=>?' +
