@@ -1,0 +1,11 @@
+version: '3'
+
+networks:
+  test:
+
+services:
+  test:
+    container_name: notification-utils-${USER}-test
+    build: .
+    volumes:
+      - .:/app
