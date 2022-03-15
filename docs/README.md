@@ -20,7 +20,7 @@ Note: the term 'government identity' refers to logos from the [government identi
 The dimensions of logos vary. Their height will be either 27px or 54px, depending on what suits the
 image. The width will adjust to keep the aspect-ratio.
 
-### Accessibility hacks
+### Accessibility Usage
 
 The following hacks have been added to make the template work with assistive technologies.
 
