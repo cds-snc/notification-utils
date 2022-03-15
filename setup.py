@@ -41,6 +41,6 @@ setup(
         # required by both api and admin
         "awscli==1.19.58",
         "boto3==1.17.58",
-        "Werkzeug=2.0.3",
+        "Werkzeug==2.0.3",
     ],
 )
