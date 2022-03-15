@@ -27,7 +27,7 @@ setup(
         "mistune==0.8.4",
         "requests==2.25.1",
         "python-json-logger==2.0.1",
-        "Flask==1.1.4",
+        "Flask==2.0.1",
         "orderedset==2.0.3",
         "Jinja2<3.0",
         "statsd==3.3.0",
