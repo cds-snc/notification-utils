@@ -27,9 +27,9 @@ setup(
         "mistune==0.8.4",
         "requests==2.25.1",
         "python-json-logger==2.0.1",
-        "Flask==1.1.4",
+        "Flask>=2.0.3",
         "orderedset==2.0.3",
-        "Jinja2<3.0",
+        "Jinja2==3.0.3",
         "statsd==3.3.0",
         "Flask-Redis==0.4.0",
         "PyYAML==5.4.1",
@@ -41,5 +41,6 @@ setup(
         # required by both api and admin
         "awscli==1.19.58",
         "boto3==1.17.58",
+        "Werkzeug=2.0.3",
     ],
 )
