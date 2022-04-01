@@ -158,3 +158,33 @@ def test_logging_records_statsd_stats_without_time(app_with_statsd, service_id):
         else:
             assert statsd.incr.call_args_list == [call("GET.homepage.200")]
             statsd.timing.assert_not_called()
+
+
+def test_get_class_attrs():
+    class Config:
+        some_dict = {
+            "FOO": "bar",
+            "BAM": "baz",
+        }
+        env = "prod"
+
+        def some_function(self):
+            return True
+
+    assert logging.get_class_attrs(Config, []) == {
+        "some_dict": {
+            "FOO": "bar",
+            "BAM": "baz",
+        },
+        "env": "prod",
+    }
+
+    an_instance = Config()
+    an_instance.some_dict = {"BAR": "bloop"}
+
+    assert logging.get_class_attrs(an_instance, ["env"]) == {
+        "some_dict": {
+            "BAR": "bloop",
+        },
+        "env": "***",
+    }
