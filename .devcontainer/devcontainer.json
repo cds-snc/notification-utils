@@ -1,0 +1,31 @@
+{
+	"name": "notification-utils",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": ".."
+	},
+
+	"remoteEnv": {
+		"PATH": "/home/vscode/.local/bin:${containerEnv:PATH}" // give our installed Python modules precedence
+	},
+
+	"containerEnv": {
+		"SHELL": "/bin/zsh"
+	},
+
+	"settings": { 
+		"python.linting.enabled": true,
+		"python.linting.pylintEnabled": true,
+		"python.linting.pylintPath": "/usr/local/bin/pylint",
+		"python.pythonPath": "/usr/local/bin/python",
+	},
+
+	"extensions": [
+		"donjayamanne.python-extension-pack",
+		"ms-python.vscode-pylance",
+		"eamodio.gitlens",
+		"GitHub.copilot",
+	],
+
+	"postCreateCommand": "bootstrap.sh",
+}

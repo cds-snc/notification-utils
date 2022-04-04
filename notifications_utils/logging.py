@@ -7,6 +7,7 @@ from flask import request, g
 from flask.ctx import has_request_context
 from pythonjsonlogger.jsonlogger import JsonFormatter as BaseJSONFormatter
 from time import monotonic
+from typing import Any
 
 import logging
 import logging.handlers
@@ -140,6 +141,19 @@ def configure_handler(handler, app, formatter):
     handler.addFilter(RequestIdFilter())
 
     return handler
+
+
+def get_class_attrs(cls, sensitive_attrs: list[str]) -> dict[str, Any]:
+    """
+    Returns a dict of Class attribute key/values.  Any attribute names in the
+    sensitive_attrs list will be masked.
+    """
+    attrs = {}
+    for attr in dir(cls):
+        attr_value = "***" if attr in sensitive_attrs else getattr(cls, attr)
+        if not attr.startswith("__") and not callable(attr_value):
+            attrs[attr] = attr_value
+    return attrs
 
 
 class AppNameFilter(logging.Filter):
