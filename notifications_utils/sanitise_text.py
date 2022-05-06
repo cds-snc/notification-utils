@@ -81,8 +81,8 @@ class SanitiseText:
 
 class SanitiseSMS(SanitiseText):
     """
-    Given an input string, makes it GSM and Welsh character compatible. This involves removing all non-gsm characters by
-    applying the following rules
+    Given an input string, makes it GSM, French and Welsh character compatible.
+    This involves removing all non-gsm characters by applying the following rules
     * characters within the GSM character set (https://en.wikipedia.org/wiki/GSM_03.38)
       and extension character set are kept
 
@@ -97,20 +97,18 @@ class SanitiseSMS(SanitiseText):
 
     * any remaining unicode characters (eg chinese/cyrillic/glyphs/emoji) are replaced with ?
     """
+    # Welsh and French characters not already included in GSM
+    FRENCH_NON_GSM_CHARACTERS = set('çËëÏïÂâÊêÎîÔôÛ')
+    WELSH_NON_GSM_CHARACTERS = set('ÂâÊêÎîÔôÛûŴŵŶŷ')
+    # Validate non GSM-7 characters at https://twiliodeved.github.io/message-segment-calculator/
+    NON_GSM_CHARACTERS = WELSH_NON_GSM_CHARACTERS | FRENCH_NON_GSM_CHARACTERS
 
-    # Welsh characters not already included in GSM
-    WELSH_NON_GSM_CHARACTERS = set("ÂâÊêÎîÔôÛûŴŵŶŷ")
-
-    ALLOWED_CHARACTERS = (
-        set(
-            "@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ\x1bÆæßÉ !\"#¤%&'()*+,-./0123456789:;<=>?"
-            + "¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà"
-            +
-            # character set extension
-            "^{}\\[~]|€"
-        )
-        | WELSH_NON_GSM_CHARACTERS
-    )
+    ALLOWED_CHARACTERS = set(
+        '@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ\x1bÆæßÉ !"#¤%&\'()*+,-./0123456789:;<=>?' +
+        '¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà' +
+        # character set extension
+        '^{}\\[~]|€'
+    ) | NON_GSM_CHARACTERS
 
 
 class SanitiseASCII(SanitiseText):

@@ -76,6 +76,7 @@ def test_extracting_placeholders(template_content, template_subject, expected):
         # should be replaced with a ?
         ("深", None, 1, 1),
         ("'First line.\n", None, 12, 12),
+        ("Services Québec - Un nouveau document en lien avec votre demande a été reçu.", None, 76, 76),
         ("\t\n\r", None, 0, 0),
         ("((placeholder))", None, 15, 3),
         ("((placeholder))", "Service name", 29, 17),
@@ -135,6 +136,39 @@ def test_sms_fragment_count_unicode_encoding(char_count, expected_sms_fragment_c
         mocked.return_value = char_count
         template = SMSMessageTemplate({"content": "This is â mêssâgê with Ŵêlsh chârâctêrs", "template_type": "sms"})
         assert template.fragment_count == expected_sms_fragment_count
+
+
+@pytest.mark.parametrize(
+    "char_count, expected_sms_fragment_count",
+    [
+        (69, 1),
+        (70, 1),
+        (71, 2),
+        (134, 2),
+        (135, 3),
+        (201, 3),
+        (202, 4),
+        (203, 4),
+        (268, 4),
+        (269, 5),
+    ])
+def test_french_sms_fragment_count_unicode_encoding(char_count, expected_sms_fragment_count):
+    with patch(
+        'notifications_utils.template.SMSMessageTemplate.content_count',
+        new_callable=PropertyMock
+    ) as mocked:
+        mocked.return_value = char_count
+        template = SMSMessageTemplate({'content': 'Ceci est un message avec caractère français',
+                                       'template_type': 'sms'})
+        assert template.fragment_count == expected_sms_fragment_count
+
+
+def test_french_sms_character_count():
+    template = SMSMessageTemplate({'content': 'Services Québec - Un nouveau document en lien avec votre ' +
+                                   'demande a été reçu. Accédez à Mon dossier pour obtenir plus d\'information.',
+                                   'template_type': 'sms'})
+    assert template.content_count == 131
+    assert template.fragment_count == 2
 
 
 def test_random_variable_retrieve():

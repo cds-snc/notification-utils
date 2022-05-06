@@ -505,7 +505,7 @@ def test_sms_message_adds_prefix(add_prefix, template_class, prefix, body, expec
     template.prefix = prefix
     template.sender = None
     str(template)
-    add_prefix.assert_called_once_with(*expected_call)
+    add_prefix.assert_called_with(*expected_call)
 
 
 @mock.patch("notifications_utils.template.add_prefix", return_value="")
@@ -534,7 +534,7 @@ def test_sms_message_adds_prefix_only_if_asked_to(
         sender=sender,
     )
     str(template)
-    add_prefix.assert_called_once_with(*expected_call)
+    add_prefix.assert_called_with(*expected_call)
 
 
 @pytest.mark.parametrize("content_to_look_for", ["GOVUK", "sms-message-sender"])

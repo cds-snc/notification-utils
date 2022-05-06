@@ -1,5 +1,6 @@
 import math
 import sys
+from chardet import detect as detect_encoding
 from os import path
 from datetime import datetime
 
@@ -199,7 +200,7 @@ class SMSMessageTemplate(Template):
 
     @property
     def fragment_count(self):
-        content_with_placeholders = str(self)
+        content_with_placeholders = SMSMessageTemplate.__str__(self)
         return get_sms_fragment_count(self.content_count, is_unicode(content_with_placeholders))
 
     def is_message_too_long(self):
@@ -228,6 +229,7 @@ class SMSPreviewTemplate(SMSMessageTemplate):
         self.jinja_template = self.template_env.get_template("sms_preview_template.jinja2")
 
     def __str__(self):
+<<<<<<< HEAD
 
         return Markup(
             self.jinja_template.render(
@@ -253,6 +255,29 @@ class SMSPreviewTemplate(SMSMessageTemplate):
                     .then(nl2br)
                     .then(autolink_sms),
                 }
+=======
+        return Markup(self.jinja_template.render({
+            'sender': self.sender,
+            'show_sender': self.show_sender,
+            'fragment_count': self.fragment_count,
+            'recipient': Field('((phone number))', self.values, html='escape', translated=True),
+            'show_recipient': self.show_recipient,
+            'body': Take(Field(
+                self.content,
+                self.values,
+                html='escape',
+                redact_missing_personalisation=self.redact_missing_personalisation,
+            )).then(
+                add_prefix, (escape_html(self.prefix) or None) if self.show_prefix else None
+            ).then(
+                sms_encode if self.downgrade_non_sms_characters else str
+            ).then(
+                remove_whitespace_before_punctuation
+            ).then(
+                nl2br
+            ).then(
+                autolink_sms
+>>>>>>> notification-utils/master
             )
         )
 
@@ -729,7 +754,7 @@ def get_sms_fragment_count(character_count, is_unicode):
 
 
 def is_unicode(content):
-    return set(content) & set(SanitiseSMS.WELSH_NON_GSM_CHARACTERS)
+    return set(content) & set(SanitiseSMS.NON_GSM_CHARACTERS)
 
 
 def get_html_email_body(template_content, template_values, redact_missing_personalisation=False, html="escape"):

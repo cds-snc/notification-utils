@@ -9,5 +9,15 @@
   </p>
 {% endif %}
 <div class="sms-message-wrapper">
+  <span class="py-1 px-2 rounded-lg text-small" style="float: right; text-align: right; background-color: #9BCFCE">
+    {{fragment_count}}
+    {% if fragment_count > 1 %}
+      segments
+    {% else %}
+      segment
+    {% endif %}
+  </span>
+  <div class="sms-message-body">
   {{ body }}
+  </div>
 </div>

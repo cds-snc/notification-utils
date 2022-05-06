@@ -39,8 +39,11 @@ params, ids = zip(
     (("à", "à", "a"), "non-ascii gsm char (a with accent)"),
     (("€", "€", "?"), "non-ascii gsm char (euro)"),
     # These characters are Welsh characters that are not present in GSM
-    (("â", "â", "a"), "non-gsm Welsh char (a with hat)"),
-    (("Ŷ", "Ŷ", "Y"), "non-gsm Welsh char (capital y with hat)"),
+    (('â', 'â', 'a'), 'non-gsm Welsh char (a with hat)'),
+    (('Ŷ', 'Ŷ', 'Y'), 'non-gsm Welsh char (capital y with hat)'),
+    # These characters are French characters that are not present in GSM
+    (('ç', 'ç', 'c'), 'non-gsm French char (c with cedilla)'),
+    (('Ë', 'Ë', 'E'), 'non-gsm French char (capital e with umlaut)'),
 )
 
 
@@ -79,16 +82,14 @@ def test_encode_string(content, expected):
     assert SanitiseASCII.encode(content) == expected
 
 
-@pytest.mark.parametrize(
-    "content, cls, expected",
-    [
-        ("The quick brown fox jumps over the lazy dog", SanitiseSMS, set()),
-        ("The “quick” brown fox has some downgradable characters\xa0", SanitiseSMS, set()),
-        ("Need more 🐮🔔", SanitiseSMS, {"🐮", "🔔"}),
-        ("Ŵêlsh chârâctêrs ârê cômpâtîblê wîth SanitiseSMS", SanitiseSMS, set()),
-        ("Lots of GSM chars that arent ascii compatible:\n\r€", SanitiseSMS, set()),
-        ("Lots of GSM chars that arent ascii compatible:\n\r€", SanitiseASCII, {"\n", "\r", "€"}),
-    ],
-)
+@pytest.mark.parametrize('content, cls, expected', [
+    ('The quick brown fox jumps over the lazy dog', SanitiseSMS, set()),
+    ('The “quick” brown fox has some downgradable characters\xa0', SanitiseSMS, set()),
+    ('Need more 🐮🔔', SanitiseSMS, {'🐮', '🔔'}),
+    ('Ŵêlsh chârâctêrs ârê cômpâtîblê wîth SanitiseSMS', SanitiseSMS, set()),
+    ('Frënch çhäräctërs ärë cömpätîblë wïth SänitiseSMS', SanitiseSMS, set()),
+    ('Lots of GSM chars that arent ascii compatible:\n\r€', SanitiseSMS, set()),
+    ('Lots of GSM chars that arent ascii compatible:\n\r€', SanitiseASCII, {'\n', '\r', '€'}),
+])
 def test_sms_encoding_get_non_compatible_characters(content, cls, expected):
     assert cls.get_non_compatible_characters(content) == expected

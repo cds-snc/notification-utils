@@ -41,3 +41,5 @@ Additionally code coverage is checked via pytest-cov:
 ## Documentation
 
 Documentation for the template used to render emails is in the [docs](./docs/README.md) folder.
+## Politique de sécurité
+Document portant sur la prise en charge des mises à jour de sécurité. Voir [SECURITY](SECURITY) pour plus d'informations.

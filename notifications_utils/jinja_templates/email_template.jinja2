@@ -1,6 +1,6 @@
 {% if complete_html %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html lang="en">
+<html lang="fr">
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -26,7 +26,7 @@
   <![endif]-->
 </head>
 
-<body style="font-family: Helvetica, Arial, sans-serif;font-size: 16px;margin: 0;color:#0b0c0c;">
+<body style="font-family: Calibri, Helvetica, Arial, sans-serif;font-size: 11pt;margin: 0;color:#0b0c0c;">
 {% endif %}
 <span style="display: none;font-size: 1px;color: #fff; max-height: 0;">{{ preheader }}…</span>
 
@@ -99,9 +99,9 @@
             <td width="100%" bgcolor="{{brand_colour}}" valign="middle" align="left" style="padding: 10px 0 14px 10px">
               <span style="
                 display: block;
-                font-family: Helvetica, Arial, sans-serif;
+                font-family: Calibri, Helvetica, Arial, sans-serif;
                 font-weight: 700;
-                font-size: 19px;
+                font-size: 13pt;
                 color: #ffffff;
                 line-height: 25px;
                 ">
@@ -134,13 +134,20 @@
                   <img src="{{ brand_logo }}" style="display: block; border: 0" height="{% if brand_text -%} 27 {%- else -%} 108 {%- endif %}"
                         alt="{% if brand_text %} {% else -%}{{ brand_name }}{%- endif %}" />
                 </td>
-                <td width="100%" style="font-family: Helvetica, Arial, sans-serif; font-size: 18px; line-height: 23px;" valign="center">
+                <td width="100%" style="font-family: Calibri, Helvetica, Arial, sans-serif; font-size: 13pt; line-height: 23px;" valign="center">
                   {% if brand_text %}
                   {{ brand_text }}
                   {% endif %}
                 </td>
               </tr>
             </table>
+            <!-- push content -->
+            <table>
+              <tr>
+                <td height="20">&nbsp;</td>
+              </tr>
+            </table>
+            <!-- end push content -->
           </td>
         </tr>
       </table>
