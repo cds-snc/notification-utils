@@ -3,6 +3,7 @@ pytest==6.2.3
 pytest-mock==3.5.1
 pytest-cov==2.11.1
 pytest-xdist==2.2.1
+pytest-watch==4.2.0
 requests-mock==1.9.3
 freezegun==1.1.0
 flake8==3.9.1
