@@ -235,6 +235,7 @@ class SMSPreviewTemplate(SMSMessageTemplate):
                 {
                     "sender": self.sender,
                     "show_sender": self.show_sender,
+                    'fragment_count': self.fragment_count,
                     "recipient": Field("((phone number))", self.values, html="escape", translated=True),
                     "show_recipient": self.show_recipient,
                     "body": Take(
