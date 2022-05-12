@@ -23,7 +23,7 @@ OBSCURE_WHITESPACE = (
     "\uFEFF"  # zero width non-breaking space
 )
 
-EMAIL_P_OPEN_TAG = '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+EMAIL_P_OPEN_TAG = '<p style="Margin: 0 0 20px 0; font-size: 11pt; line-height: 25px; color: #0B0C0C;">'
 EMAIL_P_CLOSE_TAG = "</p>"
 
 FR_OPEN = r"\[\[fr\]\]"  # matches [[fr]]

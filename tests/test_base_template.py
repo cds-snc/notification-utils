@@ -68,7 +68,7 @@ def test_extracting_placeholders(template_content, template_subject, expected):
     assert WithSubjectTemplate({"content": template_content, "subject": template_subject}).placeholders == expected
 
 
-@pytest.mark.parametrize("template_cls", [SMSMessageTemplate, SMSPreviewTemplate])
+@pytest.mark.parametrize('template_cls', [SMSMessageTemplate, SMSPreviewTemplate])
 @pytest.mark.parametrize(
     "content,prefix, expected_length, expected_replaced_length",
     [
@@ -79,18 +79,17 @@ def test_extracting_placeholders(template_content, template_subject, expected):
         ("Services Québec - Un nouveau document en lien avec votre demande a été reçu.", None, 76, 76),
         ("\t\n\r", None, 0, 0),
         ("((placeholder))", None, 15, 3),
-        ("((placeholder))", "Service name", 29, 17),
-        ("Foo", "((placeholder))", 20, 20),  # placeholder doesn’t work in service name
-    ],
-)
+        ("((placeholder))", 'Service name', 29, 17),
+        ("Foo", '((placeholder))', 20, 20),  # placeholder doesn’t work in service name
+    ])
 def test_get_character_count_of_content(content, prefix, template_cls, expected_length, expected_replaced_length):
     template = template_cls(
-        {"content": content},
+        {'content': content},
     )
     template.prefix = prefix
     template.sender = None
     assert template.content_count == expected_length
-    template.values = {"placeholder": "123"}
+    template.values = {'placeholder': '123'}
     assert template.content_count == expected_replaced_length
 
 

@@ -268,7 +268,7 @@ def test_complete_html(complete_html, branding_should_be_present, brand_logo, br
 
 def test_preheader_is_at_start_of_html_emails():
     assert (
-        '<body style="font-family: Helvetica, Arial, sans-serif;font-size: 16px;margin: 0;color:#0b0c0c;">\n'
+        '<body style="font-family: Helvetica, Arial, sans-serif;font-size: 11pt;margin: 0;color:#0b0c0c;">\n'
         "\n"
         '<span style="display: none;font-size: 1px;color: #fff; max-height: 0;">content…</span>'
     ) in str(HTMLEmailTemplate({"content": "content", "subject": "subject"}))
@@ -1083,7 +1083,7 @@ def test_templates_handle_html_and_redacting(
             HTMLEmailTemplate,
             {},
             [
-                mock.call('<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">' "content" "</p>"),
+                mock.call('<p style="Margin: 0 0 20px 0; font-size: 11pt; line-height: 25px; color: #0B0C0C;">' "content" "</p>"),
                 mock.call("\n\ncontent"),
                 mock.call(Markup("subject")),
                 mock.call(Markup("subject")),
@@ -1093,7 +1093,7 @@ def test_templates_handle_html_and_redacting(
             EmailPreviewTemplate,
             {},
             [
-                mock.call('<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">' "content" "</p>"),
+                mock.call('<p style="Margin: 0 0 20px 0; font-size: 11pt; line-height: 25px; color: #0B0C0C;">' "content" "</p>"),
                 mock.call(Markup("subject")),
                 mock.call(Markup("subject")),
                 mock.call(Markup("subject")),
@@ -1169,7 +1169,7 @@ def test_templates_remove_whitespace_before_punctuation(
             HTMLEmailTemplate,
             {},
             [
-                mock.call('<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">' "content" "</p>"),
+                mock.call('<p style="Margin: 0 0 20px 0; font-size: 11pt; line-height: 25px; color: #0B0C0C;">' "content" "</p>"),
                 mock.call("\n\ncontent"),
                 mock.call(Markup("subject")),
             ],
@@ -1178,7 +1178,7 @@ def test_templates_remove_whitespace_before_punctuation(
             EmailPreviewTemplate,
             {},
             [
-                mock.call('<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">' "content" "</p>"),
+                mock.call('<p style="Margin: 0 0 20px 0; font-size: 11pt; line-height: 25px; color: #0B0C0C;">' "content" "</p>"),
                 mock.call(Markup("subject")),
             ],
         ),
@@ -2009,9 +2009,9 @@ def test_whitespace_in_subject_placeholders(template_class):
         (
             HTMLEmailTemplate,
             (
-                '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">paragraph one</p>'
-                '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">&nbsp;</p>'
-                '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">paragraph two</p>'
+                '<p style="Margin: 0 0 20px 0; font-size: 11pt; line-height: 25px; color: #0B0C0C;">paragraph one</p>'
+                '<p style="Margin: 0 0 20px 0; font-size: 11pt; line-height: 25px; color: #0B0C0C;">&nbsp;</p>'
+                '<p style="Margin: 0 0 20px 0; font-size: 11pt; line-height: 25px; color: #0B0C0C;">paragraph two</p>'
             ),
         ),
     ],
