@@ -189,14 +189,16 @@ class SMSMessageTemplate(Template):
 
     @property
     def content_count(self):
-        return len(
-            (
-                # we always want to call SMSMessageTemplate.__str__ regardless of subclass, to avoid any html formatting
-                SMSMessageTemplate.__str__(self)
-                if self._values
-                else sms_encode(add_prefix(self.content.strip(), self.prefix))
-            ).encode(self.encoding)
+        updated_str = (
+            # we always want to call SMSMessageTemplate.__str__ regardless of subclass, to avoid any html formatting
+            SMSMessageTemplate.__str__(self)
+            if self._values
+            else sms_encode(add_prefix(self.content.strip(), self.prefix))
         )
+        # Encode with the template's encoding if needed
+        if detect_encoding(updated_str.encode())['encoding'] != self.encoding:
+            updated_str = updated_str.encode(self.encoding)
+        return len(updated_str)
 
     @property
     def fragment_count(self):

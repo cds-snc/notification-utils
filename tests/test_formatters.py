@@ -499,9 +499,9 @@ def test_list_and_bold_or_italic(markdown_function, input, expected):
         [
             notify_email_markdown,
             (
-                '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">line one<br />'
+                '<p style="Margin: 0 0 20px 0; font-size: 11pt; line-height: 25px; color: #0B0C0C;">line one<br />'
                 "line two</p>"
-                '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">new paragraph</p>'
+                '<p style="Margin: 0 0 20px 0; font-size: 11pt; line-height: 25px; color: #0B0C0C;">new paragraph</p>'
             ),
         ],
         [
