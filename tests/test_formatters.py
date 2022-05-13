@@ -572,7 +572,7 @@ def test_table(markdown_function):
         'http://example.com',
         (
             '<p style="Margin: 0 0 20px 0; font-size: 11pt; line-height: 25px; color: #0B0C0C;">'
-            '<a style="word-wrap: break-word; color: #005ea5;" href="http://example.com">http://example.com</a>'
+            '<a style="word-wrap: break-word;" href="http://example.com">http://example.com</a>'
             '</p>'
         )
     ],
@@ -581,7 +581,7 @@ def test_table(markdown_function):
         """https://example.com"onclick="alert('hi')""",
         (
             '<p style="Margin: 0 0 20px 0; font-size: 11pt; line-height: 25px; color: #0B0C0C;">'
-            '<a style="word-wrap: break-word; color: #005ea5;" href="https://example.com%22onclick=%22alert%28%27hi">'
+            '<a style="word-wrap: break-word;" href="https://example.com%22onclick=%22alert%28%27hi">'
             'https://example.com"onclick="alert(\'hi'
             '</a>\')'
             '</p>'
