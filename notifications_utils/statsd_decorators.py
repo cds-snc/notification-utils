@@ -19,7 +19,7 @@ def statsd(namespace):
                 # type: ignore
                 current_app.statsd_client.timing(
                     "{namespace}.{func}".format(namespace=namespace, func=func.__name__), elapsed_time
-                )  # type: ignore
+                )
 
             except Exception as e:
                 raise e
