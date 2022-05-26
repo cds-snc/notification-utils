@@ -15,7 +15,9 @@ def statsd(namespace):
                 elapsed_time = monotonic() - start_time
 
                 # type: ignore
-                current_app.statsd_client.incr("{namespace}.{func}".format(namespace=namespace, func=func.__name__))
+                current_app.statsd_client.incr(
+                    "{namespace}.{func}".format(namespace=namespace, func=func.__name__)
+                )
                 # type: ignore
                 current_app.statsd_client.timing(
                     "{namespace}.{func}".format(namespace=namespace, func=func.__name__), elapsed_time
