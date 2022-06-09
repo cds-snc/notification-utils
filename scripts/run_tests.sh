@@ -28,7 +28,7 @@ display_result $? 1 "Code style check (Black)"
 flake8 .
 display_result $? 1 "Code style check"
 
-mypy .
+mypy . --exclude build/
 display_result $? 1 "Static type check"
 
 ## Code coverage
