@@ -53,5 +53,6 @@ setup(
         "types-redis==4.2.6",
         "types-requests==2.27.30",
         "types-freezegun==1.1.9",
+        "importlib-metadata==4.2.0",
     ],
 )
