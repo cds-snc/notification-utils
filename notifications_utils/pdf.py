@@ -1,6 +1,6 @@
 import PyPDF2
 from PyPDF2 import PdfFileWriter
-from PyPDF2.utils import PdfReadError
+from PyPDF2.errors import PdfReadError
 import io
 
 

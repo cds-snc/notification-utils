@@ -1,4 +1,4 @@
-FROM python:3.5-slim
+FROM python:3.8-slim
 
 ARG HTTP_PROXY
 ARG HTTPS_PROXY
@@ -23,7 +23,7 @@ RUN \
 
 RUN \
 	echo "Install global pip packages" \
-	&& pip install \
-		virtualenv
+	&& python -m pip install --upgrade pip \
+	   pip install virtualenv
 
 WORKDIR /var/project
