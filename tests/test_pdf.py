@@ -3,7 +3,7 @@ from io import BytesIO
 
 import PyPDF2
 import pytest
-from PyPDF2.utils import PdfReadError
+from PyPDF2.errors import PdfReadError
 
 from notifications_utils.pdf import pdf_page_count, extract_page_from_pdf
 from tests.pdf_consts import one_page_pdf, multi_page_pdf, not_pdf
