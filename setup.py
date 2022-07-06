@@ -43,7 +43,6 @@ setup(
         "awscli==1.19.58",
         "boto3==1.17.58",
         "werkzeug==2.0.2",
-        "click==8.0.1",
         "itsdangerous==0.24",
     ],
 )
