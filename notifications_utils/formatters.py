@@ -457,7 +457,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
     def autolink(self, link, is_email=False):
         if is_email:
             return link
-        return '<a style="{}" href="{}" target="_blank">{}</a>'.format(
+        return '<a style="{}" href="{}">{}</a>'.format(
             LINK_STYLE,
             urllib.parse.quote(
                 urllib.parse.unquote(link),
