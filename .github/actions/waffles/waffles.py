@@ -40,10 +40,8 @@ from typing import Any, List, NewType
 from urllib import request
 from urllib.error import URLError
 
-import sys
-
 sys.path.append("../../..")
-from notifications_utils.base64_uuid import uuid_to_base64
+from notifications_utils.base64_uuid import uuid_to_base64  # noqa: E402 module level import not at top of file
 
 ModuleName = NewType("ModuleName", str)
 ModuleProp = NewType("ModuleProp", str)
