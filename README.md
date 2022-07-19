@@ -40,4 +40,5 @@ Additionally code coverage is checked via pytest-cov:
 
 ## Documentation
 
-Documentation for the template used to render emails is in the [docs](./docs/README.md) folder.
+* [How to work with notification-utils](https://docs.google.com/document/d/1CMCR4wiTisA3qZdkomuk0zriqeyVp-od5ZuUO95wATM)
+* Documentation for the template used to render emails is in the [docs](./docs/README.md) folder.
