@@ -40,6 +40,7 @@ from typing import Any, List, NewType
 from urllib import request
 from urllib.error import URLError
 
+from notifications_utils.base64_uuid import uuid_to_base64
 
 ModuleName = NewType("ModuleName", str)
 ModuleProp = NewType("ModuleProp", str)
@@ -253,6 +254,7 @@ def _transform_endpoint(endpoint: URL) -> URL:
         URL: The transformed URL.
     """
     endpoint = URL(re.sub(r"<uuid:[^>]*>", str(_create_uuid()), endpoint))
+    endpoint = URL(re.sub(r"<base64_uuid:[^>]*>", str(uuid_to_base64(_create_uuid())), endpoint))
     endpoint = URL(endpoint.replace("<path:filename>", "filename.txt"))
     return endpoint
 
