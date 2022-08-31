@@ -14,13 +14,10 @@ def test_lang_tags_in_templates():
     "bad_content",
     [
         "[[en]\nEN text\n[[/en]]",  # missing bracket
-        # "[[en]]EN text\n[[/en]]",  # missing \n
-        # "[[en]]\nEN text[[/en]]",  # missing \n
         "[[EN]]\nEN text\n[[/EN]]",  # tags not lowercase
         "[[en]]\nEN text\n",  # tag missing
         "EN text\n[[/en]]",  # tag missing
         "((en))\nEN text\n((/en))",  # wrong brackets
-        # "[[en]]EN text[[/en]]",  # tags not on their own line
     ],
 )
 def test_lang_tags_in_templates_bad_content(bad_content: str):
