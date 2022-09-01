@@ -166,6 +166,14 @@ class Field:
         return OrderedSet(Placeholder(body).name for body in re.findall(self.placeholder_pattern, self.content))
 
     @property
+    def placeholders_meta(self):
+        meta = {
+            Placeholder(body).name: {"is_conditional": Placeholder(body).is_conditional()}
+            for body in re.findall(self.placeholder_pattern, self.content)
+        }
+        return meta
+
+    @property
     def replaced(self):
         return re.sub(self.placeholder_pattern, self.replace_match, self.sanitizer(self.content))
 

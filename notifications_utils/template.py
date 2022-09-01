@@ -135,6 +135,10 @@ class Template:
         return Field(self.content).placeholders
 
     @property
+    def placeholders_meta(self):
+        return Field(self.content).placeholders_meta
+
+    @property
     def missing_data(self):
         return list(placeholder for placeholder in self.placeholders if self.values.get(placeholder) is None)
 
