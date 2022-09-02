@@ -123,7 +123,6 @@ def _get_flask_endpoints(flask_app: Flask) -> List[URL]:
         endpoint = URL(extra_endpoint)
         endpoints.append(endpoint)
 
-    return endpoints
     return sorted(endpoints)
 
 
