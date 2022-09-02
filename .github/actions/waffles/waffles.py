@@ -95,7 +95,13 @@ def _display_flask_endpoints(flask_app: Flask) -> None:
         methods = ",".join(rule.methods)
         line = urllib.parse.unquote("{:50s} {:20s} {}".format(rule.endpoint, methods, rule))
         output.append(line)
-    for line in sorted(output):
+
+    output = sorted(output)
+    for extra_endpoint in flask_app.config.get("EXTRA_ROUTES", []):
+        line = urllib.parse.unquote("EXTRA {:44s} {:20s} {}".format(extra_endpoint, "GET", extra_endpoint))
+        output.append(line)
+
+    for line in output:
         print(line)
 
 
@@ -112,6 +118,12 @@ def _get_flask_endpoints(flask_app: Flask) -> List[URL]:
     for rule in flask_app.url_map.iter_rules():
         endpoint = URL(rule.rule)
         endpoints.append(endpoint)
+
+    for extra_endpoint in flask_app.config.get("EXTRA_ROUTES", []):
+        endpoint = URL(extra_endpoint)
+        endpoints.append(endpoint)
+
+    return endpoints
     return sorted(endpoints)
 
 
