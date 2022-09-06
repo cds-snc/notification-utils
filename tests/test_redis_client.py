@@ -6,6 +6,7 @@ from freezegun import freeze_time
 
 from notifications_utils.clients.redis import (
     daily_limit_cache_key,
+    sms_daily_limit_cache_key,
     rate_limit_cache_key,
 )
 from notifications_utils.clients.redis.redis_client import RedisClient, prepare_value
@@ -130,7 +131,12 @@ def test_should_build_cache_key_service_and_action(sample_service):
         assert daily_limit_cache_key(sample_service.id) == "{}-2016-01-01-count".format(sample_service.id)
 
 
-def test_should_build_daily_limit_cache_key(sample_service):
+def test_should_build_cache_key_service_and_action(sample_service):
+    with freeze_time("2016-01-01 12:00:00.000000"):
+        assert sms_daily_limit_cache_key(sample_service.id) == "sms-{}-2016-01-01-count".format(sample_service.id)
+
+
+def test_should_build_rate_limit_cache_key(sample_service):
     assert rate_limit_cache_key(sample_service.id, "TEST") == "{}-TEST".format(sample_service.id)
 
 
