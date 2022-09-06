@@ -29,7 +29,7 @@ setup(
         "python-json-logger==2.0.1",
         "Flask==2.2.2",
         "orderedset==2.0.3",
-        "markupsafe==2.0.1",
+        "markupsafe>=2.0.1",
         "Jinja2>3.0.0",
         "statsd==3.3.0",
         "Flask-Redis==0.4.0",
@@ -42,7 +42,6 @@ setup(
         # required by both api and admin
         "awscli==1.19.58",
         "boto3==1.17.58",
-        "werkzeug==2.0.2",
         "itsdangerous==2.0.1",
     ],
 )
