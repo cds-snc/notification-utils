@@ -25,13 +25,13 @@ def rate_limit_cache_key(service_id, api_key_type):
     return "{}-{}".format(str(service_id), api_key_type)
 
 
-def sms_daily_limit_cache_key(service_id):
+def sms_daily_count_cache_key(service_id):
     return "sms-{}-{}-{}".format(str(service_id), datetime.utcnow().strftime("%Y-%m-%d"), "count")
 
 
 def near_sms_daily_limit_cache_key(service_id):
-    return f"nearing-{daily_limit_cache_key(service_id)}"
+    return f"nearing-daily-limit-{sms_daily_count_cache_key(service_id)}"
 
 
 def over_sms_daily_limit_cache_key(service_id):
-    return f"over-{daily_limit_cache_key(service_id)}"
+    return f"over-daily-limit-{sms_daily_count_cache_key(service_id)}"
