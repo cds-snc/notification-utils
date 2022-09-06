@@ -147,6 +147,14 @@ class RedisClient:
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "incr", key)
 
+    def incrby(self, key, by, raise_exception=False):
+        key = prepare_value(key)
+        if self.active:
+            try:
+                return self.redis_store.incrby(key, by)
+            except Exception as e:
+                self.__handle_exception(e, raise_exception, "incrby", key)
+
     def get(self, key, raise_exception=False):
         key = prepare_value(key)
         if self.active:
