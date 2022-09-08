@@ -167,10 +167,13 @@ class Field:
 
     @property
     def placeholders_meta(self):
-        meta = {
-            Placeholder(body).name: {"is_conditional": Placeholder(body).is_conditional()}
-            for body in re.findall(self.placeholder_pattern, self.content)
-        }
+        meta = {}
+        for body in re.findall(self.placeholder_pattern, self.content):
+            if Placeholder(body).name not in meta:
+                # never let a False overwrite a True
+                meta[Placeholder(body).name] = {"is_conditional": False}
+            if Placeholder(body).is_conditional():
+                meta[Placeholder(body).name] = {"is_conditional": True}
         return meta
 
     @property
