@@ -272,3 +272,18 @@ def test_what_will_trigger_conditional_placeholder(value):
 def test_field_renders_lists_as_strings(values, expected, expected_as_markdown):
     assert str(Field("list: ((placeholder))", values, markdown_lists=True)) == expected_as_markdown
     assert str(Field("list: ((placeholder))", values)) == expected
+
+
+@pytest.mark.parametrize(
+    "template_str, result",
+    [
+        ("Lorem ipsum ((var))", False),
+        ("Lorem ipsum ((var??Conditional text))", True),
+        ("Lorem ipsum ((var)) Lorem ipsum ((var??Conditional text)) Lorem ipsum ((var))", True),
+        ("Lorem ipsum ((var)) Lorem ipsum ((var))", False),
+        ("Lorem ipsum ((var??Conditional text))", True),
+        ("Lorem ipsum ((var??Conditional text)) ((other_var))", True),
+    ],
+)
+def test_placeholder_meta(template_str: str, result: bool):
+    assert Field(template_str).placeholders_meta["var"]["is_conditional"] == result
