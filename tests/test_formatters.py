@@ -956,43 +956,88 @@ def test_normalise_whitespace():
     assert normalise_whitespace("\u200C Your tax   is\ndue\n\n") == "Your tax is due"
 
 
-@pytest.mark.parametrize("lang", ("en", "fr"))
-def test_add_language_divs_fr_replaces(lang: str):
-    _content = (
-        f'<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[{lang}]]</p>'
-        '<h2 style="Margin: 0 0 20px 0; padding: 0; font-size: 27px; line-height: 35px; font-weight: bold; color: #0B0C0C;">'
-        "title</h2>"
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
-        "Comment vas-tu aujourd'hui?</p>"
-        f'<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[/{lang}]]</p>'
+class TestAddLanguageDivs:
+    @pytest.mark.parametrize("lang", ("en", "fr"))
+    def test_add_language_divs_fr_replaces(self, lang: str):
+        _content = (
+            f'<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[{lang}]]</p>'
+            '<h2 style="Margin: 0 0 20px 0; padding: 0; font-size: 27px; line-height: 35px; font-weight: bold; color: #0B0C0C;">'
+            "title</h2>"
+            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+            "Comment vas-tu aujourd'hui?</p>"
+            f'<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[/{lang}]]</p>'
+        )
+        content = (
+            f'<div lang="{lang}-ca">'
+            '<h2 style="Margin: 0 0 20px 0; padding: 0; font-size: 27px; line-height: 35px; font-weight: bold; color: #0B0C0C;">'
+            "title</h2>"
+            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+            "Comment vas-tu aujourd'hui?</p></div>"
+        )
+        assert add_language_divs(_content) == content
+
+    @pytest.mark.parametrize(
+        "input,output",
+        (
+            ("abc 123", "abc 123"),
+            ("[[fr]]\n\nabc\n\n[[/fr]]", "\n\nabc\n\n"),
+            ("[[en]]\n\nabc\n\n[[/en]]", "\n\nabc\n\n"),
+            ("[[en]]\n\nabc\n\n[[/en]]\n\n[[fr]]\n\n123\n\n[[/fr]]", "\n\nabc\n\n\n\n\n\n123\n\n"),
+        ),
     )
-    content = (
-        f'<div lang="{lang}-ca">'
-        '<h2 style="Margin: 0 0 20px 0; padding: 0; font-size: 27px; line-height: 35px; font-weight: bold; color: #0B0C0C;">'
-        "title</h2>"
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
-        "Comment vas-tu aujourd'hui?</p></div>"
-    )
-    assert add_language_divs(_content) == content
+    def test_remove_language_divs(self, input: str, output: str):
+        assert remove_language_divs(input) == output
 
+    def test_multiple_language_div_after_mistune(self):
+        testString = '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[fr]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">Le français suis l\'anglais</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[/fr]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[en]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">hi</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[/en]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[fr]]<br />Bonjour<br />[[/fr]]</p>'  # noqa
+        testResult = '<div lang="fr-ca"><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">Le français suis l\'anglais</p></div><div lang="en-ca"><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">hi</p></div><div lang="fr-ca"><br />Bonjour<br /></div>'  # noqa
 
-@pytest.mark.parametrize("lang", ("en", "fr"))
-def test_add_language_divs_fr_does_not_replace(lang: str):
-    _content = f"[[{lang}]] asdf [[/{lang}]]"
-    assert add_language_divs(_content) == _content
+        assert add_language_divs(testString) == testResult
 
+    def test_multiple_language_div_without_mistune(self):
+        testString = f"""
+        [[fr]]
+        Le français suis l'anglais
+        [[/fr]]
 
-@pytest.mark.parametrize(
-    "input,output",
-    (
-        ("abc 123", "abc 123"),
-        ("[[fr]]\n\nabc\n\n[[/fr]]", "\n\nabc\n\n"),
-        ("[[en]]\n\nabc\n\n[[/en]]", "\n\nabc\n\n"),
-        ("[[en]]\n\nabc\n\n[[/en]]\n\n[[fr]]\n\n123\n\n[[/fr]]", "\n\nabc\n\n\n\n\n\n123\n\n"),
-    ),
-)
-def test_remove_language_divs(input: str, output: str):
-    assert remove_language_divs(input) == output
+        [[en]]
+        hi
+        [[/en]]
+
+        [[fr]]
+        bonjour
+        [[/fr]]
+        """  # noqa
+
+        testResult = '\n        <div lang="fr-ca">\n        Le français suis l\'anglais\n        </div>\n\n        <div lang="en-ca">\n        hi\n        </div>\n\n        <div lang="fr-ca">\n        bonjour\n        </div>\n        '  # noqa
+        assert add_language_divs(testString) == testResult
+
+    def test_nested_language_divs_after_mistune(self):
+        testString = '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[fr]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">Le français suis l\'anglais</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[en]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">hi</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[/en]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[/fr]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[en]]<br />hi<br />[[fr]]<br />Bonjour<br />[[/fr]]<br />[[/en]]</p>'  # noqa
+        testResult = '<div lang="fr-ca"><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">Le français suis l\'anglais</p><div lang="en-ca"><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">hi</p></div></div><div lang="en-ca"><br />hi<br /><div lang="fr-ca"><br />Bonjour<br /></div><br /></div>'  # noqa
+
+        assert add_language_divs(testString) == testResult
+
+    def test_nested_language_divs_without_mistune(self):
+        testString = f"""
+        [[fr]]
+        Le français suis l'anglais
+        
+            [[en]]
+            English!
+            [[/en]]
+        
+        [[/fr]]
+
+        [[en]]
+        English
+            [[fr]]
+            French!
+            [[/fr]]
+        [[/en]]
+        """  # noqa
+        testResult = '\n        <div lang="fr-ca">\n        Le français suis l\'anglais\n        \n            <div lang="en-ca">\n            English!\n            </div>\n        \n        </div>\n\n        <div lang="en-ca">\n        English\n            <div lang="fr-ca">\n            French!\n            </div>\n        </div>\n        '  # noqa
+        assert add_language_divs(testString) == testResult
 
 
 @pytest.mark.parametrize(
