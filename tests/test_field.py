@@ -283,6 +283,8 @@ def test_field_renders_lists_as_strings(values, expected, expected_as_markdown):
         ("Lorem ipsum ((var)) Lorem ipsum ((var))", False),
         ("Lorem ipsum ((var??Conditional text))", True),
         ("Lorem ipsum ((var??Conditional text)) ((other_var))", True),
+        ("Lorem ipsum ((var)) Lorem ipsum ((var??Conditional text))", True),
+        ("Lorem ipsum ((var??Conditional text)) Lorem ipsum ((var))", True),
     ],
 )
 def test_placeholder_meta(template_str: str, result: bool):
