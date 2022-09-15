@@ -313,6 +313,7 @@ def iron(opts: OptionsIron) -> None:
     failures = list(filter(lambda v: isinstance(v, BadValidationResult), validations))
     if failures:
         print("\nA few endpoints could not be hit!")
+        print("\nFailures are: {failures}".format(failures=failures))
         sys.exit(1)
 
 
