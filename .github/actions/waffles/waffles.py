@@ -123,6 +123,7 @@ def _get_flask_endpoints(flask_app: Flask) -> List[URL]:
         endpoint = URL(extra_endpoint)
         endpoints.append(endpoint)
 
+    # We want to remove invalid paths from the endpoint list
     if "/<path:path>" in endpoints:
         endpoints.remove("/<path:path>")
 
