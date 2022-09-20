@@ -167,10 +167,22 @@ class Field:
 
     @property
     def placeholders_meta(self):
-        meta = {
-            Placeholder(body).name: {"is_conditional": Placeholder(body).is_conditional()}
-            for body in re.findall(self.placeholder_pattern, self.content)
-        }
+        meta = {}
+
+        # This loop iterates over each instance in the template where a variable is used.
+        # The same variable will be hit multiple times if it appears more than
+        # once.
+        for body in re.findall(self.placeholder_pattern, self.content):
+            if Placeholder(body).name not in meta:
+                # never let a False overwrite a True
+                meta[Placeholder(body).name] = {"is_conditional": False}
+
+            # If the variable appears in a conditional statement in the template,
+            # we consider it a conditional variable and encourage the user to set it to a
+            # boolean value
+            if Placeholder(body).is_conditional():
+                meta[Placeholder(body).name] = {"is_conditional": True}
+
         return meta
 
     @property

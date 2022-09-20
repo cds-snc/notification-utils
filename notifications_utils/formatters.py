@@ -610,16 +610,16 @@ def add_language_divs(_content: str) -> str:
     because the mistune parser has already run and put our [[lang]] tags inside
     paragraphs.
     """
-    select_anything = r"([\s\S]*)"
+    select_anything = r"([\s\S]*?)"
     fr_regex = re.compile(
-        f"{EMAIL_P_OPEN_TAG}{FR_OPEN}{EMAIL_P_CLOSE_TAG}{select_anything}{EMAIL_P_OPEN_TAG}{FR_CLOSE}{EMAIL_P_CLOSE_TAG}"
+        f"({EMAIL_P_OPEN_TAG})?{FR_OPEN}({EMAIL_P_CLOSE_TAG})?{select_anything}({EMAIL_P_OPEN_TAG})?{FR_CLOSE}({EMAIL_P_CLOSE_TAG})?"  # noqa
     )  # matches <p ...>[[fr]]</p>anything<p ...>[[/fr]]</p>
-    content = fr_regex.sub(r'<div lang="fr-ca">\1</div>', _content)  # \1 returns the "anything" content above
+    content = fr_regex.sub(r'<div lang="fr-ca">\3</div>', _content)  # \3 returns the "anything" content above (3rd group)
 
     en_regex = re.compile(
-        f"{EMAIL_P_OPEN_TAG}{EN_OPEN}{EMAIL_P_CLOSE_TAG}{select_anything}{EMAIL_P_OPEN_TAG}{EN_CLOSE}{EMAIL_P_CLOSE_TAG}"
+        f"({EMAIL_P_OPEN_TAG})?{EN_OPEN}({EMAIL_P_CLOSE_TAG})?{select_anything}({EMAIL_P_OPEN_TAG})?{EN_CLOSE}({EMAIL_P_CLOSE_TAG})?"  # noqa
     )  # matches <p ...>[[en]]</p>anything<p ...>[[/en]]</p>
-    content = en_regex.sub(r'<div lang="en-ca">\1</div>', content)  # \1 returns the "anything" content above
+    content = en_regex.sub(r'<div lang="en-ca">\3</div>', content)  # \3 returns the "anything" content above (3rd group)
     return content
 
 

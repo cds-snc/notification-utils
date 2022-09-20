@@ -123,6 +123,10 @@ def _get_flask_endpoints(flask_app: Flask) -> List[URL]:
         endpoint = URL(extra_endpoint)
         endpoints.append(endpoint)
 
+    # Remove flask dynamic path
+    if "/<path:path>" in endpoints:
+        endpoints.remove("/<path:path>")
+
     return sorted(endpoints)
 
 
@@ -313,6 +317,7 @@ def iron(opts: OptionsIron) -> None:
     failures = list(filter(lambda v: isinstance(v, BadValidationResult), validations))
     if failures:
         print("\nA few endpoints could not be hit!")
+        print("\nFailures are: {failures}".format(failures=failures))
         sys.exit(1)
 
 
