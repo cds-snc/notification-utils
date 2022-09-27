@@ -776,7 +776,7 @@ def test_error_if_too_many_email_recipients():
     assert recipients.more_rows_than_can_send
 
 
-def test_error_if_too_many_sms_messages():
+def test_error_if_too_many_sms_recipients():
     recipients = RecipientCSV(
         "phone number,\n6502532222,\n6502532222,\n6502532222,",
         placeholders=["phone_number"],
