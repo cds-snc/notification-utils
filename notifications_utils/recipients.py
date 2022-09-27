@@ -15,7 +15,7 @@ from flask import current_app
 
 from . import EMAIL_REGEX_PATTERN, hostname_part, tld_part
 from notifications_utils.formatters import strip_and_remove_obscure_whitespace, strip_whitespace
-from notifications_utils.template import Template
+from notifications_utils.template import SMSMessageTemplate, Template
 from notifications_utils.columns import Columns, Row, Cell
 from notifications_utils.international_billing_rates import (
     INTERNATIONAL_BILLING_RATES,
@@ -122,6 +122,7 @@ class RecipientCSV:
             self.missing_column_headers
             or self.duplicate_recipient_column_headers
             or self.more_rows_than_can_send
+            or self.more_sms_rows_than_can_send
             or self.too_many_rows
             or (not self.allowed_to_send_to)
             or any(self.rows_with_errors)
@@ -194,6 +195,19 @@ class RecipientCSV:
     @property
     def more_rows_than_can_send(self):
         return len(self) > self.remaining_messages
+
+    @property
+    def more_sms_rows_than_can_send(self):
+        if self.template_type != "sms":
+            return False
+        elif self.template is None:
+            return self.more_rows_than_can_send
+        else:
+            num_parts = 0
+            for row in self.rows:
+                sms = SMSMessageTemplate(self.template.__dict__, row.personalisation)
+                num_parts += sms.fragment_count
+            return num_parts > self.remaining_messages
 
     @property
     def too_many_rows(self):
