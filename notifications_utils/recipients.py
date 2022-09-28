@@ -198,16 +198,20 @@ class RecipientCSV:
 
     @property
     def more_sms_rows_than_can_send(self):
+        return self.sms_fragment_count > self.remaining_messages
+
+    @property
+    def sms_fragment_count(self):
         if self.template_type != "sms":
-            return False
+            return 0
         elif self.template is None:
-            return self.more_rows_than_can_send
+            return len(self)
         else:
             num_parts = 0
             for row in self.rows:
                 sms = SMSMessageTemplate(self.template.__dict__, row.personalisation)
                 num_parts += sms.fragment_count
-            return num_parts > self.remaining_messages
+            return num_parts
 
     @property
     def too_many_rows(self):
