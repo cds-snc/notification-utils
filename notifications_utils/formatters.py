@@ -30,6 +30,11 @@ FR_OPEN = r"\[\[fr\]\]"  # matches [[fr]]
 FR_CLOSE = r"\[\[/fr\]\]"  # matches [[/fr]]
 EN_OPEN = r"\[\[en\]\]"  # matches [[en]]
 EN_CLOSE = r"\[\[/en\]\]"  # matches [[/en]]
+FR_OPEN_LITERAL = "[[fr]]"
+FR_CLOSE_LITERAL = "[[/fr]]"
+EN_OPEN_LITERAL = "[[en]]"
+EN_CLOSE_LITERAL = "[[/en]]"
+BR_TAG = r"<br\s?/>"
 
 TAG_IMG_IRCC_COAT_OF_ARMS = r"\[\[ircc-coat-arms\]\]"  # matches [[ircc-coat-arms]]
 TAG_IMG_IRCC_GLOBAL_AFFAIRS = r"\[\[ircc-ga-seal\]\]"  # matches [[ircc-ga-seal]]
@@ -602,25 +607,30 @@ notify_letter_preview_markdown = mistune.Markdown(
 )
 
 
+def escape_lang_tags(_content: str) -> str:
+    """
+    Escape language tags into code tags in the content so mistune doesn't put them inside p tags.  This makes it simple
+    to replace them afterwards, and avoids creating invalid HTML in the process
+    """
+    _content = _content.replace(FR_OPEN_LITERAL, f"\n```\n{FR_OPEN_LITERAL}\n```\n")
+    _content = _content.replace(FR_CLOSE_LITERAL, f"\n```\n{FR_CLOSE_LITERAL}\n```\n")
+    _content = _content.replace(EN_OPEN_LITERAL, f"```\n{EN_OPEN_LITERAL}\n```\n")
+    _content = _content.replace(EN_CLOSE_LITERAL, f"\n```\n{EN_CLOSE_LITERAL}\n```\n")
+    return _content
+
+
 def add_language_divs(_content: str) -> str:
     """
     Custom parser to add the language divs.
-
-    We need to search for and remove the EMAIL_P_OPEN_TAG and EMAIL_P_CLOSE_TAG
-    because the mistune parser has already run and put our [[lang]] tags inside
-    paragraphs.
+    
+    String replace language tags in-place
     """
-    select_anything = r"([\s\S]*?)"
-    fr_regex = re.compile(
-        f"({EMAIL_P_OPEN_TAG})?{FR_OPEN}({EMAIL_P_CLOSE_TAG})?{select_anything}({EMAIL_P_OPEN_TAG})?{FR_CLOSE}({EMAIL_P_CLOSE_TAG})?"  # noqa
-    )  # matches <p ...>[[fr]]</p>anything<p ...>[[/fr]]</p>
-    content = fr_regex.sub(r'<div lang="fr-ca">\3</div>', _content)  # \3 returns the "anything" content above (3rd group)
+    _content = _content.replace(FR_OPEN_LITERAL, '<div lang="fr-ca">')
+    _content = _content.replace(FR_CLOSE_LITERAL, "</div>")
+    _content = _content.replace(EN_OPEN_LITERAL, '<div lang="en-ca">')
+    _content = _content.replace(EN_CLOSE_LITERAL, "</div>")
 
-    en_regex = re.compile(
-        f"({EMAIL_P_OPEN_TAG})?{EN_OPEN}({EMAIL_P_CLOSE_TAG})?{select_anything}({EMAIL_P_OPEN_TAG})?{EN_CLOSE}({EMAIL_P_CLOSE_TAG})?"  # noqa
-    )  # matches <p ...>[[en]]</p>anything<p ...>[[/en]]</p>
-    content = en_regex.sub(r'<div lang="en-ca">\3</div>', content)  # \3 returns the "anything" content above (3rd group)
-    return content
+    return _content
 
 
 def remove_language_divs(_content: str) -> str:
