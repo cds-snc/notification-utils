@@ -622,7 +622,7 @@ def escape_lang_tags(_content: str) -> str:
 def add_language_divs(_content: str) -> str:
     """
     Custom parser to add the language divs.
-    
+
     String replace language tags in-place
     """
     _content = _content.replace(FR_OPEN_LITERAL, '<div lang="fr-ca">')
