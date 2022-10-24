@@ -612,10 +612,16 @@ def escape_lang_tags(_content: str) -> str:
     Escape language tags into code tags in the content so mistune doesn't put them inside p tags.  This makes it simple
     to replace them afterwards, and avoids creating invalid HTML in the process
     """
-    _content = _content.replace(FR_OPEN_LITERAL, f"\n```\n{FR_OPEN_LITERAL}\n```\n")
-    _content = _content.replace(FR_CLOSE_LITERAL, f"\n```\n{FR_CLOSE_LITERAL}\n```\n")
-    _content = _content.replace(EN_OPEN_LITERAL, f"```\n{EN_OPEN_LITERAL}\n```\n")
-    _content = _content.replace(EN_CLOSE_LITERAL, f"\n```\n{EN_CLOSE_LITERAL}\n```\n")
+
+    # check to ensure we have the same number of opening and closing tags before escaping tags
+    if (_content.count(EN_OPEN_LITERAL) == _content.count(EN_CLOSE_LITERAL)) and (
+        _content.count(FR_OPEN_LITERAL) == _content.count(FR_CLOSE_LITERAL)
+    ):
+        _content = _content.replace(FR_OPEN_LITERAL, f"\n```\n{FR_OPEN_LITERAL}\n```\n")
+        _content = _content.replace(FR_CLOSE_LITERAL, f"\n```\n{FR_CLOSE_LITERAL}\n```\n")
+        _content = _content.replace(EN_OPEN_LITERAL, f"```\n{EN_OPEN_LITERAL}\n```\n")
+        _content = _content.replace(EN_CLOSE_LITERAL, f"\n```\n{EN_CLOSE_LITERAL}\n```\n")
+
     return _content
 
 
@@ -625,10 +631,15 @@ def add_language_divs(_content: str) -> str:
 
     String replace language tags in-place
     """
-    _content = _content.replace(FR_OPEN_LITERAL, '<div lang="fr-ca">')
-    _content = _content.replace(FR_CLOSE_LITERAL, "</div>")
-    _content = _content.replace(EN_OPEN_LITERAL, '<div lang="en-ca">')
-    _content = _content.replace(EN_CLOSE_LITERAL, "</div>")
+
+    # check to ensure we have the same number of opening and closing tags before escaping tags
+    if (_content.count(EN_OPEN_LITERAL) == _content.count(EN_CLOSE_LITERAL)) and (
+        _content.count(FR_OPEN_LITERAL) == _content.count(FR_CLOSE_LITERAL)
+    ):
+        _content = _content.replace(FR_OPEN_LITERAL, '<div lang="fr-ca">')
+        _content = _content.replace(FR_CLOSE_LITERAL, "</div>")
+        _content = _content.replace(EN_OPEN_LITERAL, '<div lang="en-ca">')
+        _content = _content.replace(EN_CLOSE_LITERAL, "</div>")
 
     return _content
 
