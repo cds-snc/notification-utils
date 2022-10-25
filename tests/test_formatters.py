@@ -3,11 +3,14 @@ import pytest
 from flask import Markup
 
 from notifications_utils.formatters import (
+    EMAIL_P_CLOSE_TAG,
+    EMAIL_P_OPEN_TAG,
     add_ircc_coat_of_arms,
     add_ircc_ga_seal,
     add_ircc_seal,
     add_ircc_gc_seal,
     add_language_divs,
+    add_trailing_newline,
     remove_language_divs,
     unlink_govuk_escaped,
     notify_email_markdown,
@@ -18,6 +21,7 @@ from notifications_utils.formatters import (
     strip_dvla_markup,
     strip_pipes,
     escape_html,
+    escape_lang_tags,
     remove_whitespace_before_punctuation,
     make_quotes_smart,
     replace_hyphens_with_en_dashes,
@@ -29,6 +33,7 @@ from notifications_utils.formatters import (
     strip_unsupported_characters,
     normalise_whitespace,
 )
+from notifications_utils.take import Take
 from notifications_utils.template import HTMLEmailTemplate, PlainTextEmailTemplate, SMSMessageTemplate, SMSPreviewTemplate
 
 
@@ -957,24 +962,76 @@ def test_normalise_whitespace():
 
 
 class TestAddLanguageDivs:
-    @pytest.mark.parametrize("lang", ("en", "fr"))
-    def test_add_language_divs_fr_replaces(self, lang: str):
-        _content = (
-            f'<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[{lang}]]</p>'
-            '<h2 style="Margin: 0 0 20px 0; padding: 0; font-size: 27px; line-height: 35px; font-weight: bold; color: #0B0C0C;">'
-            "title</h2>"
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
-            "Comment vas-tu aujourd'hui?</p>"
-            f'<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[/{lang}]]</p>'
-        )
-        content = (
-            f'<div lang="{lang}-ca">'
-            '<h2 style="Margin: 0 0 20px 0; padding: 0; font-size: 27px; line-height: 35px; font-weight: bold; color: #0B0C0C;">'
-            "title</h2>"
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
-            "Comment vas-tu aujourd'hui?</p></div>"
-        )
-        assert add_language_divs(_content) == content
+    testCases = (
+        (
+            # newlines after lang tags
+            """[[fr]]
+Le français suis l'anglais
+[[/fr]]
+
+[[en]]
+hi
+[[/en]]
+
+[[fr]]
+bonjour
+[[/fr]]
+            """,
+            f'<div lang="fr-ca">{EMAIL_P_OPEN_TAG}Le français suis l\'anglais{EMAIL_P_CLOSE_TAG}</div><div lang="en-ca">{EMAIL_P_OPEN_TAG}hi{EMAIL_P_CLOSE_TAG}</div><div lang="fr-ca">{EMAIL_P_OPEN_TAG}bonjour{EMAIL_P_CLOSE_TAG}</div>',  # noqa
+        ),
+        (
+            # no newlines after lang tags
+            """[[fr]]Le français suis l'anglais[[/fr]]
+
+[[en]]hi[[/en]]
+
+[[fr]]bonjour[[/fr]]
+            """,
+            f'<div lang="fr-ca">{EMAIL_P_OPEN_TAG}Le français suis l\'anglais{EMAIL_P_CLOSE_TAG}</div><div lang="en-ca">{EMAIL_P_OPEN_TAG}hi{EMAIL_P_CLOSE_TAG}</div><div lang="fr-ca">{EMAIL_P_OPEN_TAG}bonjour{EMAIL_P_CLOSE_TAG}</div>',  # noqa
+        ),
+        (
+            # with heading tag
+            """[[fr]]
+Le français suis l'anglais
+
+# Heading 1
+Hi
+[[/fr]]
+
+[[en]]
+## Heading 2
+hi
+[[/en]]
+
+[[fr]]
+bonjour
+[[/fr]]""",
+            f'<div lang="fr-ca">{EMAIL_P_OPEN_TAG}Le français suis l\'anglais{EMAIL_P_CLOSE_TAG}<h2 style="Margin: 0 0 20px 0; padding: 0; font-size: 27px; line-height: 35px; font-weight: bold; color: #0B0C0C;">Heading 1</h2>{EMAIL_P_OPEN_TAG}Hi{EMAIL_P_CLOSE_TAG}</div><div lang="en-ca"><h3 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #0B0C0C;font-size: 24px; font-weight: bold;">Heading 2</h3>{EMAIL_P_OPEN_TAG}hi{EMAIL_P_CLOSE_TAG}</div><div lang="fr-ca">{EMAIL_P_OPEN_TAG}bonjour{EMAIL_P_CLOSE_TAG}</div>',  # noqa
+        ),
+        # with list tag
+        (
+            """[[fr]]
+Le français suis l'anglais
+[[/fr]]
+
+[[en]]
+- item 1
+- item 2
+- item 3
+[[/en]]
+
+[[fr]]
+bonjour
+
+1. item 1
+1. item 2
+1. item 3
+[[/fr]]""",
+            f'<div lang="fr-ca">{EMAIL_P_OPEN_TAG}Le français suis l\'anglais{EMAIL_P_CLOSE_TAG}</div><div lang="en-ca"><table role="presentation" style="padding: 0 0 20px 0;"><tr><td style="font-family: Helvetica, Arial, sans-serif;"><ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;"><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 1</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 2</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 3</li></ul></td></tr></table></div><div lang="fr-ca">{EMAIL_P_OPEN_TAG}bonjour{EMAIL_P_CLOSE_TAG}<table role="presentation" style="padding: 0 0 20px 0;"><tr><td style="font-family: Helvetica, Arial, sans-serif;"><ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;"><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 1</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 2</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 3</li></ol></td></tr></table></div>',  # noqa
+        ),
+        ("[[en]]No closing tag", f"{EMAIL_P_OPEN_TAG}[[en]]No closing tag{EMAIL_P_CLOSE_TAG}"),
+        ("No opening tag[[/en]]", f"{EMAIL_P_OPEN_TAG}No opening tag[[/en]]{EMAIL_P_CLOSE_TAG}"),
+    )
 
     @pytest.mark.parametrize(
         "input,output",
@@ -988,56 +1045,65 @@ class TestAddLanguageDivs:
     def test_remove_language_divs(self, input: str, output: str):
         assert remove_language_divs(input) == output
 
-    def test_multiple_language_div_after_mistune(self):
-        testString = '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[fr]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">Le français suis l\'anglais</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[/fr]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[en]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">hi</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[/en]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[fr]]<br />Bonjour<br />[[/fr]]</p>'  # noqa
-        testResult = '<div lang="fr-ca"><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">Le français suis l\'anglais</p></div><div lang="en-ca"><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">hi</p></div><div lang="fr-ca"><br />Bonjour<br /></div>'  # noqa
+    @pytest.mark.parametrize("input, output", testCases)
+    def test_multiple_language_tags(self, input: str, output: str):
+        # send it through the function guantlet (This mirrors what is done in template.py/get_html_email_body())
+        testString = (
+            Take(input)
+            .then(unlink_govuk_escaped)
+            .then(strip_unsupported_characters)
+            .then(add_trailing_newline)
+            .then(escape_lang_tags)
+            .then(notify_email_markdown)
+            .then(add_language_divs)
+        )
 
-        assert add_language_divs(testString) == testResult
+        assert testString == output
 
-    def test_multiple_language_div_without_mistune(self):
-        testString = f"""
-        [[fr]]
-        Le français suis l'anglais
-        [[/fr]]
+    @pytest.mark.parametrize(
+        "input",
+        (
+            # With newlines + nested lang tags
+            """[[fr]]
+Le français suis l'anglais
+[[/fr]]
 
-        [[en]]
-        hi
-        [[/en]]
+[[en]]
+hi
+[[fr]]
+NESTED!
+[[/fr]]
+[[/en]]
 
-        [[fr]]
-        bonjour
-        [[/fr]]
-        """  # noqa
+[[fr]]
+bonjour
+[[/fr]]
+            """,
+            # Without newlines + nested lang tags
+            """[[fr]]Le français suis l'anglais[[/fr]]
 
-        testResult = '\n        <div lang="fr-ca">\n        Le français suis l\'anglais\n        </div>\n\n        <div lang="en-ca">\n        hi\n        </div>\n\n        <div lang="fr-ca">\n        bonjour\n        </div>\n        '  # noqa
-        assert add_language_divs(testString) == testResult
+[[en]]hi[[fr]]NESTED![[/fr]][[/en]]
 
-    def test_nested_language_divs_after_mistune(self):
-        testString = '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[fr]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">Le français suis l\'anglais</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[en]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">hi</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[/en]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[/fr]]</p><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">[[en]]<br />hi<br />[[fr]]<br />Bonjour<br />[[/fr]]<br />[[/en]]</p>'  # noqa
-        testResult = '<div lang="fr-ca"><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">Le français suis l\'anglais</p><div lang="en-ca"><p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">hi</p></div></div><div lang="en-ca"><br />hi<br /><div lang="fr-ca"><br />Bonjour<br /></div><br /></div>'  # noqa
+[[fr]]bonjour[[/fr]]
+            """,
+        ),
+    )
+    def test_nested_language_tags(self, input: str):
+        # send it through the function guantlet (This mirrors what is done in template.py/get_html_email_body())
+        testString = (
+            Take(input)
+            .then(unlink_govuk_escaped)
+            .then(strip_unsupported_characters)
+            .then(add_trailing_newline)
+            .then(escape_lang_tags)
+            .then(notify_email_markdown)
+            .then(add_language_divs)
+        )
 
-        assert add_language_divs(testString) == testResult
-
-    def test_nested_language_divs_without_mistune(self):
-        testString = f"""
-        [[fr]]
-        Le français suis l'anglais
-        
-            [[en]]
-            English!
-            [[/en]]
-        
-        [[/fr]]
-
-        [[en]]
-        English
-            [[fr]]
-            French!
-            [[/fr]]
-        [[/en]]
-        """  # noqa
-        testResult = '\n        <div lang="fr-ca">\n        Le français suis l\'anglais\n        \n            <div lang="en-ca">\n            English!\n            </div>\n        \n        </div>\n\n        <div lang="en-ca">\n        English\n            <div lang="fr-ca">\n            French!\n            </div>\n        </div>\n        '  # noqa
-        assert add_language_divs(testString) == testResult
+        assert (
+            testString
+            == f'<div lang="fr-ca">{EMAIL_P_OPEN_TAG}Le français suis l\'anglais{EMAIL_P_CLOSE_TAG}</div><div lang="en-ca">{EMAIL_P_OPEN_TAG}hi{EMAIL_P_CLOSE_TAG}<div lang="fr-ca">{EMAIL_P_OPEN_TAG}NESTED!{EMAIL_P_CLOSE_TAG}</div></div><div lang="fr-ca">{EMAIL_P_OPEN_TAG}bonjour{EMAIL_P_CLOSE_TAG}</div>'  # noqa
+        )
 
 
 @pytest.mark.parametrize(

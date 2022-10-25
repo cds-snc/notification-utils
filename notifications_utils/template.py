@@ -28,6 +28,7 @@ from notifications_utils.formatters import (
     remove_empty_lines,
     sms_encode,
     escape_html,
+    escape_lang_tags,
     strip_dvla_markup,
     strip_pipes,
     remove_whitespace_before_punctuation,
@@ -753,6 +754,7 @@ def get_html_email_body(template_content, template_values, redact_missing_person
         .then(unlink_govuk_escaped)
         .then(strip_unsupported_characters)
         .then(add_trailing_newline)
+        .then(escape_lang_tags)
         .then(notify_email_markdown)
         .then(add_language_divs)
         .then(add_ircc_coat_of_arms)
