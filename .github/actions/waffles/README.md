@@ -4,6 +4,55 @@ This action performs URL checks of self-discovered endpoints within a Flask
 application against a provided base URL, i.e. targeting the staging or
 production environment.
 
+## Supporting a new URL within GCNotify
+
+When you want to add a new URL to be supported in GCNotify, this will require
+a few code interventions. For example, if you want to publish a new landing page
+on the admin component via GCArticles, you'd need to perform these steps to allow
+the new URL to get through the firewall rules. We restrict these URLs because
+we don't want any URLs to get hit by URL scanning actions on GCNotify, producing
+noise in our WAF logs and potentially triggering support alarms.
+
+Modifying the WAF rules and deploying in the target environment (e.g. staging)
+is a necessary step for the checks to pass in dependent pull requests.
+
+### Add to AWS WAF rules in Terraform repository
+
+To open new URLs, we need to refine the regular expressions in the Terraform
+repository. Listed below are the locations of these, depending on the component
+you need to add the new URLs for.
+
+#### notification-admin
+
+1. If the URL to add is for GCArticles, grab the link from the wordpress
+platform and the assigned slug for the new article.
+
+2. Add a corresponding  regular expressions at this location to let the
+new URL through:
+
+   * [aws/eks/admin_waf_regex_patterns.tf](https://github.com/cds-snc/notification-terraform/blob/main/aws/eks/admin_waf_regex_patterns.tf)
+
+3. Add the new routes into the `GC_ARTICLES_ROUTES` global variable in
+the file below. Make sure that the changes of the previous step is merged
+into the mainline, so that AWS processed the WAF rules and allow the PR checks
+to get through.
+
+   * [app/articles/routing.py](https://github.com/cds-snc/notification-admin/blob/97bd1e2762c8358af55cccb947496d5bc990a15d/app/articles/routing.py#L5)
+
+#### notification-api
+
+1. Add a corresponding  regular expressions at this location to let the
+new URL through:
+
+   * [aws/eks/api_waf_regex_patterns.tf](https://github.com/cds-snc/notification-terraform/blob/main/aws/lambda-api/api_waf_regex_patterns.tf)
+
+#### notification-document-download-api
+
+1. Add a corresponding  regular expressions at this location to let the
+new URL through:
+
+   * [aws/eks/waf.tf](https://github.com/cds-snc/notification-terraform/blob/1273707e7c4fe101f8c1a7d31ca3de421662a9e7/aws/eks/waf.tf#L615)
+
 ## Inputs
 
 ## `app-loc`
