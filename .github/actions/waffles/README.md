@@ -13,6 +13,9 @@ the new URL to get through the firewall rules. We restrict these URLs because
 we don't want any URLs to get hit by URL scanning actions on GCNotify, producing
 noise in our WAF logs and potentially triggering support alarms.
 
+Modifying the WAF rules and deploying in the target environment (e.g. staging)
+is a necessary step for the checks to pass in dependent pull requests.
+
 ### Add to AWS WAF rules in Terraform repository
 
 To open new URLs, we need to refine the regular expressions in the Terraform
@@ -30,7 +33,9 @@ new URL through:
    * [aws/eks/admin_waf_regex_patterns.tf](https://github.com/cds-snc/notification-terraform/blob/main/aws/eks/admin_waf_regex_patterns.tf)
 
 3. Add the new routes into the `GC_ARTICLES_ROUTES` global variable in
-this file:
+the file below. Make sure that the changes of the previous step is merged
+into the mainline, so that AWS processed the WAF rules and allow the PR checks
+to get through.
 
    * [app/articles/routing.py](https://github.com/cds-snc/notification-admin/blob/97bd1e2762c8358af55cccb947496d5bc990a15d/app/articles/routing.py#L5)
 
