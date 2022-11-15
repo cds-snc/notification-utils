@@ -40,5 +40,5 @@ Additionally code coverage is checked via pytest-cov:
 
 ## Documentation
 
-* [How to work with notification-utils](https://docs.google.com/document/d/1CMCR4wiTisA3qZdkomuk0zriqeyVp-od5ZuUO95wATM)
+* [How to work with notification-utils](https://github.com/cds-snc/notification-utils/wiki/How-to-work-with-notification-utils-locally)
 * Documentation for the template used to render emails is in the [docs](./docs/README.md) folder.
