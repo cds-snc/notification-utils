@@ -2,7 +2,7 @@ import pytest
 import itertools
 import unicodedata
 from functools import partial
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 
 from notifications_utils import SMS_CHAR_COUNT_LIMIT
 from notifications_utils.recipients import Cell, RecipientCSV, Row
