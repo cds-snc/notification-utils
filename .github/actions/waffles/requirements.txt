@@ -1,4 +1,4 @@
 docopt==0.6.2
-Flask==2.0.3
-markupsafe==2.0.1
+Flask==2.2.2
+markupsafe==2.1.1
 git+https://github.com/cds-snc/notifier-utils.git@48.3.0#egg=notifications-utils

@@ -7,7 +7,7 @@ jobs:
     steps:
     - uses: actions/checkout@main
     - name: docker://python:3.9
-      uses: docker://python:3.9
+      uses: docker://python:3.11.0
       with:
           entrypoint: /bin/bash
           args: -c "/github/workspace/scripts/bootstrap.sh && /github/workspace/scripts/run_tests.sh"
