@@ -1,5 +1,5 @@
 import re
-from typing import Any, Callable, Dict, List, Literal
+from typing import Any, Callable, Dict, List, Literal, Optional
 
 from orderedset import OrderedSet
 from flask import Markup
@@ -68,7 +68,7 @@ class Field:
     def __init__(
         self,
         content: str,
-        values: Dict[str, Any] = None,
+        values: Optional[Dict[str, Any]] = None,
         html: HtmlSanitizers = "strip",
         markdown_lists: bool = False,
         redact_missing_personalisation: bool = False,
