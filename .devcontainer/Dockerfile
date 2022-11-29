@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/vscode/devcontainers/python:0-3.9@sha256:30cd5aa1d4c9b36e29676034ae9690ebaab1611eca39146a5e9a058b382992a7
+FROM mcr.microsoft.com/vscode/devcontainers/python:0-3.10
 
 RUN apt-get update \
     && apt-get -y install --no-install-recommends apt-utils 2>&1 \
