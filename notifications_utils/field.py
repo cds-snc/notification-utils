@@ -1,7 +1,7 @@
 import re
 from typing import Any, Callable, Dict, List, Literal, Optional
 
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 from flask import Markup
 
 from notifications_utils.columns import Columns

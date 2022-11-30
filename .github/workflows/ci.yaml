@@ -6,8 +6,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@main
-    - name: docker://python:3.9
-      uses: docker://python:3.9
+    - name: docker://python:3.10
+      uses: docker://python:3.10
       with:
           entrypoint: /bin/bash
           args: -c "/github/workspace/scripts/bootstrap.sh && /github/workspace/scripts/run_tests.sh"

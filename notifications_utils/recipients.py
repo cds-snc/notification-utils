@@ -8,7 +8,7 @@ from contextlib import suppress
 from functools import lru_cache, partial
 from itertools import islice
 from collections import OrderedDict, namedtuple
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 from typing import Callable, Dict, List
 
 from flask import current_app
