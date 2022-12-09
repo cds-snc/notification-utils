@@ -10,6 +10,6 @@ RUN mkdir app
 COPY . /app
 WORKDIR /app
 
-RUN pip3 install -r requirements.txt
+RUN pip install -r requirements.txt
 
 ENTRYPOINT ["sh", "/app/entrypoint.sh"]
