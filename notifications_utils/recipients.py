@@ -386,7 +386,7 @@ def validate_local_phone_number(number, column=None):
         raise InvalidPhoneError('Not a valid local number')
 
 
-def validate_phone_number(number, column=None, international=False):
+def validate_phone_number(number, column=None, international=False):  # noqa:   C901
 
     if ';' in number:
         raise InvalidPhoneError('Not a valid number')
@@ -394,18 +394,28 @@ def validate_phone_number(number, column=None, international=False):
     if (not international) or is_local_phone_number(number):
         return validate_local_phone_number(number)
 
-    number = normalise_phone_number(number)
+    normalized_number = normalise_phone_number(number)
 
-    if number is False:
-        raise InvalidPhoneError('Not a valid international number')
+    if not normalized_number:
+        try:
+            parsedNumber = phonenumbers.parse(number, region_code)
+            isValidNumber = phonenumbers.is_valid_number(parsedNumber)
+            if not isValidNumber:
+                current_app.logger.exception('%s: This number is not accpeted', number)
+                raise InvalidPhoneError(
+                    'Field contains an invalid number due to either formatting '
+                    'or an impossible combination of area code and/or telephone prefix.'
+                )
+        except phonenumbers.phonenumberutil.NumberParseException:
+            raise InvalidPhoneError('Not a valid number')
 
-    if len(number) < 8:
+    if len(normalized_number) < 8:
         raise InvalidPhoneError('Not enough digits')
 
-    if get_international_prefix(number) is None:
+    if get_international_prefix(normalized_number) is None:
         raise InvalidPhoneError('Not a valid country prefix')
 
-    return number
+    return normalized_number
 
 
 validate_and_format_phone_number = validate_phone_number
