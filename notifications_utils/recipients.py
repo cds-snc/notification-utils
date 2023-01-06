@@ -386,7 +386,7 @@ def validate_local_phone_number(number, column=None):
         raise InvalidPhoneError('Not a valid local number')
 
 
-def validate_phone_number(number, column=None, international=False):
+def validate_phone_number(number, column=None, international=False):  # noqa:   C901
 
     if ';' in number:
         raise InvalidPhoneError('Not a valid number')
