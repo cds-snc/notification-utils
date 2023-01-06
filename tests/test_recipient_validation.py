@@ -80,7 +80,7 @@ invalid_local_phone_numbers = sum([
 invalid_phone_numbers = [
     ('+21 4321 0987', 'Not a valid number'),
     ('+003997 1234 7890', 'Not a valid number'),
-    ('800000000000', 'field contains an invalid number due to either formatting or an impossible combination of area code and/or telephone prefix.'),
+    ('800000000000', 'Field contains an invalid number due to either formatting or an impossible combination of area code and/or telephone prefix.'),
     ('1234567', 'Field contains an invalid number due to either formatting or an impossible combination of area code and/or telephone prefix.'),
     ('+682 1234', 'Field contains an invalid number due to either formatting or an impossible combination of area code and/or telephone prefix.'),  # Cook Islands phone numbers can be 5 digits
     ('+17553927664', 'Field contains an invalid number due to either formatting or an impossible combination of area code and/or telephone prefix.'),
