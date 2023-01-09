@@ -396,11 +396,11 @@ def validate_phone_number(number, column=None, international=False):  # noqa:   
 
     normalized_number = normalise_phone_number(number)
 
-    if normalized_number is False:
+    if not normalized_number:
         try:
             parsedNumber = phonenumbers.parse(number, region_code)
             isValidNumber = phonenumbers.is_valid_number(parsedNumber)
-            if (isValidNumber is False):
+            if not isValidNumber:
                 raise InvalidPhoneError(
                     'Field contains an invalid number due to either formatting '
                     'or animpossible combination of area code and/or telephone prefix.'
