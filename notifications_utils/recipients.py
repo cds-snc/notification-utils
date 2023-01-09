@@ -399,7 +399,7 @@ def validate_phone_number(number, column=None, international=False):  # noqa:   
             parsed_number = phonenumbers.parse(number, region_code)
             is_valid_number = phonenumbers.is_valid_number(parsed_number)
             if not is_valid_number:
-                logging.warning('Failed to validate parsed number: %s,', parsed_number)
+                logging.warning('Failed to validate parsed number: %s', parsed_number)
                 raise InvalidPhoneError(
                     'Field contains an invalid number due to either formatting '
                     'or an impossible combination of area code and/or telephone prefix.'
