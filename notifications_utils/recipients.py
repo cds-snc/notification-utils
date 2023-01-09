@@ -401,6 +401,7 @@ def validate_phone_number(number, column=None, international=False):  # noqa:   
             parsedNumber = phonenumbers.parse(number, region_code)
             isValidNumber = phonenumbers.is_valid_number(parsedNumber)
             if not isValidNumber:
+                current_app.logger.exception('%s: This number is not accpeted', number)
                 raise InvalidPhoneError(
                     'Field contains an invalid number due to either formatting '
                     'or an impossible combination of area code and/or telephone prefix.'
