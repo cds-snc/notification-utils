@@ -1,3 +1,4 @@
+import logging
 import re
 import sys
 import csv
@@ -9,9 +10,6 @@ from functools import lru_cache, partial
 from itertools import islice
 from collections import OrderedDict, namedtuple
 from orderedset import OrderedSet
-
-from flask import current_app
-
 from . import EMAIL_REGEX_PATTERN, hostname_part, tld_part
 from notifications_utils.formatters import strip_and_remove_obscure_whitespace, strip_whitespace
 from notifications_utils.template import Template
@@ -401,7 +399,7 @@ def validate_phone_number(number, column=None, international=False):  # noqa:   
             parsedNumber = phonenumbers.parse(number, region_code)
             isValidNumber = phonenumbers.is_valid_number(parsedNumber)
             if not isValidNumber:
-                current_app.logger.exception('%s: This number is not accpeted', number)
+                logging.error('%s: This number is not accpeted', number)
                 raise InvalidPhoneError(
                     'Field contains an invalid number due to either formatting '
                     'or an impossible combination of area code and/or telephone prefix.'
@@ -430,7 +428,7 @@ def try_validate_and_format_phone_number(number, column=None, international=None
         return validate_and_format_phone_number(number, column, international)
     except InvalidPhoneError as exc:
         if log_msg:
-            current_app.logger.warning('{}: {}'.format(log_msg, exc))
+            logging.warning('{}: {}'.format(log_msg, exc))
         return number
 
 

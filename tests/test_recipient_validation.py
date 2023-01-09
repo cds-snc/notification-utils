@@ -435,7 +435,7 @@ def test_format_recipient(recipient, expected_formatted):
 
 
 def test_try_format_recipient_doesnt_throw():
-    assert try_validate_and_format_phone_number('ALPHANUM3R1C') == 'ALPHANUM3R1C'
+    assert try_validate_and_format_phone_number('ALPHANUM3R1C', log_msg="Log this.") == 'ALPHANUM3R1C'
 
 
 def test_format_phone_number_human_readable_doenst_throw():
