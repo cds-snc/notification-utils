@@ -403,7 +403,7 @@ def validate_phone_number(number, column=None, international=False):  # noqa:   
             if not isValidNumber:
                 raise InvalidPhoneError(
                     'Field contains an invalid number due to either formatting '
-                    'or animpossible combination of area code and/or telephone prefix.'
+                    'or an impossible combination of area code and/or telephone prefix.'
                 )
         except phonenumbers.phonenumberutil.NumberParseException:
             raise InvalidPhoneError('Not a valid number')
