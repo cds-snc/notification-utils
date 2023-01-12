@@ -7,12 +7,12 @@
     <td class="force-white-bg" style="padding: 15px 0; border-radius: 10px;">
       <table role="presentation" width="100%" style="border-collapse: collapse;">
         <tr>
-          <td style="padding: 0;">
+          <td style="padding: 0 10px 0 {% if brand_colour %} 8px; border-left: solid 2px {{ brand_colour }}{% else %} 10px;{% endif %}">
             <img src="{{ brand_logo }}" style="display: block; border: 0" height="{% if brand_text -%} 27 {%- else -%} 108 {%- endif %}"
                         alt="{% if brand_text %} {% else -%}{{ brand_name }}{%- endif %}" />
           </td>
           {% if brand_text %}
-            <td style="font-family: Helvetica, Arial, sans-serif; font-size: 18px; line-height: 23px;">
+            <td width="100%" style="font-family: Helvetica, Arial, sans-serif; font-size: 18px; line-height: 23px;" valign="center">
               {{ brand_text }}
             </td>
           {% endif %}
