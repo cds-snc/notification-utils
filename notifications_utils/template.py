@@ -341,7 +341,7 @@ class PlainTextEmailTemplate(WithSubjectTemplate):
 class HTMLEmailTemplate(WithSubjectTemplate):
 
     # Instantiate with regular jinja for test mocking (tests expect this to exist before init)
-    jinja_template = template_env.get_template("email_template.jinja2")
+    jinja_template = template_env.get_template("email/email_template.jinja2")
 
     PREHEADER_LENGTH_IN_CHARACTERS = 256
 
@@ -373,7 +373,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         # set this again to make sure the correct either utils / downstream local jinja is used
         # however, don't set if we are in a test environment (to preserve the above mock)
         if "pytest" not in sys.modules:
-            self.jinja_template = self.template_env.get_template("email_template.jinja2")
+            self.jinja_template = self.template_env.get_template("email/email_template.jinja2")
 
     @property
     def preheader(self):
@@ -444,7 +444,7 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         self.from_address = from_address
         self.reply_to = reply_to
         self.show_recipient = show_recipient
-        self.jinja_template = self.template_env.get_template("email_preview_template.jinja2")
+        self.jinja_template = self.template_env.get_template("email/email_preview_template.jinja2")
         self.fip_banner_english = fip_banner_english
         self.fip_banner_french = fip_banner_french
         self.brand_colour = brand_colour
