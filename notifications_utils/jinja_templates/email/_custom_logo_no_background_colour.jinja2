@@ -1,0 +1,30 @@
+<table role="presentation" style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 0px auto"
+>
+  <tr>
+    <td width="100%" class="force-white-bg" style="border-radius: 10px;">
+      <table role="presentation" style="border-collapse: collapse; max-width: 286px;" align="left">
+        <tr>
+            <td style="line-height: 0px; border: 0; padding: 0">
+              <img 
+                src="{{ brand_logo }}" 
+                height="{% if brand_text -%} 27 {%- else -%} 108 {%- endif %}"
+                width="286"
+                border="0"
+                alt="{% if brand_text %} {% else -%}{{ brand_name }}{%- endif %}" />
+                </td>
+                </tr>
+                <tr>
+                <td width="100%" style="font-family: Helvetica, Arial, sans-serif; font-size: 18px; line-height: 23px;" valign="center">
+                  {% if brand_text %}
+                  {{ brand_text }}
+                  {% endif %}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<div style="height:30px">&nbsp;</div>
