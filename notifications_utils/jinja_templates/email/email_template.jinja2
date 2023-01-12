@@ -1,0 +1,68 @@
+{% if complete_html %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta content="telephone=no" name="format-detection" /> <!-- need to add formatting for real phone numbers -->
+  <meta name="viewport" content="width=device-width" />
+  <title>Page title</title>
+
+  <style type="text/css">
+    @media only screen and (min-device-width: 581px) {
+      .content {
+        width: 580px !important;
+      }
+    }
+    body { margin:0 !important; }
+    div[style*="margin: 16px 0"] { margin:0 !important; }
+    .force-white-bg { background-color: #fff; background: linear-gradient(#fff, #fff); background-image: url("https://assets.notification.canada.ca/1x1-ffffff.png"); }
+    [data-ogsc] .force-white-bg { background-color: #fff; }
+  </style>
+  <!--[if gte mso 9]>
+  <style>
+     li {text-indent: -1em;}
+  </style>
+  <![endif]-->
+</head>
+
+<body style="font-family: Helvetica, Arial, sans-serif;font-size: 16px;margin: 0;color:#0b0c0c;">
+{% endif %}
+<span style="display: none;font-size: 1px;color: #fff; max-height: 0;">{{ preheader }}…</span>
+
+<div style="height:20px">&nbsp;</div>
+<!-- start primary template header EN + FR -->
+{% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
+  {% include 'email/_fip_banner.jinja2' %}
+{% endif %}
+
+{% if logo_with_background_colour %}
+  {% include 'email/_custom_logo_with_background_colour.jinja2' %}
+{% endif %}
+
+{% if brand_logo and not logo_with_background_colour %}
+  {% include 'email/_custom_logo_no_background_colour.jinja2' %}
+{% endif %}
+
+<!-- main content -->
+<table
+    role="presentation"
+    class="content"
+    style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 0 auto;"
+>
+  <tr>
+    <td style="font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.315789474; padding: 0 10px;">
+        {{ body|safe }}
+    </td>
+  </tr>
+</table>
+<!-- end main content -->
+
+{% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
+  {% include 'email/_footer.jinja2' %}
+{% endif %}
+
+{% if complete_html %}
+</body>
+</html>
+{% endif %}

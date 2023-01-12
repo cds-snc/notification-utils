@@ -1,0 +1,43 @@
+{% set brand_colour = brand_colour if brand_colour else '#0b0c0c' %}
+<table role="presentation" style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 0px auto">
+  <tr>
+    <td width="100%" bgcolor="{{brand_colour}}" style="padding: 15px 0; background-color: {{brand_colour}}; background: linear-gradient({{brand_colour}}, {{brand_colour}}); border-radius: 10px;">
+      <table role="presentation" width="100%" style="border-collapse: collapse;max-width: 580px; padding-left: 10px;" align="left">
+        <tr>
+          {% if brand_logo %}
+            <td
+              width="70"
+              height="{% if brand_text -%} 27 {%- else -%} 54 {%- endif %}"
+              bgcolor="{{brand_colour}}"
+              valign="middle"
+              style="padding: 10px 0px 12px 10px"
+            >
+              <img
+                src="{{ brand_logo }}"
+                border="0"
+                style="display: block; border: 0;"
+                height="{% if brand_text -%} 27 {%- else -%} 54 {%- endif %}"
+                alt="{% if brand_text %} {% else -%}{{ brand_name }}{%- endif %}"
+              />
+            </td>
+          {% endif %}
+          {% if brand_text %}
+            <td width="100%" bgcolor="{{brand_colour}}" valign="middle" align="left" style="padding: 10px 0 14px 10px">
+              <span style="
+                display: block;
+                font-family: Helvetica, Arial, sans-serif;
+                font-weight: 700;
+                font-size: 19px;
+                color: #ffffff;
+                line-height: 25px;
+                ">
+                  {{ brand_text }}
+              </span>
+            </td>
+          {% endif %}
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<div style="height:30px">&nbsp;</div>
