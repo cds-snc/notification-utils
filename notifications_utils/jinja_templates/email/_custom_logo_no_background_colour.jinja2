@@ -8,16 +8,14 @@
       <table role="presentation" width="100%" style="border-collapse: collapse;">
         <tr>
           <td style="padding: 0;">
-            <div>
-              <img src="{{ brand_logo }}" style="display: block; border: 0" height="{% if brand_text -%} 27 {%- else -%} 108 {%- endif %}"
+            <img src="{{ brand_logo }}" style="display: block; border: 0" height="{% if brand_text -%} 27 {%- else -%} 108 {%- endif %}"
                         alt="{% if brand_text %} {% else -%}{{ brand_name }}{%- endif %}" />
-              {% if brand_text %}
-                <div style="font-family: Helvetica, Arial, sans-serif; font-size: 18px; line-height: 23px;">
-                  {{ brand_text }}
-                </div>
-              {% endif %}
-            </div>
           </td>
+          {% if brand_text %}
+            <td style="font-family: Helvetica, Arial, sans-serif; font-size: 18px; line-height: 23px;">
+              {{ brand_text }}
+            </td>
+          {% endif %}
         </tr>
       </table>
     </td>
