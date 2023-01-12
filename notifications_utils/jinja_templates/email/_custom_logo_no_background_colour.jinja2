@@ -7,7 +7,7 @@
     <td class="force-white-bg" style="padding: 15px 0; border-radius: 10px;">
       <table role="presentation" width="100%" style="border-collapse: collapse;">
         <tr>
-          <td style="padding: 0 10px 0 10px;">
+          <td style="padding: 0 10px 0 {% if brand_colour %} 8px; border-left: solid 2px {{ brand_colour }}{% else %} 10px;{% endif %}">
             <img src="{{ brand_logo }}" style="display: block; border: 0" height="{% if brand_text -%} 27 {%- else -%} 108 {%- endif %}"
                         alt="{% if brand_text %} {% else -%}{{ brand_name }}{%- endif %}" />
           </td>
