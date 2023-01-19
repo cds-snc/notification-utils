@@ -1,3 +1,4 @@
+import json
 import logging as builtin_logging
 import uuid
 from time import monotonic
@@ -188,3 +189,62 @@ def test_get_class_attrs():
         },
         "env": "***",
     }
+
+
+@pytest.mark.parametrize("debugconfig", [True, False])
+@pytest.mark.parametrize("testcases", [("info", "warning", "error", "exception", "critical")])
+def test_logger_adds_extra_context_details(app, mocker, debugconfig, testcases):  # noqa
+    def createApp(app):
+        app.debug = debugconfig
+
+        @app.route("/info", methods=["POST"])
+        def info():
+            app.logger.info("info")
+            return "ok"
+
+        @app.route("/warning", methods=["POST"])
+        def warning():
+            app.logger.warning("warning")
+            return "ok"
+
+        @app.route("/error", methods=["POST"])
+        def error():
+            app.logger.error("error")
+            return "ok"
+
+        @app.route("/exception", methods=["POST"])
+        def exception():
+            app.logger.exception("exception")
+            return "ok"
+
+        @app.route("/critical", methods=["POST"])
+        def critical():
+            app.logger.critical("critical")
+            return "ok"
+
+        logging.init_app(app)
+
+    createApp(app)
+
+    if debugconfig:
+        log_spy = mocker.spy(logging.CustomLogFormatter, "format")
+    else:
+        log_spy = mocker.spy(logging.JSONFormatter, "process_log_record")
+
+    with app.app_context():
+        for route in testcases:
+            app.test_client().post(
+                f"/{route}", data=json.dumps({"template_id": "1234"}), headers={"Content-Type": "application/json"}
+            )
+
+            if debugconfig:
+                errorMessage = log_spy.spy_return  # message is returned as a string when using the CustomLogFormatter
+            else:
+                errorMessage = log_spy.spy_return["message"]  # message is embedded in JSON when using the JSONFormatter
+
+            # ensure extra request details are being added
+            assert "Request details" in errorMessage
+            # ensure body data (template_id) is shown
+            assert "template_id" in errorMessage
+            # ensure request data (endpoint) is shown
+            assert "endpoint" in errorMessage
