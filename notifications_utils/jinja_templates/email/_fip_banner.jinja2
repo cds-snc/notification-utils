@@ -1,0 +1,36 @@
+<table role="presentation" style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 0px auto">
+    <tr>
+        <td width="100%" class="force-white-bg" style="border-radius: 10px;">
+        <!-- start fip -->
+        <table role="presentation" style="border-collapse: collapse; max-width: 286px;" align="left">
+            <tr>
+            <td style="line-height: 0px; border: 0; padding: 0">
+
+                {% if fip_banner_english %}
+                <img
+                src="https://assets.notification.canada.ca/gc-logo-en.png?20210531"
+                alt="Government of Canada / Gouvernement du Canada"
+                height="55"
+                width="286"
+                border="0"
+                />
+                {% endif %}
+
+                {% if fip_banner_french or brand_name == "canada.ca-fr" %}
+                <img
+                src="https://assets.notification.canada.ca/gc-logo-fr.png?20210531"
+                alt="Gouvernement du Canada / Government of Canada"
+                height="55"
+                width="286"
+                border="0"
+                />
+                {% endif %}
+
+            </td>
+            </tr>
+        </table>
+        <!-- end fip -->
+        </td>
+    </tr>
+</table>
+<div style="height:30px">&nbsp;</div>

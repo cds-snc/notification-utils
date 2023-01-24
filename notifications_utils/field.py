@@ -1,7 +1,7 @@
 import re
-from typing import Any, Callable, Dict, List, Literal
+from typing import Any, Callable, Dict, List, Literal, Optional
 
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 from flask import Markup
 
 from notifications_utils.columns import Columns
@@ -68,7 +68,7 @@ class Field:
     def __init__(
         self,
         content: str,
-        values: Dict[str, Any] = None,
+        values: Optional[Dict[str, Any]] = None,
         html: HtmlSanitizers = "strip",
         markdown_lists: bool = False,
         redact_missing_personalisation: bool = False,

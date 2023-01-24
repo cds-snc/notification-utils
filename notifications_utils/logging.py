@@ -195,9 +195,13 @@ class CustomLogFormatter(logging.Formatter):
     def format(self, record):
         record = self.add_fields(record)
         try:
+            # sometimes record.msg is an exception so this is checking for that
+            if isinstance(record.msg, str):
+                record.msg += _getAdditionalLoggingDetails()
             record.msg = str(record.msg).format(**record.__dict__)
         except (KeyError, IndexError) as e:
             logger.exception("failed to format log message: {} not found".format(e))
+
         return super(CustomLogFormatter, self).format(record)
 
 
@@ -215,4 +219,34 @@ class JSONFormatter(BaseJSONFormatter):
             log_record["message"] = str(log_record["message"])
         except (KeyError, IndexError) as e:
             logger.exception("failed to format log message: {} not found".format(e))
+
+        # add additional details to log message when we can
+        log_record["message"] += _getAdditionalLoggingDetails()
+
         return log_record
+
+
+# log request details when logging occurs as part of a request
+def _getAdditionalLoggingDetails():
+    if has_request_context():
+        # request fields to log
+        requestFields = ("full_path", "endpoint")
+        # body fields to log
+        bodyFields = ("template_id", "service_id", "notification_id")
+        additionalDetails = " [Request details: "
+
+        # log request fields if they are present
+        for field in requestFields:
+            additionalDetails += f"{field}: '{getattr(request, field)}' " if hasattr(request, field) else ""
+
+        # log body fields if they are present
+        json = request.get_json()
+        if json:
+            for field in bodyFields:
+                additionalDetails += f"{field}: '{json[field]}' " if field in json else ""
+
+        additionalDetails += "]"
+    else:
+        additionalDetails = ""
+
+    return additionalDetails

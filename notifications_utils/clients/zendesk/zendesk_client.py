@@ -70,7 +70,7 @@ class ZendeskClient:
             data["ticket"]["requester"] = {"email": user_email, "name": user_name or "(no name supplied)"}
 
         response = requests.post(
-            self.ZENDESK_TICKET_URL, json=data, auth=("{}/token".format(self.NOTIFY_ZENDESK_EMAIL), self.api_key)
+            self.ZENDESK_TICKET_URL, json=data, auth=("{}/token".format(self.NOTIFY_ZENDESK_EMAIL), self.api_key)  # type: ignore
         )
 
         if response.status_code != 201:
