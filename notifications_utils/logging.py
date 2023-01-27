@@ -235,18 +235,22 @@ def _getAdditionalLoggingDetails():
         bodyFields = ("template_id", "service_id", "notification_id")
         additionalDetails = " [Request details: "
 
-        # log request fields if they are present
-        for field in requestFields:
-            additionalDetails += f"{field}: '{getattr(request, field)}' " if hasattr(request, field) else ""
+        try:
+            # log request fields if they are present
+            for field in requestFields:
+                additionalDetails += f"{field}: '{getattr(request, field)}' " if hasattr(request, field) else ""
 
-        # log body fields if they are present
-        json = request.get_json()
-        if json:
-            for field in bodyFields:
-                additionalDetails += f"{field}: '{json[field]}' " if field in json else ""
+            # log body fields if they are present
+            json = request.get_json(silent=True)
+            if json:
+                for field in bodyFields:
+                    additionalDetails += f"{field}: '{json[field]}' " if field in json else ""
 
-        additionalDetails += "]"
-    else:
-        additionalDetails = ""
+            additionalDetails += "]"
 
-    return additionalDetails
+        except Exception as e:
+            logger.exception("unable to get json data or header data from the request: {} ".format(e))
+
+        return additionalDetails
+
+    return ""
