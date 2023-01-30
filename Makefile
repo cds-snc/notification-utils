@@ -12,7 +12,7 @@ help:
 
 .PHONY: dependencies
 dependencies:
-	poetry install
+	poetry install --only test
 
 .PHONY: build
 build: dependencies ## Build project
