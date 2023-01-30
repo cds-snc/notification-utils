@@ -26,7 +26,7 @@ function get_sha(){
 }
 
 function get_version(){
-    VERSION=$(python setup.py --version)
+    VERSION=$(grep -n "__version__" ../notifications_utils/version.py | sed 's/.*\"\(.*\)\"/\1/'i)
     echo "latest version is ${VERSION}" | pretty
 }
 
