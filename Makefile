@@ -10,22 +10,16 @@ DOCKER_CONTAINER_PREFIX = ${USER}-${BUILD_TAG}
 help:
 	@cat $(MAKEFILE_LIST) | grep -E '^[a-zA-Z_-]+:.*?## .*$$' | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: venv
-venv: venv/bin/activate ## Create virtualenv if it does not exist
-
-venv/bin/activate:
-	test -d venv || virtualenv venv
-
 .PHONY: dependencies
-dependencies: venv ## Install build dependencies
-	./venv/bin/pip install -r requirements_for_test.txt
+dependencies:
+	poetry install
 
 .PHONY: build
 build: dependencies ## Build project
 
 .PHONY: test
-test: venv ## Run tests
-	./scripts/run_tests.sh
+test: ## Run tests
+	poetry run ./scripts/run_tests.sh
 
 .PHONY: prepare-docker-build-image
 prepare-docker-build-image: ## Prepare the Docker builder image

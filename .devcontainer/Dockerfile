@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/vscode/devcontainers/python:0-3.10
 
-ENV POETRY_VERSION="1.3.0"
+ENV POETRY_VERSION="1.3.2"
 
 RUN apt-get update \
     && apt-get -y install --no-install-recommends apt-utils 2>&1 \
@@ -32,4 +32,4 @@ RUN pip install --upgrade pip
 RUN pip install poetry==${POETRY_VERSION} \
   && poetry --version
 
-COPY scripts/bootstrap.sh /usr/local/bin/
+COPY .devcontainer/scripts/notify-dev-entrypoint.sh /usr/local/bin/

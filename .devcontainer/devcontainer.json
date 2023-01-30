@@ -28,5 +28,5 @@
 		"bungcip.better-toml",
 	],
 
-	"postCreateCommand": "bootstrap.sh",
+	"postCreateCommand": "notify-dev-entrypoint.sh",
 }
