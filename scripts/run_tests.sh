@@ -38,4 +38,4 @@ display_result $? 1 "Static type check"
 py.test -n4 tests/
 display_result $? 3 "Unit tests"
 
-python setup.py sdist
+poetry build

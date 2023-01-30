@@ -4,7 +4,7 @@ target-version = ['py37', 'py38', 'py39', 'py310']
 include = '(notifications_utils|tests)/.*\.pyi?$'
 
 [tool.poetry]
-name = "notification-document-download-api"
+name = "notifications-utils"
 version = "50.1.1"
 description = "Shared python code for Notification - Provides logging utils etc."
 authors = ["Canadian Digital Service"]
