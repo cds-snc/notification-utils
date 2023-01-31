@@ -26,7 +26,7 @@ function get_sha(){
 }
 
 function get_version(){
-    VERSION=$(grep -n "__version__" ../notifications_utils/version.py | sed 's/.*\"\(.*\)\"/\1/'i)
+    VERSION=$(poetry version -s)
     echo "latest version is ${VERSION}" | pretty
 }
 
