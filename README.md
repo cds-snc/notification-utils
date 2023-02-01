@@ -14,21 +14,20 @@ This is a python 3 application. It has not been run against any version of pytho
 
 #### Dependency management
 
-This is done through [pip](https://pip.readthedocs.io) and [virtualenv](https://virtualenv.readthedocs.org/en/latest/). In practise we have used
-[VirtualEnvWrapper](http://virtualenvwrapper.readthedocs.org/en/latest/command_ref.html) for our virtual environments.
+This is done through [poetry](https://python-poetry.org/).
 
 Setting up a virtualenvwrapper for python3
 
     mkvirtualenv -p /usr/local/bin/python3 notifications-utils
 
 
-The boostrap script will set the application up. *Ensure you have activated the virtual environment first.*
+The boostrap script will set the application up. *Ensure you have activated the virtual environment first with `poetry shell` or prefix the command with `poetry run`*
 
     ./scripts/bootstrap.sh
 
 This will
 
-* Use pip to install dependencies.
+* Use poetry to install dependencies.
 
 #### Tests
 
