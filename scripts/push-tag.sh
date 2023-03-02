@@ -26,7 +26,7 @@ function get_sha(){
 }
 
 function get_version(){
-    VERSION=$(python setup.py --version)
+    VERSION=$(poetry version -s)
     echo "latest version is ${VERSION}" | pretty
 }
 

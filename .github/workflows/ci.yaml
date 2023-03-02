@@ -4,10 +4,27 @@ jobs:
   build:
     name: PyTest
     runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@main
     - name: docker://python:3.10
       uses: docker://python:3.10
-      with:
-          entrypoint: /bin/bash
-          args: -c "/github/workspace/scripts/bootstrap.sh && /github/workspace/scripts/run_tests.sh"
+
+    - name: Install poetry
+      env:
+        POETRY_VERSION: "1.3.2"
+      run: pip install poetry==${POETRY_VERSION} && poetry --version
+
+    - name: Install requirements
+      run: poetry install
+
+    - name: Copy site-packages in workspace
+      working-directory: ${{ github.workspace }}
+      shell: bash
+      run: |
+        mkdir -p "${{ github.workspace }}/env/" && cp -fR $(poetry env list | poetry env info -p)/lib/python3.10/site-packages "${{ github.workspace }}/env/"
+
+    - name: Bootstrap and run tests
+      working-directory: ${{ github.workspace }}
+      shell: bash
+      run: poetry run ./scripts/run_tests.sh

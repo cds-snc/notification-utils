@@ -5,7 +5,8 @@ ARG HTTPS_PROXY
 ARG NO_PROXY
 
 ENV PYTHONUNBUFFERED=1 \
-	DEBIAN_FRONTEND=noninteractive
+	DEBIAN_FRONTEND=noninteractive \
+    POETRY_VERSION="1.3.2"
 
 RUN \
 	echo "Install base packages" \
@@ -17,13 +18,14 @@ RUN \
 		curl \
 		git \
 		build-essential \
-
 	&& echo "Clean up" \
 	&& rm -rf /var/lib/apt/lists/* /tmp/*
 
-RUN \
-	echo "Install global pip packages" \
-	&& pip install \
-		virtualenv
+RUN pip install --upgrade pip
+
+RUN pip install poetry==${POETRY_VERSION} \
+  && poetry --version
+
+RUN poetry install
 
 WORKDIR /var/project

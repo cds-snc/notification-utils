@@ -105,9 +105,7 @@ class SanitiseSMS(SanitiseText):
         set(
             "@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ\x1bÆæßÉ !\"#¤%&'()*+,-./0123456789:;<=>?"
             + "¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà"
-            +
-            # character set extension
-            "^{}\\[~]|€"
+            + "^{}\\[~]|€"  # character set extension
         )
         | WELSH_NON_GSM_CHARACTERS
     )

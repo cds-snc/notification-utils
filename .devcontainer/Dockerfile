@@ -1,5 +1,7 @@
 FROM mcr.microsoft.com/vscode/devcontainers/python:0-3.10
 
+ENV POETRY_VERSION="1.3.2"
+
 RUN apt-get update \
     && apt-get -y install --no-install-recommends apt-utils 2>&1 \
     && apt-get -y install \
@@ -7,16 +9,16 @@ RUN apt-get update \
         emacs \
         exa \
         fd-find \
-        git \ 
+        git \
         iproute2 \
-        less \ 
+        less \
         libsodium-dev \
-        lsb-release \ 
+        lsb-release \
         man-db \
         manpages \
         net-tools \
-        openssh-client \ 
-        procps \ 
+        openssh-client \
+        procps \
         sudo \
         tldr \
         unzip \
@@ -27,4 +29,7 @@ RUN apt-get update \
 
 RUN pip install --upgrade pip
 
-COPY scripts/bootstrap.sh /usr/local/bin/
+RUN pip install poetry==${POETRY_VERSION} \
+  && poetry --version
+
+COPY .devcontainer/scripts/notify-dev-entrypoint.sh /usr/local/bin/

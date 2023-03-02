@@ -13,7 +13,7 @@
 		"SHELL": "/bin/zsh"
 	},
 
-	"settings": { 
+	"settings": {
 		"python.linting.enabled": true,
 		"python.linting.pylintEnabled": true,
 		"python.linting.pylintPath": "/usr/local/bin/pylint",
@@ -25,7 +25,8 @@
 		"ms-python.vscode-pylance",
 		"eamodio.gitlens",
 		"GitHub.copilot",
+		"bungcip.better-toml",
 	],
 
-	"postCreateCommand": "bootstrap.sh",
+	"postCreateCommand": "notify-dev-entrypoint.sh",
 }
