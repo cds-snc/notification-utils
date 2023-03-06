@@ -176,7 +176,7 @@ class RedisClient:
                 try:
                     pipe = self.redis_store.pipeline()
                     when = time()
-                    pipe.zremrangebyscore(cache_key, "-inf", when - interval) # Delete all keys that are before the interval
+                    pipe.zremrangebyscore(cache_key, "-inf", when - interval)  # Delete all keys that are before the interval
                     pipe.zcard(cache_key)
                     result = pipe.execute()
                     return result[2]
