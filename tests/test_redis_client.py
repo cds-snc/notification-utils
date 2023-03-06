@@ -287,7 +287,9 @@ class TestRedisSortedSets:
         mocked_redis_client.delete_key_from_sorted_set("key", 0, 1)
         mocked_redis_client.redis_store.zremrangebyscore.assert_called_with("key", 0, 1)
 
-    def test_get_redis_sorted_set(self, mocked_redis_client):
-        mocked_redis_client.get_length_of_sorted_set("key", 0, 1)
-        mocked_redis_client.redis_store.zremrangebyscore.assert_called_with("key", 0, 1)
-        mocked_redis_client.redis_store.zcard.assert_called_with("key")
+    def test_get_redis_sorted_set(self, mocked_redis_client, mocked_redis_pipeline):
+        mocked_redis_client.get_length_of_sorted_set("key", 1)
+        assert mocked_redis_client.redis_store.pipeline.called
+        assert mocked_redis_pipeline.zremrangebyscore.called
+        mocked_redis_pipeline.zcard.assert_called_with("key")
+        assert mocked_redis_pipeline.execute.called
