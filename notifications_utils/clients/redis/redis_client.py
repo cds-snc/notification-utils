@@ -136,7 +136,6 @@ class RedisClient:
         :param value:
         :param score:
         :param raise_exception:
-        :return:
         """
         cache_key = prepare_value(cache_key)
         value = prepare_value(value)
@@ -145,8 +144,6 @@ class RedisClient:
                 self.redis_store.zadd(cache_key, {value: score})
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "add-key-to-ordered-set", cache_key)
-        else:
-            return False
 
     def delete_key_from_sorted_set(self, cache_key, min_score, max_score, raise_exception=False):
         """
@@ -156,7 +153,6 @@ class RedisClient:
         :param min_score:
         :param max_score:
         :param raise_exception:
-        :return:
         """
         cache_key = prepare_value(cache_key)
         if self.active:
@@ -164,8 +160,6 @@ class RedisClient:
                 self.redis_store.zremrangebyscore(cache_key, min_score, max_score)
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "delete-key-from-ordered-set", cache_key)
-        else:
-            return False
 
     def get_length_of_sorted_set(self, cache_key, min_score=None, max_score=None, raise_exception=False):
         """
@@ -175,7 +169,7 @@ class RedisClient:
         :param min_score:
         :param max_vscore:
         :param raise_exception:
-        :return:
+        :return: int
         """
         cache_key = prepare_value(cache_key)
         if self.active:
@@ -191,7 +185,7 @@ class RedisClient:
                 except Exception as e:
                     self.__handle_exception(e, raise_exception, "get-length-of-ordered-set", cache_key)
         else:
-            return False
+            return 0
 
     def set(self, key, value, ex=None, px=None, nx=False, xx=False, raise_exception=False):
         key = prepare_value(key)
