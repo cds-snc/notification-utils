@@ -272,3 +272,18 @@ def test_delete_cache_keys_returns_zero_when_redis_disabled(mocked_redis_client)
 
     assert delete_mock.called is False
     assert ret == 0
+
+
+class TestRedisSortedSets:
+    def test_add_to_redis_sorted_set(self, mocked_redis_client):
+        mocked_redis_client.add_key_to_sorted_set("key", "value", 1)
+        mocked_redis_client.redis_store.zadd.assert_called_with("key", {"value": 1})
+
+    def test_delete_from_redis_sorted_set(self, mocked_redis_client):
+        mocked_redis_client.delete_key_from_sorted_set("key", 0, 1)
+        mocked_redis_client.redis_store.zremrangebyscore.assert_called_with("key", 0, 1)
+
+    def test_get_redis_sorted_set(self, mocked_redis_client):
+        mocked_redis_client.get_length_of_sorted_set("key", 0, 1)
+        mocked_redis_client.redis_store.zremrangebyscore.assert_called_with("key", 0, -1)
+        mocked_redis_client.redis_store.zcard.assert_called_with("key")
