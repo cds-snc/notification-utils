@@ -34,6 +34,10 @@ def build_redis_client(app, mocked_redis_pipeline, mocker):
     mocker.patch.object(redis_client.redis_store, "expire")
     mocker.patch.object(redis_client.redis_store, "delete")
     mocker.patch.object(redis_client.redis_store, "pipeline", return_value=mocked_redis_pipeline)
+    mocker.patch.object(redis_client.redis_store, "zadd")
+    mocker.patch.object(redis_client.redis_store, "zremrangebyscore")
+    mocker.patch.object(redis_client.redis_store, "zrangebyscore")
+    mocker.patch.object(redis_client.redis_store, "zcard")
 
     return redis_client
 
@@ -272,3 +276,20 @@ def test_delete_cache_keys_returns_zero_when_redis_disabled(mocked_redis_client)
 
     assert delete_mock.called is False
     assert ret == 0
+
+
+class TestRedisSortedSets:
+    def test_add_to_redis_sorted_set(self, mocked_redis_client):
+        mocked_redis_client.add_key_to_sorted_set("key", "value", 1)
+        mocked_redis_client.redis_store.zadd.assert_called_with("key", {"value": 1})
+
+    def test_delete_from_redis_sorted_set(self, mocked_redis_client):
+        mocked_redis_client.delete_key_from_sorted_set("key", 0, 1)
+        mocked_redis_client.redis_store.zremrangebyscore.assert_called_with("key", 0, 1)
+
+    def test_get_redis_sorted_set(self, mocked_redis_client, mocked_redis_pipeline):
+        mocked_redis_client.get_length_of_sorted_set("key", 1)
+        assert mocked_redis_client.redis_store.pipeline.called
+        assert mocked_redis_pipeline.zremrangebyscore.called
+        mocked_redis_pipeline.zcard.assert_called_with("key")
+        assert mocked_redis_pipeline.execute.called

@@ -50,7 +50,6 @@ class RedisClient:
             self.register_scripts()
 
     def register_scripts(self):
-
         # delete keys matching a pattern supplied as a parameter. Does so in batches of 5000 to prevent unpack from
         # exceeding lua's stack limit, and also to prevent errors if no keys match the pattern.
         # Inspired by https://gist.github.com/ddre54/0a4751676272e0da8186
@@ -129,6 +128,67 @@ class RedisClient:
                 return False
         else:
             return False
+
+    def add_key_to_sorted_set(self, cache_key, value, score, raise_exception=False):
+        """
+        Add a key to a sorted set, with a score
+        :param cache_key:
+        :param value:
+        :param score:
+        :param raise_exception:
+        """
+        cache_key = prepare_value(cache_key)
+        value = prepare_value(value)
+        if self.active:
+            try:
+                self.redis_store.zadd(cache_key, {value: score})
+            except Exception as e:
+                self.__handle_exception(e, raise_exception, "add-key-to-ordered-set", cache_key)
+
+    def delete_key_from_sorted_set(self, cache_key, min_score, max_score, raise_exception=False):
+        """
+        Delete a key from a sorted set
+
+        :param cache_key:
+        :param min_score:
+        :param max_score:
+        :param raise_exception:
+        """
+        cache_key = prepare_value(cache_key)
+        if self.active:
+            try:
+                self.redis_store.zremrangebyscore(cache_key, min_score, max_score)
+            except Exception as e:
+                self.__handle_exception(e, raise_exception, "delete-key-from-ordered-set", cache_key)
+
+    def get_length_of_sorted_set(self, cache_key, interval=None, raise_exception=False):
+        """
+        Get the length of a sorted set. If we pass in an interval, we delete the keys in that range.
+
+        :param cache_key:
+        :param interval:
+        :param raise_exception:
+        :return: int
+        """
+        cache_key = prepare_value(cache_key)
+        if self.active:
+            if interval is not None:
+                try:
+                    pipe = self.redis_store.pipeline()
+                    when = time()
+                    pipe.zremrangebyscore(cache_key, "-inf", when - interval)  # Delete all keys that are before the interval
+                    pipe.zcard(cache_key)
+                    result = pipe.execute()
+                    return result[2]
+                except Exception as e:
+                    self.__handle_exception(e, raise_exception, "get-length-of-ordered-set", cache_key)
+            else:
+                try:
+                    return self.redis_store.zcard(cache_key)
+                except Exception as e:
+                    self.__handle_exception(e, raise_exception, "get-length-of-ordered-set", cache_key)
+        else:
+            return 0
 
     def set(self, key, value, ex=None, px=None, nx=False, xx=False, raise_exception=False):
         key = prepare_value(key)
