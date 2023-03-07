@@ -1,10 +1,7 @@
 """This module is used to calculate the bounce rate for a service. It uses Redis to store the total number of hard bounces """
 import time
 
-from clients.redis import (
-    add_key_to_sorted_set,
-    get_length_of_sorted_set,
-)
+from notifications_utils.clients.redis.redis_client import RedisClient
 from redis import Redis
 from flask import current_app
 
@@ -26,17 +23,18 @@ def _current_time():
 
 
 class RedisBounceRate:
-    def init_app(self, redis: Redis):
+    def __init__(self, redis=RedisClient()):
         self._redis_client = redis
 
     def set_hard_bounce(self, service_id):
-        add_key_to_sorted_set(self._redis_client, _hard_bounce_total_key(service_id), _current_time())
+        import pdb; pdb.set_trace()
+        self._redis_client.add_key_to_sorted_set(self._redis_client, _hard_bounce_total_key(service_id), _current_time())
 
     def set_total_notifications(self, service_id):
-        add_key_to_sorted_set(self._redis_client, _total_notifications_key(service_id), _current_time())
+        self._redis_client.add_key_to_sorted_set(self._redis_client, _total_notifications_key(service_id), _current_time())
 
     def get_bounce_rate(self, service_id, bounce_window=_twenty_four_hour_window()):
         current_app.logger.info(f"Getting bounce rate for {service_id}")
-        total_hard_bounces = get_length_of_sorted_set(self._redis_client, _hard_bounce_total_key(service_id), bounce_window)
-        total_notifications = get_length_of_sorted_set(self._redis_client, _total_notifications_key(service_id), bounce_window)
+        total_hard_bounces = self._redis_client.get_length_of_sorted_set(self._redis_client, _hard_bounce_total_key(service_id), bounce_window)
+        total_notifications = self._redis_client.get_length_of_sorted_set(self._redis_client, _total_notifications_key(service_id), bounce_window)
         return round(total_hard_bounces / total_notifications, 2) if total_notifications else 0
