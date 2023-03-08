@@ -2,7 +2,6 @@
 import time
 
 from notifications_utils.clients.redis.redis_client import RedisClient
-from redis import Redis
 from flask import current_app
 
 
