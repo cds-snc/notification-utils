@@ -27,14 +27,19 @@ class RedisBounceRate:
         self._redis_client = redis
 
     def set_hard_bounce(self, service_id):
-        import pdb; pdb.set_trace()
-        self._redis_client.add_key_to_sorted_set(self._redis_client, _hard_bounce_total_key(service_id), _current_time())
+        current_time = _current_time()
+        self._redis_client.add_key_to_sorted_set(_hard_bounce_total_key(service_id), current_time, current_time)
 
     def set_total_notifications(self, service_id):
-        self._redis_client.add_key_to_sorted_set(self._redis_client, _total_notifications_key(service_id), _current_time())
+        current_time = _current_time()
+        self._redis_client.add_key_to_sorted_set(_total_notifications_key(service_id), current_time, current_time)
 
     def get_bounce_rate(self, service_id, bounce_window=_twenty_four_hour_window()):
         current_app.logger.info(f"Getting bounce rate for {service_id}")
-        total_hard_bounces = self._redis_client.get_length_of_sorted_set(self._redis_client, _hard_bounce_total_key(service_id), bounce_window)
-        total_notifications = self._redis_client.get_length_of_sorted_set(self._redis_client, _total_notifications_key(service_id), bounce_window)
+        total_hard_bounces = self._redis_client.get_length_of_sorted_set(
+            self._redis_client, _hard_bounce_total_key(service_id), bounce_window
+        )
+        total_notifications = self._redis_client.get_length_of_sorted_set(
+            self._redis_client, _total_notifications_key(service_id), bounce_window
+        )
         return round(total_hard_bounces / total_notifications, 2) if total_notifications else 0
