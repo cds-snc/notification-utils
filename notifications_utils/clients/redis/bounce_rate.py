@@ -2,7 +2,6 @@
 import time
 
 from notifications_utils.clients.redis.redis_client import RedisClient
-from flask import current_app
 
 
 def _hard_bounce_total_key(service_id):
