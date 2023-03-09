@@ -55,5 +55,11 @@ test-with-docker: prepare-docker-build-image ## Run tests inside a Docker contai
 clean-docker-containers: ## Clean up any remaining docker containers
 	docker rm -f $(shell docker ps -q -f "name=${DOCKER_CONTAINER_PREFIX}") 2> /dev/null || true
 
+.PHONY: format
+format:
+	poetry run black --config pyproject.toml .
+	poetry run flake8 .
+	poetry run mypy .
+
 clean:
 	rm -rf cache venv
