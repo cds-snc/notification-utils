@@ -34,7 +34,6 @@ class RedisBounceRate:
         self._redis_client.add_key_to_sorted_set(_total_notifications_key(service_id), current_time, current_time)
 
     def get_bounce_rate(self, service_id, bounce_window=_twenty_four_hour_window()):
-        current_app.logger.info(f"Getting bounce rate for {service_id}")
         total_hard_bounces = self._redis_client.get_length_of_sorted_set(
             self._redis_client, _hard_bounce_total_key(service_id), bounce_window
         )
