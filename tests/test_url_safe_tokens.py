@@ -1,9 +1,27 @@
 import urllib
 
-from itsdangerous import BadSignature, SignatureExpired
+from itsdangerous import BadSignature, BadTimeSignature, SignatureExpired
 from pytest import fail
 
 from notifications_utils.url_safe_token import generate_token, check_token
+
+
+def test_works_without_salt():
+    payload = "email@something.com"
+    token = generate_token(payload, "secret-key")
+    token = urllib.parse.unquote(token)
+    assert payload == check_token(token, "secret-key")
+
+
+def test_fails_for_incorrect_salt():
+    payload = "email@something.com"
+    token = generate_token(payload, "secret-key")
+    token = urllib.parse.unquote(token)
+    try:
+        assert payload == check_token(token, "secret-key", salt="wrong-salt")
+        fail("Expected a BadTimeSignature exception")
+    except BadTimeSignature:
+        pass
 
 
 def test_should_return_payload_from_signed_token():
