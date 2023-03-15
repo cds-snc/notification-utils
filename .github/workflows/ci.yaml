@@ -8,7 +8,7 @@ jobs:
     steps:
     - uses: actions/checkout@main
     - name: docker://python:3.10
-      uses: docker://python:3.10
+      uses: docker://python:3.11.2
 
     - name: Install poetry
       env:
