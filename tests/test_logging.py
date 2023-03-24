@@ -161,36 +161,27 @@ def test_logging_records_statsd_stats_without_time(app_with_statsd, service_id):
             statsd.timing.assert_not_called()
 
 
-def test_get_class_attrs():
+def test_get_class_attr():
     class Config:
         some_dict = {
             "FOO": "bar",
             "BAM": "baz",
         }
         env = "prod"
-        secret = "secret value"
+        secret19 = "19 long secret 1234"
+        secret20 = "20 long secret 12345"
 
         def some_function(self):
             return True
 
-    assert logging.get_class_attrs(Config, []) == {
+    assert logging.get_class_attrs(Config, ["secret19", "secret20"]) == {
         "some_dict": {
             "FOO": "bar",
             "BAM": "baz",
         },
         "env": "prod",
-        "secret": "secret value",
-    }
-
-    an_instance = Config()
-    an_instance.some_dict = {"BAR": "bloop"}
-
-    assert logging.get_class_attrs(an_instance, ["secret"]) == {
-        "some_dict": {
-            "BAR": "bloop",
-        },
-        "env": "prod",
-        "secret": "***alue",
+        "secret19": "***",
+        "secret20": "***45",
     }
 
 
