@@ -26,11 +26,11 @@ class RedisBounceRate:
 
     def set_hard_bounce(self, service_id):
         current_time = _current_time()
-        self._redis_client.add_key_to_sorted_set(_hard_bounce_total_key(service_id), current_time, current_time)
+        self._redis_client.add_key_to_sorted_set(_hard_bounce_total_key(service_id), current_time, current_time, expire=True)
 
     def set_total_notifications(self, service_id):
         current_time = _current_time()
-        self._redis_client.add_key_to_sorted_set(_total_notifications_key(service_id), current_time, current_time)
+        self._redis_client.add_key_to_sorted_set(_total_notifications_key(service_id), current_time, current_time, expire=True)
 
     def get_bounce_rate(self, service_id, bounce_window=_twenty_four_hour_window()):
         total_hard_bounces = self._redis_client.get_length_of_sorted_set(

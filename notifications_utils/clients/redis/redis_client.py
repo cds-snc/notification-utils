@@ -129,7 +129,7 @@ class RedisClient:
         else:
             return False
 
-    def add_key_to_sorted_set(self, cache_key, value, score, raise_exception=False):
+    def add_key_to_sorted_set(self, cache_key, value, score, expire=True, raise_exception=False):
         """
         Add a key to a sorted set, with a score
         :param cache_key:
@@ -142,6 +142,11 @@ class RedisClient:
         if self.active:
             try:
                 self.redis_store.zadd(cache_key, {value: score})
+            except Exception as e:
+                self.__handle_exception(e, raise_exception, "add-key-to-ordered-set", cache_key)
+        if expire:
+            try:
+                self.redis_store.delete_key_from_sorted_set(cache_key, "-inf", value - 24*60*60) # Delete keys that are older than 24 hours
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "add-key-to-ordered-set", cache_key)
 

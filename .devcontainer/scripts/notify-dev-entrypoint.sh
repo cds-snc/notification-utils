@@ -21,3 +21,4 @@ poetry completions zsh > ~/.zfunc/_poetry
 
 # Install dependencies
 poetry install
+git config --global --add safe.directory /workspaces/notification-api
