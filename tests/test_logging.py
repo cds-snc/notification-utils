@@ -161,7 +161,7 @@ def test_logging_records_statsd_stats_without_time(app_with_statsd, service_id):
             statsd.timing.assert_not_called()
 
 
-def test_get_class_attr():
+def test_get_class_attrs():
     class Config:
         some_dict = {
             "FOO": "bar",
