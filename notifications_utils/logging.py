@@ -143,6 +143,24 @@ def configure_handler(handler, app, formatter):
     return handler
 
 
+# def get_class_attrs(cls, sensitive_attrs: list[str]) -> dict[str, Any]:
+#     """
+#     Returns a dict of Class attribute key/values.  Any attribute names in the
+#     sensitive_attrs list will be masked.
+#     """
+#     attrs = {}
+#     for attr in dir(cls):
+#         if not attr.startswith("__") and not callable(getattr(cls, attr)):
+#             value = getattr(cls, attr)
+#             if attr not in sensitive_attrs:
+#                 attrs[attr] = value
+#             elif len(str(value)) >= 20:
+#                 attrs[attr] = "***" + str(value)[-2:]
+#             else:
+#                 attrs[attr] = "***"
+#     return attrs
+
+
 def get_class_attrs(cls, sensitive_attrs: list[str]) -> dict[str, Any]:
     """
     Returns a dict of Class attribute key/values.  Any attribute names in the
@@ -152,12 +170,8 @@ def get_class_attrs(cls, sensitive_attrs: list[str]) -> dict[str, Any]:
     for attr in dir(cls):
         if not attr.startswith("__") and not callable(getattr(cls, attr)):
             value = getattr(cls, attr)
-            if attr not in sensitive_attrs:
-                attrs[attr] = value
-            elif len(str(value)) >= 20:
-                attrs[attr] = "***" + str(value)[-2:]
-            else:
-                attrs[attr] = "***"
+            if attr in sensitive_attrs:
+                attrs[attr] = len(str(value))
     return attrs
 
 
