@@ -150,9 +150,14 @@ def get_class_attrs(cls, sensitive_attrs: list[str]) -> dict[str, Any]:
     """
     attrs = {}
     for attr in dir(cls):
-        attr_value = "***" if attr in sensitive_attrs else getattr(cls, attr)
-        if not attr.startswith("__") and not callable(attr_value):
-            attrs[attr] = attr_value
+        if not attr.startswith("__") and not callable(getattr(cls, attr)):
+            value = getattr(cls, attr)
+            if attr not in sensitive_attrs:
+                attrs[attr] = value
+            elif len(str(value)) >= 20:
+                attrs[attr] = "***" + str(value)[-2:]
+            else:
+                attrs[attr] = "***"
     return attrs
 
 
