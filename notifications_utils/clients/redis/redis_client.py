@@ -190,7 +190,15 @@ class RedisClient:
         else:
             return 0
 
-    def set(self, key, value, ex=None, px=None, nx=False, xx=False, raise_exception=False):
+    def get_values_of_sorted_set(self, cache_key, start, end, raise_exception=False):
+        cache_key = prepare_value(cache_key)
+        if self.active:
+            try:
+                return self.redis_store.zrevrange(cache_key, 0, get_length_of_sorted_set(cache_key))
+            except Exception as e:
+                self.__handle_exception(e, raise_exception, "get_values_of_sorted_set", cache_key)
+
+    def set(self, key, valEue, ex=None, px=None, nx=False, xx=False, raise_exception=False):
         key = prepare_value(key)
         value = prepare_value(value)
         if self.active:

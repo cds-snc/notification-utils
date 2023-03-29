@@ -1,3 +1,5 @@
+import datetime
+import random
 import uuid
 import pytest
 from unittest.mock import Mock
@@ -8,6 +10,8 @@ from notifications_utils.clients.redis.bounce_rate import (
     _hard_bounce_total_key,
     _current_time,
     _total_notifications_key,
+    _total_notifications_service_id_seeded_data,
+
 )
 from notifications_utils.clients.redis.redis_client import RedisClient
 
@@ -33,11 +37,19 @@ def build_redis_client(app, mocked_redis_pipeline, mocker):
 def mocked_bounce_rate_client(mocked_redis_client, mocker):
     return build_bounce_rate_client(mocker, mocked_redis_client)
 
+@pytest.fixture(scope="function")
+def mocked_seeded_data_hours():
+    hour_delta = datetime.timedelta(hours=1)
+    hours = [datetime.datetime.now() - hour_delta]
+    for i in range(23):
+        hours.append(hours[i] - hour_delta)
+    return hours
 
 def build_bounce_rate_client(mocker, mocked_redis_client):
     bounce_rate_client = RedisBounceRate(mocked_redis_client)
     mocker.patch.object(bounce_rate_client._redis_client, "add_key_to_sorted_set")
-    mocker.patch.object(bounce_rate_client._redis_client, "get_length_of_sorted_set", side_effect=[10, 20, 3, 0, 0, 8])
+    mocker.patch.object(bounce_rate_client._redis_client, "get_length_of_sorted_set", side_effect=[8, 20, 3, 0, 0, 8])
+    mocker.patch.object(bounce_rate_client._redis_client, "get_values_of_sorted_set", side_effect=[2, 4, 0])
     return bounce_rate_client
 
 
@@ -71,3 +83,13 @@ class TestRedisBounceRate:
 
         answer = mocked_bounce_rate_client.get_bounce_rate(mocked_service_id)
         assert answer == 0
+
+    def test_set_total_notifications_service_id_seeded_data_with_24_hour_period(self, mocked_bounce_rate_client, mocked_service_id, mocked_seeded_data_hours):
+        for hour in mocked_seeded_data_hours:
+            bounce_count = random.randint(1, 10)
+            mocked_bounce_rate_client.set_total_notifications_service_id_seeded_data(mocked_service_id, hour, bounce_count)
+            mocked_bounce_rate_client._redis_client.add_key_to_sorted_set.assert_called_with(
+                _total_notifications_service_id_seeded_data(mocked_service_id),
+                bounce_count,
+                int(hour.timestamp())
+            )
