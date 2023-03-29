@@ -49,6 +49,7 @@ class RedisBounceRate:
             self._redis_client, _total_notifications_key(service_id), bounce_window
         )
         total_seeded_bounces = self._redis_client.get_values_of_sorted_set(
-            self._redis_client, _total_notifications_service_id_seeded_data(service_id),
+            self._redis_client,
+            _total_notifications_service_id_seeded_data(service_id),
         )
         return round((total_hard_bounces + total_seeded_bounces) / total_notifications, 2) if total_notifications else 0
