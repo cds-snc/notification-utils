@@ -141,7 +141,7 @@ class RedisClient:
         value = prepare_value(value)
         if self.active:
             try:
-                self.redis_store.zadd(cache_key, {value: score})
+                self.redis_store.zadd(cache_key, {value: score} )
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "add-key-to-ordered-set", cache_key)
 
@@ -191,8 +191,22 @@ class RedisClient:
             return 0
 
     def get_values_of_sorted_set(
-        self, cache_key: bytes | str | numbers.Number, start: int = 0, end: int = 0, raise_exception=False
+        self, cache_key: bytes | str | numbers.Number, end: int=0, start: int=0 , raise_exception=False
     ):
+        """
+        Get the values of a sorted set by key.
+
+        Args:
+            cache_key (bytes | str | numbers.Number): The key of the sorted set to retrieve values from.
+            end (int, optional): The index to stop reading at. Defaults to the length of the sorted set being read.
+            start (int, optional): The index to start reading at Defaults to 0.
+            raise_exception (bool, optional):  Defaults to False.
+
+        Returns:
+            A range of values from the sorted set in descending order.
+        """
+        end = self.get_length_of_sorted_set(cache_key) if end == 0 else end
+
         cache_key = prepare_value(cache_key)
         if self.active:
             try:
@@ -201,6 +215,15 @@ class RedisClient:
                 self.__handle_exception(e, raise_exception, "get_values_of_sorted_set", cache_key)
         else:
             return 0
+
+    def incr_sorted_set_member(self, cache_key, increment:int=1 member, raise_exception=False):
+        key = prepare_value(cache_key)
+        member = prepare_value(member)
+        if self.active:
+            try:
+                self.redis_store.zincrby(key, increment, member)
+            except Exception as e:
+                self.__handle_exception(e, raise_exception, "incr_sorted_set_member", key)
 
     def set(self, key, value, ex=None, px=None, nx=False, xx=False, raise_exception=False):
         key = prepare_value(key)

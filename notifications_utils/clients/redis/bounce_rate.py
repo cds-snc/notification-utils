@@ -13,7 +13,7 @@ def _total_notifications_key(service_id: str):
 
 
 def _total_notifications_service_id_seeded_data(service_id: str):
-    return f"total_notifications_service_id_seeded_data:{service_id}"
+    return f"total_notifications_seeded_{service_id}"
 
 
 def _twenty_four_hour_window():
@@ -36,9 +36,10 @@ class RedisBounceRate:
         current_time = _current_time()
         self._redis_client.add_key_to_sorted_set(_total_notifications_key(service_id), current_time, current_time)
 
-    def set_total_notifications_service_id_seeded_data(self, service_id: str, current_hour, total_bounce):
-        hour = int(current_hour.timestamp())
-        self._redis_client.add_key_to_sorted_set(_total_notifications_service_id_seeded_data(service_id), total_bounce, hour)
+    def set_total_notifications_service_id_seeded_data(self, service_id: str, bounce_time):
+        # Strip the time down to the hour and convert to epoch
+        bounce_hour_epoch = bounce_time.replace(minute=0, second=0, microsecond=0).timestamp()
+        self._redis_client.incr_sorted_set_member(_total_notifications_service_id_seeded_data(service_id), bounce_hour_epoch)
 
     def get_bounce_rate(self, service_id: str, bounce_window=_twenty_four_hour_window()) -> int:
         total_hard_bounces = self._redis_client.get_length_of_sorted_set(
