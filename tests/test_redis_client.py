@@ -38,6 +38,7 @@ def build_redis_client(app, mocked_redis_pipeline, mocker):
     mocker.patch.object(redis_client.redis_store, "zremrangebyscore")
     mocker.patch.object(redis_client.redis_store, "zrangebyscore")
     mocker.patch.object(redis_client.redis_store, "zcard")
+    mocker.patch.object(redis_client.redis_store, "zrevrange")
 
     return redis_client
 
@@ -293,3 +294,13 @@ class TestRedisSortedSets:
         assert mocked_redis_pipeline.zremrangebyscore.called
         mocked_redis_pipeline.zcard.assert_called_with("key")
         assert mocked_redis_pipeline.execute.called
+
+    def test_get_values_of_sorted_set(self, mocked_redis_client):
+        mocked_redis_client.get_values_of_sorted_set("key")
+        mocked_redis_client.redis_store.zrevrange.assert_called_with("key", 0, 0)
+
+    def test_get_values_of_sorted_set_should_not_call_zrevrange_if_not_enabled(self, mocked_redis_client):
+        mocked_redis_client.active = False
+        ret = mocked_redis_client.get_values_of_sorted_set("key")
+        mocked_redis_client.redis_store.zrevrange.assert_not_called()
+        assert ret == 0
