@@ -168,26 +168,20 @@ def test_get_class_attrs():
             "BAM": "baz",
         }
         env = "prod"
+        secret19 = "19 long secret 1234"
+        secret20 = "20 long secret 12345"
 
         def some_function(self):
             return True
 
-    assert logging.get_class_attrs(Config, []) == {
+    assert logging.get_class_attrs(Config, ["secret19", "secret20"]) == {
         "some_dict": {
             "FOO": "bar",
             "BAM": "baz",
         },
         "env": "prod",
-    }
-
-    an_instance = Config()
-    an_instance.some_dict = {"BAR": "bloop"}
-
-    assert logging.get_class_attrs(an_instance, ["env"]) == {
-        "some_dict": {
-            "BAR": "bloop",
-        },
-        "env": "***",
+        "secret19": "***",
+        "secret20": "***45",
     }
 
 
