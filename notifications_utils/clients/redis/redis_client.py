@@ -197,6 +197,8 @@ class RedisClient:
                 return self.redis_store.zrevrange(cache_key, 0, get_length_of_sorted_set(cache_key))
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "get_values_of_sorted_set", cache_key)
+        else:
+            return 0
 
     def set(self, key, valEue, ex=None, px=None, nx=False, xx=False, raise_exception=False):
         key = prepare_value(key)
