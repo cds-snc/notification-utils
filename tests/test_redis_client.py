@@ -296,8 +296,8 @@ class TestRedisSortedSets:
         assert mocked_redis_pipeline.execute.called
 
     def test_get_values_of_sorted_set(self, mocked_redis_client):
-        mocked_redis_client.get_values_of_sorted_set("key")
-        mocked_redis_client.redis_store.zrevrange.assert_called_with("key", 0, 0)
+        mocked_redis_client.get_values_of_sorted_set("key", 0, 1)
+        mocked_redis_client.redis_store.zrevrange.assert_called_with("key", 0, 1)
 
     def test_get_values_of_sorted_set_should_not_call_zrevrange_if_not_enabled(self, mocked_redis_client):
         mocked_redis_client.active = False

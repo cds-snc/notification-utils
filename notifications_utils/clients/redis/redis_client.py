@@ -191,7 +191,7 @@ class RedisClient:
             return 0
 
     def get_values_of_sorted_set(
-        self, cache_key: bytes | str | numbers.Number, end: int=0, start: int=0 , raise_exception=False
+        self, cache_key: bytes | str | numbers.Number, start: int=0, end: int=-1, raise_exception=False
     ):
         """
         Get the values of a sorted set by key.
@@ -216,7 +216,7 @@ class RedisClient:
         else:
             return 0
 
-    def incr_sorted_set_member(self, cache_key, increment:int=1 member, raise_exception=False):
+    def incr_sorted_set_member(self, cache_key, member, increment:int=1, raise_exception=False):
         key = prepare_value(cache_key)
         member = prepare_value(member)
         if self.active:
