@@ -39,6 +39,7 @@ def build_redis_client(app, mocked_redis_pipeline, mocker):
     mocker.patch.object(redis_client.redis_store, "zrangebyscore")
     mocker.patch.object(redis_client.redis_store, "zcard")
     mocker.patch.object(redis_client.redis_store, "zrevrange")
+    mocker.patch.object(redis_client.redis_store, "zrange")
 
     return redis_client
 
@@ -288,19 +289,23 @@ class TestRedisSortedSets:
         mocked_redis_client.delete_key_from_sorted_set("key", 0, 1)
         mocked_redis_client.redis_store.zremrangebyscore.assert_called_with("key", 0, 1)
 
-    def test_get_redis_sorted_set(self, mocked_redis_client, mocked_redis_pipeline):
+    def test_get_length_of_sorted_set(self, mocked_redis_client, mocked_redis_pipeline):
         mocked_redis_client.get_length_of_sorted_set("key", 1)
         assert mocked_redis_client.redis_store.pipeline.called
         assert mocked_redis_pipeline.zremrangebyscore.called
         mocked_redis_pipeline.zcard.assert_called_with("key")
         assert mocked_redis_pipeline.execute.called
 
-    def test_get_values_of_sorted_set(self, mocked_redis_client):
-        mocked_redis_client.get_values_of_sorted_set("key", 0, 1)
-        mocked_redis_client.redis_store.zrevrange.assert_called_with("key", 0, 1)
+    def test_get_sorted_set_values(self, mocked_redis_client):
+        mocked_redis_client.get_sorted_set_values("key", 0, 1)
+        mocked_redis_client.redis_store.zrevrange.assert_called_with("key", 0, 1, withscores=True)
 
-    def test_get_values_of_sorted_set_should_not_call_zrevrange_if_not_enabled(self, mocked_redis_client):
+    def test_get_sorted_set_members_by_score(self, mocked_redis_client):
+        mocked_redis_client.get_sorted_set_members_by_score("key", 0, 5)
+        mocked_redis_client.redis_store.zrange.assert_called_with("key", 0, 5, withscores=True)
+
+    def test_get_values_of_sorted_set_should_not_call_zrevrange_if_redis_client_not_enabled(self, mocked_redis_client):
         mocked_redis_client.active = False
-        ret = mocked_redis_client.get_values_of_sorted_set("key")
+        ret = mocked_redis_client.get_sorted_set_values("key")
         mocked_redis_client.redis_store.zrevrange.assert_not_called()
         assert ret == 0
