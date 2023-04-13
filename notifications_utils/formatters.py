@@ -44,7 +44,7 @@ TAG_IMG_IRCC_GC_SEAL = r"\[\[ircc-gc-seal\]\]"  # matches [[ircc-gc-seal]]
 mistune._block_quote_leading_pattern = re.compile(r"^ *\^ ?", flags=re.M)
 mistune.BlockGrammar.block_quote = re.compile(r"^( *\^[^\n]+(\n[^\n]+)*\n*)+")
 mistune.BlockGrammar.list_block = re.compile(
-    r"^( *)([•*-]|\d+\.) [^*][\s\S]+?"
+    r"^( *)([•*-]|\d+\.) ([^*]|[*]{2})[\s\S]+?"
     r"(?:"
     r"\n+(?=\1?(?:[-*_] *){3,}(?:\n+|$))"  # hrule
     r"|\n+(?=%s)"  # def links
