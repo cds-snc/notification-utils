@@ -373,7 +373,15 @@ def test_hrule(markdown_function, expected):
         [
             notify_email_markdown,
             "1.one\n" "2.two\n" "3.three\n",
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">1.one<br />2.two<br />3.three</p>',
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+                "1.one"
+                "<br />"
+                "2.two"
+                "<br />"
+                "3.three"
+                "</p>"
+            ),
         ],
         [
             notify_plain_text_email_markdown,
