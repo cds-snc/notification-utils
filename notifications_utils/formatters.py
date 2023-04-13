@@ -60,13 +60,6 @@ mistune.BlockGrammar.list_block = re.compile(
     )
 )
 
-# Default in mistune is:
-# mistune.BlockGrammar.list_item = re.compile(
-#     r'^(( *)(?:[*+-]|\d+\.) [^\n]*'
-#     r'(?:\n(?!\2(?:[*+-]|\d+\.) )[^\n]*)*)',
-#     flags=re.M
-# )
-
 mistune.BlockGrammar.list_item = re.compile(r"^(( *)(?:[•*-]|\d+\.) [^\n]*" r"(?:\n(?!\2(?:[•*-]|\d+\.))[^\n]*)*)", flags=re.M)
 mistune.BlockGrammar.list_bullet = re.compile(r"^ *(?:[•*-]|\d+\.)")
 mistune.InlineGrammar.url = re.compile(r"""^(https?:\/\/[^\s<]+[^<.,:"')\]\s])""")
