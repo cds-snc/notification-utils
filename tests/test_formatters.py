@@ -434,15 +434,16 @@ def test_ordered_list(markdown_function, markdown_input, expected):
 def test_unordered_list(markdown, markdown_function, expected):
     assert markdown_function(markdown) == expected
 
+
 """
 This use case emulates formatting if someone would try to write a list without a
 space after the bullet. The result would be italized text with line breaks.
 """
+
+
 @pytest.mark.parametrize(
     "markdown",
-    (
-        ("*one\n" "*two\n" "*three\n"),  # no space
-    ),
+    (("*one\n" "*two\n" "*three\n"),),  # no space
 )
 @pytest.mark.parametrize(
     "markdown_function, expected",
