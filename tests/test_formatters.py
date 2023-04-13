@@ -394,7 +394,6 @@ def test_ordered_list(markdown_function, markdown_input, expected):
 @pytest.mark.parametrize(
     "markdown",
     (
-        ("*one\n" "*two\n" "*three\n"),  # no space
         ("* one\n" "* two\n" "* three\n"),  # single space
         ("*  one\n" "*  two\n" "*  three\n"),  # two spaces
         ("*  one\n" "*  two\n" "*  three\n"),  # tab
@@ -433,6 +432,32 @@ def test_ordered_list(markdown_function, markdown_input, expected):
     ),
 )
 def test_unordered_list(markdown, markdown_function, expected):
+    assert markdown_function(markdown) == expected
+
+"""
+This use case emulates formatting if someone would try to write a list without a
+space after the bullet. The result would be italized text with line breaks.
+"""
+@pytest.mark.parametrize(
+    "markdown",
+    (
+        ("*one\n" "*two\n" "*three\n"),  # no space
+    ),
+)
+@pytest.mark.parametrize(
+    "markdown_function, expected",
+    (
+        [
+            notify_email_markdown,
+            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;"><em>one</em>two<br />*three</p>',
+        ],
+        [
+            notify_plain_text_email_markdown,
+            "\n\n_one_two\n*three",
+        ],
+    ),
+)
+def test_unordered_list_with_no_spaces(markdown, markdown_function, expected):
     assert markdown_function(markdown) == expected
 
 
