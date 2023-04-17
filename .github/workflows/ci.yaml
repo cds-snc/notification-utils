@@ -8,7 +8,7 @@ jobs:
     steps:
     - uses: actions/checkout@main
     - name: docker://python:3.10
-      uses: docker://python:3.11.2
+      uses: docker://python:3.10  # utils is currently 3.10 so we need to use 3.10 in ci
 
     - name: Install poetry
       env:
