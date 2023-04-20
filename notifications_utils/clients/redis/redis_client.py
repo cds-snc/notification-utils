@@ -166,8 +166,8 @@ class RedisClient:
 
         if self.active:
             try:
-                included_list = self.redis_store.zrange(cache_key, min_score, max_score, withscores=True)
-                return sum([value for _, value in included_list]) if included_list else 0
+                included_list = self.redis_store.zrange(cache_key, min_score, max_score, byscore=True)
+                return len(included_list) if included_list else 0
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "get-sorted-set-members-by-score", cache_key)
 
