@@ -1,7 +1,7 @@
 import numbers
 import uuid
 from time import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from flask_redis import FlaskRedis
 from flask import current_app
@@ -129,19 +129,19 @@ class RedisClient:
         else:
             return False
 
-    def add_key_to_sorted_set(self, cache_key, score, value, raise_exception=False):
+    def add_key_to_sorted_set(self, cache_key, item_key, item_score, raise_exception=False):
         """
         Add a key to a sorted set, with a score
         :param cache_key:
-        :param value:
-        :param score:
+        :param item_key:
+        :param item_score:
         :param raise_exception:
         """
         cache_key = prepare_value(cache_key)
-        value = prepare_value(value)
+        item_key = prepare_value(item_key)
         if self.active:
             try:
-                self.redis_store.zadd(cache_key, {score: value})
+                self.redis_store.zadd(cache_key, {item_key: item_score})
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "add-key-to-ordered-set", cache_key)
 
@@ -204,7 +204,7 @@ class RedisClient:
 
     def get_sorted_set_values(
         self, cache_key: bytes | str | numbers.Number, start: int = 0, end: int = -1, raise_exception=False
-    ):
+    ) -> Optional[int]:
         """
         Get the values of a sorted set by key.
 
@@ -222,8 +222,8 @@ class RedisClient:
         cache_key = prepare_value(cache_key)
         if self.active:
             try:
-                included_list = self.redis_store.zrevrange(cache_key, start, end, withscores=True)
-                return sum([value for _, value in included_list]) if included_list else 0
+                included_list = self.redis_store.zrange(cache_key, start, end, byscore=True)
+                return len(included_list) if included_list else 0
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "get_values_of_sorted_set", cache_key)
         else:

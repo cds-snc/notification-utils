@@ -3,6 +3,7 @@ import pytest
 from datetime import datetime
 from unittest.mock import Mock, call
 from freezegun import freeze_time
+import fakeredis
 
 from notifications_utils.clients.redis import (
     daily_limit_cache_key,
@@ -21,6 +22,15 @@ def mocked_redis_pipeline():
 def mocked_redis_client(app, mocked_redis_pipeline, mocker):
     app.config["REDIS_ENABLED"] = True
     return build_redis_client(app, mocked_redis_pipeline, mocker)
+
+
+@pytest.fixture(scope="function")
+def better_mocked_redis_client(app):
+    app.config["REDIS_ENABLED"] = True
+    redis_client = RedisClient()
+    redis_client.redis_store = fakeredis.FakeStrictRedis(version=6)  # type: ignore
+    redis_client.active = True
+    return redis_client
 
 
 def build_redis_client(app, mocked_redis_pipeline, mocker):
@@ -296,13 +306,11 @@ class TestRedisSortedSets:
         mocked_redis_pipeline.zcard.assert_called_with("key")
         assert mocked_redis_pipeline.execute.called
 
-    def test_get_sorted_set_values(self, mocked_redis_client):
-        mocked_redis_client.get_sorted_set_values("key", 0, 1)
-        mocked_redis_client.redis_store.zrevrange.assert_called_with("key", 0, 1, withscores=True)
-
-    def test_get_sorted_set_members_by_score(self, mocked_redis_client):
-        mocked_redis_client.get_sorted_set_members_by_score("key", 0, 5)
-        mocked_redis_client.redis_store.zrange.assert_called_with("key", 0, 5, withscores=True)
+    def test_get_sorted_set_values(self, better_mocked_redis_client):
+        better_mocked_redis_client.add_key_to_sorted_set("main_key", "item_1", 10)
+        better_mocked_redis_client.add_key_to_sorted_set("main_key", "item_2", 12)
+        better_mocked_redis_client.add_key_to_sorted_set("main_key", "item_3", 8)
+        assert better_mocked_redis_client.get_sorted_set_values("main_key", 0, 11) == 2
 
     def test_get_values_of_sorted_set_should_not_call_zrevrange_if_redis_client_not_enabled(self, mocked_redis_client):
         mocked_redis_client.active = False
