@@ -226,6 +226,7 @@ class RedisClient:
                 return len(included_list) if included_list else 0
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "get_values_of_sorted_set", cache_key)
+                return None
         else:
             return 0
 
