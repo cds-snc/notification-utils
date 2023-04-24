@@ -11,6 +11,8 @@ def hard_bounce_key(service_id: str):
 def total_notifications_key(service_id: str):
     return f"sliding_total_notifications:{service_id}"
 
+def seeding_complete_key(service_id: str):
+    return f"seeding_complete:{service_id}"
 
 def _twenty_four_hour_window_ms() -> int:
     return 24 * 60 * 60 * 1000
@@ -38,6 +40,16 @@ class RedisBounceRate:
     def set_hard_bounce_seeded(self, service_id: str, seeded_data: dict) -> None:
         self._redis_client.add_data_to_sorted_set(hard_bounce_key(service_id), seeded_data)
 
+    def set_seeding_complete(self, service_id: str) -> None:
+        """Call this after seeding data in Redis"""
+        self._redis_client.set(seeding_complete_key(service_id), "True")
+        
+    def get_seeding_complete(self, service_id: str) -> bool:
+        """Returns True if seeding is complete, False otherwise"""
+        if self._redis_client.get(seeding_complete_key(service_id)) == b"True":
+            return True
+        return False
+        
     def get_bounce_rate(self, service_id: str, bounce_window=_twenty_four_hour_window_ms()) -> float:
 
         now = _current_timestamp_ms()
