@@ -5,7 +5,7 @@ from unittest.mock import Mock
 from freezegun import freeze_time
 
 from notifications_utils.clients.redis.bounce_rate import (
-    _current_time_ms,
+    _current_timestamp_ms,
     RedisBounceRate,
     hard_bounce_key,
     total_notifications_key,
@@ -62,14 +62,14 @@ class TestRedisBounceRate:
     def test_set_hard_bounce(self, mocked_bounce_rate_client, mocked_service_id):
         mocked_bounce_rate_client.set_sliding_hard_bounce(mocked_service_id)
         mocked_bounce_rate_client._redis_client.add_data_to_sorted_set.assert_called_with(
-            hard_bounce_key(mocked_service_id), {_current_time_ms(): _current_time_ms()}
+            hard_bounce_key(mocked_service_id), {_current_timestamp_ms(): _current_timestamp_ms()}
         )
 
     @freeze_time("2001-01-01 12:00:00.000000")
     def test_set_total_notifications(self, mocked_bounce_rate_client, mocked_service_id):
         mocked_bounce_rate_client.set_sliding_notifications(mocked_service_id)
         mocked_bounce_rate_client._redis_client.add_data_to_sorted_set.assert_called_with(
-            total_notifications_key(mocked_service_id), {_current_time_ms(): _current_time_ms()}
+            total_notifications_key(mocked_service_id), {_current_timestamp_ms(): _current_timestamp_ms()}
         )
 
     @freeze_time("2001-01-01 12:00:00.000000")

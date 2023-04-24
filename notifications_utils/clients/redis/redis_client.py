@@ -143,7 +143,7 @@ class RedisClient:
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "add-key-to-ordered-set", cache_key)
 
-    def delete_key_from_sorted_set(self, cache_key, min_score, max_score, raise_exception=False):
+    def delete_from_sorted_set(self, cache_key, min_score, max_score, raise_exception=False):
         """
         Delete a key from a sorted set
 
@@ -159,21 +159,9 @@ class RedisClient:
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "delete-key-from-ordered-set", cache_key)
 
-    def get_sorted_set_members_by_score(self, cache_key, min_score, max_score, raise_exception=False):
-        cache_key = prepare_value(cache_key)
-
-        if self.active:
-            try:
-                included_list = self.redis_store.zrange(cache_key, min_score, max_score, byscore=True)
-                return len(included_list) if included_list else 0
-            except Exception as e:
-                self.__handle_exception(e, raise_exception, "get-sorted-set-members-by-score", cache_key)
-
-        return 0
-
-    def get_length_of_sorted_set(self, cache_key, interval=None, raise_exception=False):
+    def get_length_of_sorted_set(self, cache_key: str, min_score, max_score, raise_exception=False) -> Optional[int]:
         """
-        Get the length of a sorted set. If we pass in an interval, we delete the keys in that range.
+        Get the length of a sorted set between min_score and max_score.
 
         :param cache_key:
         :param interval:
@@ -182,51 +170,14 @@ class RedisClient:
         """
         cache_key = prepare_value(cache_key)
         if self.active:
-            if interval is not None:
-                try:
-                    pipe = self.redis_store.pipeline()
-                    when = time()
-                    pipe.zremrangebyscore(cache_key, "-inf", when - interval)  # Delete all keys that are before the interval
-                    pipe.zcard(cache_key)
-                    result = pipe.execute()
-                    return result[1] if result else 0
-                except Exception as e:
-                    self.__handle_exception(e, raise_exception, "get-length-of-ordered-set", cache_key)
-            else:
-                try:
-                    return self.redis_store.zcard(cache_key)
-                except Exception as e:
-                    self.__handle_exception(e, raise_exception, "get-length-of-ordered-set", cache_key)
-        else:
-            return 0
-
-    def get_sorted_set_values(
-        self, cache_key: bytes | str | numbers.Number, start: int = 0, end: int = -1, raise_exception=False
-    ) -> Optional[int]:
-        """
-        Get the values of a sorted set by key.
-
-        Args:
-            cache_key (bytes | str | numbers.Number): The key of the sorted set to retrieve values from.
-            end (int, optional): The index to stop reading at. Defaults to the length of the sorted set being read.
-            start (int, optional): The index to start reading at Defaults to 0.
-            raise_exception (bool, optional):  Defaults to False.
-
-        Returns:
-            A range of values from the sorted set in descending order.
-        """
-        end = self.get_length_of_sorted_set(cache_key) if end == 0 else end
-
-        cache_key = prepare_value(cache_key)
-        if self.active:
             try:
-                included_list = self.redis_store.zrange(cache_key, start, end, byscore=True)
+                included_list = self.redis_store.zrange(cache_key, min_score, max_score, byscore=True)
                 return len(included_list) if included_list else 0
             except Exception as e:
-                self.__handle_exception(e, raise_exception, "get_values_of_sorted_set", cache_key)
+                self.__handle_exception(e, raise_exception, "get_length_of_sorted_set", cache_key)
                 return None
         else:
-            return 0
+            return None
 
     def set(self, key, value, ex=None, px=None, nx=False, xx=False, raise_exception=False):
         key = prepare_value(key)
