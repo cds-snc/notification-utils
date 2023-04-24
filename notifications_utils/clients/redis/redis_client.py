@@ -132,7 +132,7 @@ class RedisClient:
     def add_data_to_sorted_set(self, cache_key: str, sorted_set_data: dict, raise_exception=False) -> None:
         """
         Add data to a sorted set
-        :param cache_key: the redis key for the sorted set to add to
+        :param cache_key: the Redis key for the sorted set to add to
         :param sorted_set_data: the data to add to the sorted set, in the form {key1: score1, key2: score2}
         :param raise_exception: True if we should allow the exception to bubble up
         """
@@ -145,12 +145,11 @@ class RedisClient:
 
     def delete_from_sorted_set(self, cache_key, min_score, max_score, raise_exception=False):
         """
-        Delete a key from a sorted set
-
-        :param cache_key:
-        :param min_score:
-        :param max_score:
-        :param raise_exception:
+        Delete data from a sorted set from inside the range (min_score, max_score)
+        :param cache_key: the Redis key for the sorted set to add to
+        :param min_score: the minimum score to delete
+        :param max_score: the maximum score to delete
+        :param raise_exception: True if we should allow the exception to bubble up
         """
         cache_key = prepare_value(cache_key)
         if self.active:
@@ -161,11 +160,11 @@ class RedisClient:
 
     def get_length_of_sorted_set(self, cache_key: str, min_score, max_score, raise_exception=False) -> int:
         """
-        Get the length of a sorted set between min_score and max_score.
-
-        :param cache_key:
-        :param interval:
-        :param raise_exception:
+        Get the number of items from a sorted set between min_score and max_score.
+        :param cache_key: the Redis key for the sorted set to add to
+        :param min_score: defines the minimum of the range to count
+        :param max_score: defines the maximum of the range to count
+        :param raise_exception: True if we should allow the exception to bubble up
         :return: int
         """
         cache_key = prepare_value(cache_key)
