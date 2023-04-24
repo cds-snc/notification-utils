@@ -1,6 +1,8 @@
 """This module is used to calculate the bounce rate for a service. It uses Redis to store the total number of hard bounces """
 from datetime import datetime
 
+from notifications_utils.clients.redis.redis_client import RedisClient
+
 
 def hard_bounce_key(service_id: str):
     return f"sliding_hard_bounce:{service_id}"
@@ -19,7 +21,7 @@ def _current_timestamp_ms() -> int:
 
 
 class RedisBounceRate:
-    def __init__(self, redis):
+    def __init__(self, redis: RedisClient):
         self._redis_client = redis
 
     def set_sliding_notifications(self, service_id: str) -> None:
@@ -36,16 +38,14 @@ class RedisBounceRate:
     def set_hard_bounce_seeded(self, service_id: str, seeded_data: dict) -> None:
         self._redis_client.add_data_to_sorted_set(hard_bounce_key(service_id), seeded_data)
 
-    def get_bounce_rate(self, service_id: str, bounce_window=_twenty_four_hour_window_ms()) -> int:
+    def get_bounce_rate(self, service_id: str, bounce_window=_twenty_four_hour_window_ms()) -> float:
 
         now = _current_timestamp_ms()
         twenty_four_hours_ago = now - bounce_window
 
-        # remove data older than 24 hours
-        self._redis_client.remove_data_from_sorted_set(
-            hard_bounce_key(service_id), min_score=twenty_four_hours_ago, max_score=now
-        )
-        self._redis_client.remove_data_from_sorted_set(
+        # delete data older than 24 hours
+        self._redis_client.delete_from_sorted_set(hard_bounce_key(service_id), min_score=twenty_four_hours_ago, max_score=now)
+        self._redis_client.delete_from_sorted_set(
             total_notifications_key(service_id), min_score=twenty_four_hours_ago, max_score=now
         )
 
@@ -56,4 +56,4 @@ class RedisBounceRate:
             total_notifications_key(service_id), min_score=twenty_four_hours_ago, max_score=now
         )
 
-        return round(total_hard_bounces / (1.0 * total_notifications), 2) if (total_notifications > 0) else 0
+        return round(total_hard_bounces / (1.0 * total_notifications), 2) if (total_notifications > 0) else 0.0

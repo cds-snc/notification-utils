@@ -1,7 +1,7 @@
 import numbers
 import uuid
 from time import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from flask_redis import FlaskRedis
 from flask import current_app
@@ -159,7 +159,7 @@ class RedisClient:
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "delete-key-from-ordered-set", cache_key)
 
-    def get_length_of_sorted_set(self, cache_key: str, min_score, max_score, raise_exception=False) -> Optional[int]:
+    def get_length_of_sorted_set(self, cache_key: str, min_score, max_score, raise_exception=False) -> int:
         """
         Get the length of a sorted set between min_score and max_score.
 
@@ -175,9 +175,9 @@ class RedisClient:
                 return len(included_list) if included_list else 0
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "get_length_of_sorted_set", cache_key)
-                return None
+                return 0
         else:
-            return None
+            return 0
 
     def set(self, key, value, ex=None, px=None, nx=False, xx=False, raise_exception=False):
         key = prepare_value(key)
