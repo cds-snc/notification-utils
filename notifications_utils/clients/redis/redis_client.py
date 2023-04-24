@@ -129,10 +129,10 @@ class RedisClient:
         else:
             return False
 
-    def add_key_to_sorted_set(self, cache_key: str, sorted_set_data: dict, raise_exception=False) -> None:
+    def add_data_to_sorted_set(self, cache_key: str, sorted_set_data: dict, raise_exception=False) -> None:
         """
         Add data to a sorted set
-        :param cache_key: the redis key for the sorted set to add to
+        :param cache_key: the Redis key for the sorted set to add to
         :param sorted_set_data: the data to add to the sorted set, in the form {key1: score1, key2: score2}
         :param raise_exception: True if we should allow the exception to bubble up
         """
@@ -143,14 +143,13 @@ class RedisClient:
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "add-key-to-ordered-set", cache_key)
 
-    def delete_key_from_sorted_set(self, cache_key, min_score, max_score, raise_exception=False):
+    def delete_from_sorted_set(self, cache_key, min_score, max_score, raise_exception=False):
         """
-        Delete a key from a sorted set
-
-        :param cache_key:
-        :param min_score:
-        :param max_score:
-        :param raise_exception:
+        Delete data from a sorted set from inside the range (min_score, max_score)
+        :param cache_key: the Redis key for the sorted set to add to
+        :param min_score: the minimum score to delete
+        :param max_score: the maximum score to delete
+        :param raise_exception: True if we should allow the exception to bubble up
         """
         cache_key = prepare_value(cache_key)
         if self.active:
@@ -159,71 +158,23 @@ class RedisClient:
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "delete-key-from-ordered-set", cache_key)
 
-    def get_sorted_set_members_by_score(self, cache_key, min_score, max_score, raise_exception=False):
-        cache_key = prepare_value(cache_key)
-
-        if self.active:
-            try:
-                included_list = self.redis_store.zrange(cache_key, min_score, max_score, withscores=True)
-                return sum([value for _, value in included_list]) if included_list else 0
-            except Exception as e:
-                self.__handle_exception(e, raise_exception, "get-sorted-set-members-by-score", cache_key)
-
-        return 0
-
-    def get_length_of_sorted_set(self, cache_key, interval=None, raise_exception=False):
+    def get_length_of_sorted_set(self, cache_key: str, min_score, max_score, raise_exception=False) -> int:
         """
-        Get the length of a sorted set. If we pass in an interval, we delete the keys in that range.
-
-        :param cache_key:
-        :param interval:
-        :param raise_exception:
+        Get the number of items from a sorted set between min_score and max_score.
+        :param cache_key: the Redis key for the sorted set to add to
+        :param min_score: defines the minimum of the range to count
+        :param max_score: defines the maximum of the range to count
+        :param raise_exception: True if we should allow the exception to bubble up
         :return: int
         """
         cache_key = prepare_value(cache_key)
         if self.active:
-            if interval is not None:
-                try:
-                    pipe = self.redis_store.pipeline()
-                    when = time()
-                    pipe.zremrangebyscore(cache_key, "-inf", when - interval)  # Delete all keys that are before the interval
-                    pipe.zcard(cache_key)
-                    result = pipe.execute()
-                    return result[1] if result else 0
-                except Exception as e:
-                    self.__handle_exception(e, raise_exception, "get-length-of-ordered-set", cache_key)
-            else:
-                try:
-                    return self.redis_store.zcard(cache_key)
-                except Exception as e:
-                    self.__handle_exception(e, raise_exception, "get-length-of-ordered-set", cache_key)
-        else:
-            return 0
-
-    def get_sorted_set_values(
-        self, cache_key: bytes | str | numbers.Number, start: int = 0, end: int = -1, raise_exception=False
-    ):
-        """
-        Get the values of a sorted set by key.
-
-        Args:
-            cache_key (bytes | str | numbers.Number): The key of the sorted set to retrieve values from.
-            end (int, optional): The index to stop reading at. Defaults to the length of the sorted set being read.
-            start (int, optional): The index to start reading at Defaults to 0.
-            raise_exception (bool, optional):  Defaults to False.
-
-        Returns:
-            A range of values from the sorted set in descending order.
-        """
-        end = self.get_length_of_sorted_set(cache_key) if end == 0 else end
-
-        cache_key = prepare_value(cache_key)
-        if self.active:
             try:
-                included_list = self.redis_store.zrevrange(cache_key, start, end, withscores=True)
-                return sum([value for _, value in included_list]) if included_list else 0
+                included_list = self.redis_store.zrange(cache_key, min_score, max_score, byscore=True)
+                return len(included_list) if included_list else 0
             except Exception as e:
-                self.__handle_exception(e, raise_exception, "get_values_of_sorted_set", cache_key)
+                self.__handle_exception(e, raise_exception, "get_length_of_sorted_set", cache_key)
+                return 0
         else:
             return 0
 

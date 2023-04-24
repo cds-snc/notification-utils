@@ -5,7 +5,7 @@ from unittest.mock import Mock
 from freezegun import freeze_time
 
 from notifications_utils.clients.redis.bounce_rate import (
-    _current_time_ms,
+    _current_timestamp_ms,
     RedisBounceRate,
     hard_bounce_key,
     total_notifications_key,
@@ -46,7 +46,7 @@ def mocked_seeded_data_hours():
 
 def build_bounce_rate_client(mocker, mocked_redis_client):
     bounce_rate_client = RedisBounceRate(mocked_redis_client)
-    mocker.patch.object(bounce_rate_client._redis_client, "add_key_to_sorted_set")
+    mocker.patch.object(bounce_rate_client._redis_client, "add_data_to_sorted_set")
     mocker.patch.object(bounce_rate_client._redis_client, "get_length_of_sorted_set", side_effect=[8, 20, 0, 0, 0, 8, 10, 20])
     mocker.patch.object(bounce_rate_client._redis_client, "expire")
     return bounce_rate_client
@@ -61,15 +61,15 @@ class TestRedisBounceRate:
     @freeze_time("2001-01-01 12:00:00.000000")
     def test_set_hard_bounce(self, mocked_bounce_rate_client, mocked_service_id):
         mocked_bounce_rate_client.set_sliding_hard_bounce(mocked_service_id)
-        mocked_bounce_rate_client._redis_client.add_key_to_sorted_set.assert_called_with(
-            hard_bounce_key(mocked_service_id), {_current_time_ms(): _current_time_ms()}
+        mocked_bounce_rate_client._redis_client.add_data_to_sorted_set.assert_called_with(
+            hard_bounce_key(mocked_service_id), {_current_timestamp_ms(): _current_timestamp_ms()}
         )
 
     @freeze_time("2001-01-01 12:00:00.000000")
     def test_set_total_notifications(self, mocked_bounce_rate_client, mocked_service_id):
         mocked_bounce_rate_client.set_sliding_notifications(mocked_service_id)
-        mocked_bounce_rate_client._redis_client.add_key_to_sorted_set.assert_called_with(
-            total_notifications_key(mocked_service_id), {_current_time_ms(): _current_time_ms()}
+        mocked_bounce_rate_client._redis_client.add_data_to_sorted_set.assert_called_with(
+            total_notifications_key(mocked_service_id), {_current_timestamp_ms(): _current_timestamp_ms()}
         )
 
     @freeze_time("2001-01-01 12:00:00.000000")
@@ -93,13 +93,13 @@ class TestRedisBounceRate:
     ):
         seeded_data = {12345: 12345, 12346: 12346}
         mocked_bounce_rate_client.set_hard_bounce_seeded(mocked_service_id, seeded_data)
-        mocked_bounce_rate_client._redis_client.add_key_to_sorted_set.assert_called_with(
+        mocked_bounce_rate_client._redis_client.add_data_to_sorted_set.assert_called_with(
             hard_bounce_key(mocked_service_id), seeded_data
         )
 
     def test_set_total_notifications_seeded(self, mocked_bounce_rate_client, mocked_service_id):
         seeded_data = {12345: 12345, 12346: 12346}
         mocked_bounce_rate_client.set_notifications_seeded(mocked_service_id, seeded_data)
-        mocked_bounce_rate_client._redis_client.add_key_to_sorted_set.assert_called_with(
+        mocked_bounce_rate_client._redis_client.add_data_to_sorted_set.assert_called_with(
             total_notifications_key(mocked_service_id), seeded_data
         )
