@@ -292,7 +292,7 @@ def test_delete_cache_keys_returns_zero_when_redis_disabled(mocked_redis_client)
 
 class TestRedisSortedSets:
     def test_add_to_redis_sorted_set(self, mocked_redis_client):
-        mocked_redis_client.add_key_to_sorted_set("key", "value", 1)
+        mocked_redis_client.add_data_to_sorted_set("key", {"value": 1})
         mocked_redis_client.redis_store.zadd.assert_called_with("key", {"value": 1})
 
     def test_delete_from_redis_sorted_set(self, mocked_redis_client):
@@ -307,10 +307,8 @@ class TestRedisSortedSets:
         assert mocked_redis_pipeline.execute.called
 
     def test_get_sorted_set_values(self, better_mocked_redis_client):
-        better_mocked_redis_client.add_key_to_sorted_set("main_key", "item_1", 10)
-        better_mocked_redis_client.add_key_to_sorted_set("main_key", "item_2", 12)
-        better_mocked_redis_client.add_key_to_sorted_set("main_key", "item_3", 8)
-        assert better_mocked_redis_client.get_sorted_set_values("main_key", 0, 11) == 2
+        better_mocked_redis_client.add_data_to_sorted_set("cache_key", {"item_1": 10, "item_2": 12, "item_3": 8})
+        assert better_mocked_redis_client.get_sorted_set_values("cache_key", 0, 11) == 2
 
     def test_get_values_of_sorted_set_should_not_call_zrevrange_if_redis_client_not_enabled(self, mocked_redis_client):
         mocked_redis_client.active = False
