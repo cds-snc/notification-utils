@@ -309,4 +309,4 @@ class TestRedisSortedSets:
         better_mocked_redis_client.add_data_to_sorted_set("cache_key", {"item_1": 10, "item_2": 12, "item_3": 8})
         better_mocked_redis_client.active = False
         ret = better_mocked_redis_client.get_length_of_sorted_set("cache_key", min_score=0, max_score=100)
-        assert ret is 0
+        assert ret == 0
