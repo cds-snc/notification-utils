@@ -129,18 +129,17 @@ class RedisClient:
         else:
             return False
 
-    def add_key_to_sorted_set(self, cache_key, sorted_set: dict, raise_exception=False):
+    def add_key_to_sorted_set(self, cache_key: str, sorted_set_data: dict, raise_exception=False) -> None:
         """
-        Add a key to a sorted set, with a score
-        :param cache_key:
-        :param value:
-        :param score:
-        :param raise_exception:
+        Add data to a sorted set
+        :param cache_key: the redis key for the sorted set to add to
+        :param sorted_set_data: the data to add to the sorted set, in the form {key1: score1, key2: score2}
+        :param raise_exception: True if we should allow the exception to bubble up
         """
         cache_key = prepare_value(cache_key)
         if self.active:
             try:
-                self.redis_store.zadd(cache_key, sorted_set)
+                self.redis_store.zadd(cache_key, sorted_set_data)
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "add-key-to-ordered-set", cache_key)
 
