@@ -50,7 +50,7 @@ class RedisBounceRate:
         self._redis_client.expire(seeding_started_key(service_id), TWENTY_FOUR_HOURS_IN_SECONDS)
 
     def get_seeding_started(self, service_id: str) -> bool:
-        """Returns True if seeding is complete, False otherwise"""
+        """Returns True if seeding is has already started, False otherwise"""
         if self._redis_client.get(seeding_started_key(service_id)) == b"True":
             return True
         return False
