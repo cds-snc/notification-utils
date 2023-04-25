@@ -2,6 +2,7 @@ import datetime
 import uuid
 import pytest
 from unittest.mock import Mock
+import fakeredis
 from freezegun import freeze_time
 
 from notifications_utils.clients.redis.bounce_rate import (
@@ -24,6 +25,15 @@ def mocked_redis_client(app, mocked_redis_pipeline, mocker):
     return build_redis_client(app, mocked_redis_pipeline, mocker)
 
 
+@pytest.fixture(scope="function")
+def better_mocked_redis_client(app):
+    app.config["REDIS_ENABLED"] = True
+    redis_client = RedisClient()
+    redis_client.redis_store = fakeredis.FakeStrictRedis(version=6)  # type: ignore
+    redis_client.active = True
+    return redis_client
+
+
 def build_redis_client(app, mocked_redis_pipeline, mocker):
     redis_client = RedisClient()
     redis_client.init_app(app)
@@ -33,6 +43,11 @@ def build_redis_client(app, mocked_redis_pipeline, mocker):
 @pytest.fixture(scope="function")
 def mocked_bounce_rate_client(mocked_redis_client, mocker):
     return build_bounce_rate_client(mocker, mocked_redis_client)
+
+
+@pytest.fixture(scope="function")
+def better_mocked_bounce_rate_client(better_mocked_redis_client, mocker):
+    return build_bounce_rate_client(mocker, better_mocked_redis_client)
 
 
 @pytest.fixture(scope="function")
@@ -103,3 +118,8 @@ class TestRedisBounceRate:
         mocked_bounce_rate_client._redis_client.add_data_to_sorted_set.assert_called_with(
             total_notifications_key(mocked_service_id), seeded_data
         )
+
+    def test_seeding_complete_flag(self, better_mocked_bounce_rate_client, mocked_service_id):
+        assert better_mocked_bounce_rate_client.get_seeding_complete(mocked_service_id) is False
+        better_mocked_bounce_rate_client.set_seeding_complete(mocked_service_id)
+        assert better_mocked_bounce_rate_client.get_seeding_complete(mocked_service_id)
