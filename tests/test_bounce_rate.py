@@ -48,7 +48,9 @@ def mocked_seeded_data_hours():
 def build_bounce_rate_client(app, mocker, mocked_redis_client):
     bounce_rate_client = RedisBounceRate(mocked_redis_client)
     mocker.patch.object(bounce_rate_client._redis_client, "add_data_to_sorted_set")
-    mocker.patch.object(bounce_rate_client._redis_client, "get_length_of_sorted_set", side_effect=[408, 1020, 0, 0, 0, 1008, 510, 1020, 5, 10 ])
+    mocker.patch.object(
+        bounce_rate_client._redis_client, "get_length_of_sorted_set", side_effect=[408, 1020, 0, 0, 0, 1008, 510, 1020, 5, 10]
+    )
     mocker.patch.object(bounce_rate_client._redis_client, "expire")
     return bounce_rate_client
 
@@ -89,7 +91,6 @@ class TestRedisBounceRate:
 
         answer = mocked_bounce_rate_client.get_bounce_rate(mocked_service_id)
         assert answer == 0
-
 
     def test_set_total_hard_bounce_seeded(
         self,
