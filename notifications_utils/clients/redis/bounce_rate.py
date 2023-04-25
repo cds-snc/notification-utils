@@ -3,6 +3,8 @@ from datetime import datetime
 
 from notifications_utils.clients.redis.redis_client import RedisClient
 
+TWENTY_FOUR_HOURS_IN_SECONDS = 24 * 60 * 60
+
 
 def hard_bounce_key(service_id: str):
     return f"sliding_hard_bounce:{service_id}"
@@ -45,13 +47,14 @@ class RedisBounceRate:
     def set_seeding_complete(self, service_id: str) -> None:
         """Call this after seeding data in Redis"""
         self._redis_client.set(seeding_complete_key(service_id), "True")
+        self._redis_client.expire(seeding_complete_key(service_id), TWENTY_FOUR_HOURS_IN_SECONDS)
 
     def get_seeding_complete(self, service_id: str) -> bool:
         """Returns True if seeding is complete, False otherwise"""
         if self._redis_client.get(seeding_complete_key(service_id)) == b"True":
             return True
         return False
-    
+
     def clear_bounce_rate_data(self, service_id: str) -> None:
         """Clears all data for a service before seeding new data"""
         self._redis_client.delete(hard_bounce_key(service_id))
