@@ -22,7 +22,8 @@ def mocked_redis_pipeline():
 @pytest.fixture(scope="function")
 def mocked_redis_client(app, mocked_redis_pipeline, mocker):
     app.config["REDIS_ENABLED"] = True
-    app.config["BR_DISPLAY_VOLUME_MINIMUM"] = 1000
+    app.config["BR_CRITICAL_PERCENTAGE"] = 0.1
+    app.config["BR_WARNING_PERCENTAGE"] = 0.05
     return build_redis_client(app, mocked_redis_pipeline, mocker)
 
 
@@ -42,8 +43,8 @@ def build_redis_client(app, mocked_redis_pipeline, mocker):
 
 
 @pytest.fixture(scope="function")
-def mocked_bounce_rate_client(app, mocked_redis_client, mocker):
-    return build_bounce_rate_client(app, mocker, mocked_redis_client)
+def mocked_bounce_rate_client(app, better_mocked_redis_client, mocker):
+    return build_bounce_rate_client(mocker, better_mocked_redis_client)
 
 
 @pytest.fixture(scope="function")
@@ -60,11 +61,11 @@ def mocked_seeded_data_hours():
     return hours
 
 
-def build_bounce_rate_client(app, mocker, mocked_redis_client):
-    bounce_rate_client = RedisBounceRate(mocked_redis_client)
+def build_bounce_rate_client(mocker, better_mocked_redis_client):
+    bounce_rate_client = RedisBounceRate(better_mocked_redis_client)
     mocker.patch.object(bounce_rate_client._redis_client, "add_data_to_sorted_set")
     mocker.patch.object(
-        bounce_rate_client._redis_client, "get_length_of_sorted_set", side_effect=[408, 1020, 0, 0, 0, 1008, 510, 1020, 5, 10]
+        bounce_rate_client._redis_client, "get_length_of_sorted_set", side_effect=[8, 20, 0, 0, 0, 8, 10, 20]
     )
     mocker.patch.object(bounce_rate_client._redis_client, "expire")
     return bounce_rate_client
@@ -104,8 +105,6 @@ class TestRedisBounceRate:
         answer = mocked_bounce_rate_client.get_bounce_rate(mocked_service_id)
         assert answer == 0.5
 
-        answer = mocked_bounce_rate_client.get_bounce_rate(mocked_service_id)
-        assert answer == 0
 
     def test_set_total_hard_bounce_seeded(
         self,
@@ -153,3 +152,31 @@ class TestRedisBounceRate:
             total_notifications_key(mocked_service_id), min_score=0, max_score="+inf"
         )
         assert total_notifications == 0
+
+
+    @pytest.mark.parametrize(
+        "total_bounces, total_notifications, expected_status, volume_threshold",
+        [
+            (10, 100, "critical", 75),
+            (5, 100, "warning", 75),
+            (0, 100, "normal", 75),
+            (0, 0, "normal", 75),
+            (0, 1, "normal", 75),
+            (1, 1, "normal", 75)
+        ]
+    )
+    def test_check_bounce_rate_critical(app, better_mocked_bounce_rate_client, mocked_service_id, total_bounces, total_notifications, expected_status, volume_threshold):
+        better_mocked_bounce_rate_client._critical_threshold = 0.1
+        better_mocked_bounce_rate_client._warning_threshold = 0.05
+        better_mocked_bounce_rate_client.clear_bounce_rate_data(mocked_service_id)
+        now = int(datetime.datetime.now().timestamp() * 1000.0)
+
+        notification_data = [(now - n, now - n) for n in range(total_notifications)]
+        bounce_data = [(now - n, now - n) for n in range(total_bounces)]
+
+        better_mocked_bounce_rate_client.set_notifications_seeded(mocked_service_id, dict(notification_data))
+        better_mocked_bounce_rate_client.set_hard_bounce_seeded(mocked_service_id, dict(bounce_data))
+
+        bounce_status = better_mocked_bounce_rate_client.check_bounce_rate_status(mocked_service_id, volume_threshold=volume_threshold)
+        assert bounce_status == expected_status
+
