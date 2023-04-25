@@ -21,6 +21,7 @@ def mocked_redis_pipeline():
 @pytest.fixture(scope="function")
 def mocked_redis_client(app, mocked_redis_pipeline, mocker):
     app.config["REDIS_ENABLED"] = True
+    app.config["BR_DISPLAY_VOLUME_MINIMUM"] = 1000
     return build_redis_client(app, mocked_redis_pipeline, mocker)
 
 
@@ -31,8 +32,8 @@ def build_redis_client(app, mocked_redis_pipeline, mocker):
 
 
 @pytest.fixture(scope="function")
-def mocked_bounce_rate_client(mocked_redis_client, mocker):
-    return build_bounce_rate_client(mocker, mocked_redis_client)
+def mocked_bounce_rate_client(app, mocked_redis_client, mocker):
+    return build_bounce_rate_client(app, mocker, mocked_redis_client)
 
 
 @pytest.fixture(scope="function")
@@ -44,10 +45,10 @@ def mocked_seeded_data_hours():
     return hours
 
 
-def build_bounce_rate_client(mocker, mocked_redis_client):
+def build_bounce_rate_client(app, mocker, mocked_redis_client):
     bounce_rate_client = RedisBounceRate(mocked_redis_client)
     mocker.patch.object(bounce_rate_client._redis_client, "add_data_to_sorted_set")
-    mocker.patch.object(bounce_rate_client._redis_client, "get_length_of_sorted_set", side_effect=[8, 20, 0, 0, 0, 8, 10, 20])
+    mocker.patch.object(bounce_rate_client._redis_client, "get_length_of_sorted_set", side_effect=[408, 1020, 0, 0, 0, 1008, 510, 1020, 5, 10 ])
     mocker.patch.object(bounce_rate_client._redis_client, "expire")
     return bounce_rate_client
 
@@ -85,6 +86,10 @@ class TestRedisBounceRate:
 
         answer = mocked_bounce_rate_client.get_bounce_rate(mocked_service_id)
         assert answer == 0.5
+
+        answer = mocked_bounce_rate_client.get_bounce_rate(mocked_service_id)
+        assert answer == 0
+
 
     def test_set_total_hard_bounce_seeded(
         self,

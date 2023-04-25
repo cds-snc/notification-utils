@@ -23,6 +23,10 @@ def _current_timestamp_ms() -> int:
 class RedisBounceRate:
     def __init__(self, redis: RedisClient):
         self._redis_client = redis
+        self.minimum_volume = 1000
+
+    def init_app(self, app, *args, **kwargs):
+        self.minimum_volume = app.config.get("BR_DISPLAY_VOLUME_MINIMUM")
 
     def set_sliding_notifications(self, service_id: str) -> None:
         current_time = _current_timestamp_ms()
@@ -56,4 +60,4 @@ class RedisBounceRate:
             total_notifications_key(service_id), min_score=twenty_four_hours_ago, max_score=now
         )
 
-        return round(total_hard_bounces / (1.0 * total_notifications), 2) if (total_notifications > 0) else 0.0
+        return round(total_hard_bounces / (1.0 * total_notifications), 2) if (total_notifications >= self.minimum_volume) else 0.0
