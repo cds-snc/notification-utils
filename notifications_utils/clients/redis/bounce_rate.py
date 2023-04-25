@@ -5,6 +5,8 @@ from notifications_utils.clients.redis.redis_client import RedisClient
 
 TWENTY_FOUR_HOURS_IN_SECONDS = 24 * 60 * 60
 DEFAULT_VOLUME_THRESHOLD = 1000
+BR_CRITICAL_PERCENTAGE_DEFAULT = 0.1
+BR_WARNING_PERCENTAGE_DEFAULT = 0.05
 
 
 def hard_bounce_key(service_id: str):
@@ -32,8 +34,14 @@ class RedisBounceRate:
         self._redis_client = redis
 
     def init_app(self, app, *args, **kwargs):
-        self._critical_threshold = app.config.get("BR_CRITICAL_PERCENTAGE")
-        self._warning_threshold = app.config.get("BR_WARNING_PERCENTAGE")
+        self._critical_threshold = (
+            app.config.get("BR_CRITICAL_PERCENTAGE")
+            if app.config.get("BR_CRITICAL_PERCENTAGE")
+            else BR_CRITICAL_PERCENTAGE_DEFAULT
+        )
+        self._warning_threshold = (
+            app.config.get("BR_WARNING_PERCENTAGE") if app.config.get("BR_WARNING_PERCENTAGE") else BR_WARNING_PERCENTAGE_DEFAULT
+        )
 
     def set_sliding_notifications(self, service_id: str) -> None:
         current_time = _current_timestamp_ms()
