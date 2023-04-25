@@ -6,6 +6,7 @@ from notifications_utils.clients.redis.redis_client import RedisClient
 TWENTY_FOUR_HOURS_IN_SECONDS = 24 * 60 * 60
 DEFAULT_VOLUME_THRESHOLD = 1000
 
+
 def hard_bounce_key(service_id: str):
     return f"sliding_hard_bounce:{service_id}"
 
@@ -27,7 +28,6 @@ def _current_timestamp_ms() -> int:
 
 
 class RedisBounceRate:
-
     def __init__(self, redis: RedisClient):
         self._redis_client = redis
 
@@ -83,12 +83,14 @@ class RedisBounceRate:
             total_notifications_key(service_id), min_score=twenty_four_hours_ago, max_score=now
         )
 
-        if (total_notifications < 1):
+        if total_notifications < 1:
             return 0.0
 
         return round(total_hard_bounces / (1.0 * total_notifications), 2)
 
-    def check_bounce_rate_status(self, service_id: str, volume_threshold: int = DEFAULT_VOLUME_THRESHOLD, bounce_window=_twenty_four_hour_window_ms()):
+    def check_bounce_rate_status(
+        self, service_id: str, volume_threshold: int = DEFAULT_VOLUME_THRESHOLD, bounce_window=_twenty_four_hour_window_ms()
+    ):
         now = _current_timestamp_ms()
         twenty_four_hours_ago = now - bounce_window
         bounce_rate = self.get_bounce_rate(service_id)

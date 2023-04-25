@@ -64,9 +64,7 @@ def mocked_seeded_data_hours():
 def build_bounce_rate_client(mocker, better_mocked_redis_client):
     bounce_rate_client = RedisBounceRate(better_mocked_redis_client)
     mocker.patch.object(bounce_rate_client._redis_client, "add_data_to_sorted_set")
-    mocker.patch.object(
-        bounce_rate_client._redis_client, "get_length_of_sorted_set", side_effect=[8, 20, 0, 0, 0, 8, 10, 20]
-    )
+    mocker.patch.object(bounce_rate_client._redis_client, "get_length_of_sorted_set", side_effect=[8, 20, 0, 0, 0, 8, 10, 20])
     mocker.patch.object(bounce_rate_client._redis_client, "expire")
     return bounce_rate_client
 
@@ -104,7 +102,6 @@ class TestRedisBounceRate:
 
         answer = mocked_bounce_rate_client.get_bounce_rate(mocked_service_id)
         assert answer == 0.5
-
 
     def test_set_total_hard_bounce_seeded(
         self,
@@ -153,7 +150,6 @@ class TestRedisBounceRate:
         )
         assert total_notifications == 0
 
-
     @pytest.mark.parametrize(
         "total_bounces, total_notifications, expected_status, volume_threshold",
         [
@@ -162,10 +158,18 @@ class TestRedisBounceRate:
             (0, 100, "normal", 75),
             (0, 0, "normal", 75),
             (0, 1, "normal", 75),
-            (1, 1, "normal", 75)
-        ]
+            (1, 1, "normal", 75),
+        ],
     )
-    def test_check_bounce_rate_critical(app, better_mocked_bounce_rate_client, mocked_service_id, total_bounces, total_notifications, expected_status, volume_threshold):
+    def test_check_bounce_rate_critical(
+        app,
+        better_mocked_bounce_rate_client,
+        mocked_service_id,
+        total_bounces,
+        total_notifications,
+        expected_status,
+        volume_threshold,
+    ):
         better_mocked_bounce_rate_client._critical_threshold = 0.1
         better_mocked_bounce_rate_client._warning_threshold = 0.05
         better_mocked_bounce_rate_client.clear_bounce_rate_data(mocked_service_id)
@@ -177,6 +181,7 @@ class TestRedisBounceRate:
         better_mocked_bounce_rate_client.set_notifications_seeded(mocked_service_id, dict(notification_data))
         better_mocked_bounce_rate_client.set_hard_bounce_seeded(mocked_service_id, dict(bounce_data))
 
-        bounce_status = better_mocked_bounce_rate_client.check_bounce_rate_status(mocked_service_id, volume_threshold=volume_threshold)
+        bounce_status = better_mocked_bounce_rate_client.check_bounce_rate_status(
+            mocked_service_id, volume_threshold=volume_threshold
+        )
         assert bounce_status == expected_status
-
