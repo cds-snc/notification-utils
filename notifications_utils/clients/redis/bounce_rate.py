@@ -14,8 +14,8 @@ def total_notifications_key(service_id: str):
     return f"sliding_total_notifications:{service_id}"
 
 
-def seeding_complete_key(service_id: str):
-    return f"seeding_complete:{service_id}"
+def seeding_started_key(service_id: str):
+    return f"seeding_started:{service_id}"
 
 
 def _twenty_four_hour_window_ms() -> int:
@@ -44,14 +44,14 @@ class RedisBounceRate:
     def set_hard_bounce_seeded(self, service_id: str, seeded_data: dict) -> None:
         self._redis_client.add_data_to_sorted_set(hard_bounce_key(service_id), seeded_data)
 
-    def set_seeding_complete(self, service_id: str) -> None:
-        """Call this after seeding data in Redis"""
-        self._redis_client.set(seeding_complete_key(service_id), "True")
-        self._redis_client.expire(seeding_complete_key(service_id), TWENTY_FOUR_HOURS_IN_SECONDS)
+    def set_seeding_started(self, service_id: str) -> None:
+        """Set a flag in Redis to indicate that we have started to seed data for a given service"""
+        self._redis_client.set(seeding_started_key(service_id), "True")
+        self._redis_client.expire(seeding_started_key(service_id), TWENTY_FOUR_HOURS_IN_SECONDS)
 
-    def get_seeding_complete(self, service_id: str) -> bool:
+    def get_seeding_started(self, service_id: str) -> bool:
         """Returns True if seeding is complete, False otherwise"""
-        if self._redis_client.get(seeding_complete_key(service_id)) == b"True":
+        if self._redis_client.get(seeding_started_key(service_id)) == b"True":
             return True
         return False
 

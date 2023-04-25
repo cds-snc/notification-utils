@@ -119,10 +119,10 @@ class TestRedisBounceRate:
             total_notifications_key(mocked_service_id), seeded_data
         )
 
-    def test_seeding_complete_flag(self, better_mocked_bounce_rate_client, mocked_service_id):
-        assert better_mocked_bounce_rate_client.get_seeding_complete(mocked_service_id) is False
-        better_mocked_bounce_rate_client.set_seeding_complete(mocked_service_id)
-        assert better_mocked_bounce_rate_client.get_seeding_complete(mocked_service_id)
+    def test_seeding_started_flag(self, better_mocked_bounce_rate_client, mocked_service_id):
+        assert better_mocked_bounce_rate_client.get_seeding_started(mocked_service_id) is False
+        better_mocked_bounce_rate_client.set_seeding_started(mocked_service_id)
+        assert better_mocked_bounce_rate_client.get_seeding_started(mocked_service_id)
 
     def test_clear_bounce_rate_data(self, better_mocked_bounce_rate_client, mocked_service_id):
         better_mocked_bounce_rate_client.set_sliding_notifications(mocked_service_id)
