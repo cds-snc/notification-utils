@@ -51,6 +51,11 @@ class RedisBounceRate:
         if self._redis_client.get(seeding_complete_key(service_id)) == b"True":
             return True
         return False
+    
+    def clear_bounce_rate_data(self, service_id: str) -> None:
+        """Clears all data for a service before seeding new data"""
+        self._redis_client.delete(hard_bounce_key(service_id))
+        self._redis_client.delete(total_notifications_key(service_id))
 
     def get_bounce_rate(self, service_id: str, bounce_window=_twenty_four_hour_window_ms()) -> float:
         """Returns the bounce rate for a service in the last 24 hours, and deletes data older than 24 hours"""

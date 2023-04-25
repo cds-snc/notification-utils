@@ -47,8 +47,8 @@ def mocked_bounce_rate_client(mocked_redis_client, mocker):
 
 @pytest.fixture(scope="function")
 def better_mocked_bounce_rate_client(better_mocked_redis_client, mocker):
-    return build_bounce_rate_client(mocker, better_mocked_redis_client)
-
+    return RedisBounceRate(better_mocked_redis_client)
+    
 
 @pytest.fixture(scope="function")
 def mocked_seeded_data_hours():
@@ -123,3 +123,27 @@ class TestRedisBounceRate:
         assert better_mocked_bounce_rate_client.get_seeding_complete(mocked_service_id) is False
         better_mocked_bounce_rate_client.set_seeding_complete(mocked_service_id)
         assert better_mocked_bounce_rate_client.get_seeding_complete(mocked_service_id)
+
+    def test_clear_bounce_rate_data(self, better_mocked_bounce_rate_client, mocked_service_id):
+        better_mocked_bounce_rate_client.set_sliding_notifications(mocked_service_id)
+        better_mocked_bounce_rate_client.set_sliding_hard_bounce(mocked_service_id)
+ 
+        total_hard_bounces = better_mocked_bounce_rate_client._redis_client.get_length_of_sorted_set(
+            hard_bounce_key(mocked_service_id), min_score=0, max_score="+inf"
+        )
+        assert total_hard_bounces == 1
+        total_notifications = better_mocked_bounce_rate_client._redis_client.get_length_of_sorted_set(
+            total_notifications_key(mocked_service_id), min_score=0, max_score="+inf"
+        )
+        assert total_notifications == 1
+   
+        better_mocked_bounce_rate_client.clear_bounce_rate_data(mocked_service_id)
+        
+        total_hard_bounces = better_mocked_bounce_rate_client._redis_client.get_length_of_sorted_set(
+            hard_bounce_key(mocked_service_id), min_score=0, max_score="+inf"
+        )
+        assert total_hard_bounces == 0
+        total_notifications = better_mocked_bounce_rate_client._redis_client.get_length_of_sorted_set(
+            total_notifications_key(mocked_service_id), min_score=0, max_score="+inf"
+        )
+        assert total_notifications == 0
