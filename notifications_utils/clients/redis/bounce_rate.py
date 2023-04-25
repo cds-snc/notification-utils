@@ -3,6 +3,8 @@ from datetime import datetime
 
 from notifications_utils.clients.redis.redis_client import RedisClient
 
+TWENTY_FOUR_HOURS_IN_SECONDS = 24 * 60 * 60
+
 
 def hard_bounce_key(service_id: str):
     return f"sliding_hard_bounce:{service_id}"
@@ -10,6 +12,10 @@ def hard_bounce_key(service_id: str):
 
 def total_notifications_key(service_id: str):
     return f"sliding_total_notifications:{service_id}"
+
+
+def seeding_started_key(service_id: str):
+    return f"seeding_started:{service_id}"
 
 
 def _twenty_four_hour_window_ms() -> int:
@@ -42,8 +48,24 @@ class RedisBounceRate:
     def set_hard_bounce_seeded(self, service_id: str, seeded_data: dict) -> None:
         self._redis_client.add_data_to_sorted_set(hard_bounce_key(service_id), seeded_data)
 
-    def get_bounce_rate(self, service_id: str, bounce_window=_twenty_four_hour_window_ms()) -> float:
+    def set_seeding_started(self, service_id: str) -> None:
+        """Set a flag in Redis to indicate that we have started to seed data for a given service"""
+        self._redis_client.set(seeding_started_key(service_id), "True")
+        self._redis_client.expire(seeding_started_key(service_id), TWENTY_FOUR_HOURS_IN_SECONDS)
 
+    def get_seeding_started(self, service_id: str) -> bool:
+        """Returns True if seeding is has already started, False otherwise"""
+        if self._redis_client.get(seeding_started_key(service_id)) == b"True":
+            return True
+        return False
+
+    def clear_bounce_rate_data(self, service_id: str) -> None:
+        """Clears all data for a service before seeding new data"""
+        self._redis_client.delete(hard_bounce_key(service_id))
+        self._redis_client.delete(total_notifications_key(service_id))
+
+    def get_bounce_rate(self, service_id: str, bounce_window=_twenty_four_hour_window_ms()) -> float:
+        """Returns the bounce rate for a service in the last 24 hours, and deletes data older than 24 hours"""
         now = _current_timestamp_ms()
         twenty_four_hours_ago = now - bounce_window
 
