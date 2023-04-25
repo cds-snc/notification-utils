@@ -51,7 +51,7 @@ class RedisBounceRate:
         return False
         
     def get_bounce_rate(self, service_id: str, bounce_window=_twenty_four_hour_window_ms()) -> float:
-
+        """Returns the bounce rate for a service in the last 24 hours, and deletes data older than 24 hours"""
         now = _current_timestamp_ms()
         twenty_four_hours_ago = now - bounce_window
 
