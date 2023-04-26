@@ -44,7 +44,7 @@ TAG_IMG_IRCC_GC_SEAL = r"\[\[ircc-gc-seal\]\]"  # matches [[ircc-gc-seal]]
 mistune._block_quote_leading_pattern = re.compile(r"^ *\^ ?", flags=re.M)
 mistune.BlockGrammar.block_quote = re.compile(r"^( *\^[^\n]+(\n[^\n]+)*\n*)+")
 mistune.BlockGrammar.list_block = re.compile(
-    r"^( *)([•*-]|\d+\.)[^*][\s\S]+?"
+    r"^( *)([•*-]|\d+\.) ([^*]|[*]{2})[\s\S]+?"
     r"(?:"
     r"\n+(?=\1?(?:[-*_] *){3,}(?:\n+|$))"  # hrule
     r"|\n+(?=%s)"  # def links
@@ -59,7 +59,7 @@ mistune.BlockGrammar.list_block = re.compile(
         mistune._pure_pattern(mistune.BlockGrammar.def_footnotes),
     )
 )
-mistune.BlockGrammar.list_item = re.compile(r"^(( *)(?:[•*-]|\d+\.)[^\n]*" r"(?:\n(?!\2(?:[•*-]|\d+\.))[^\n]*)*)", flags=re.M)
+mistune.BlockGrammar.list_item = re.compile(r"^(( *)(?:[•*-]|\d+\.) [^\n]*" r"(?:\n(?!\2(?:[•*-]|\d+\.))[^\n]*)*)", flags=re.M)
 mistune.BlockGrammar.list_bullet = re.compile(r"^ *(?:[•*-]|\d+\.)")
 mistune.InlineGrammar.url = re.compile(r"""^(https?:\/\/[^\s<]+[^<.,:"')\]\s])""")
 
@@ -489,7 +489,6 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
 
 
 class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
-
     COLUMN_WIDTH = 65
 
     def header(self, text, level, raw=None):

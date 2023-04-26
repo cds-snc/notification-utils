@@ -342,11 +342,17 @@ def test_hrule(markdown_function, expected):
 
 
 @pytest.mark.parametrize(
-    "markdown_function, expected",
+    "markdown_function, markdown_input, expected",
     (
-        [notify_letter_preview_markdown, ("<ol>\n" "<li>one</li>\n" "<li>two</li>\n" "<li>three</li>\n" "</ol>\n")],
+        [
+            notify_letter_preview_markdown,
+            "1. one\n" "2. two\n" "3. three\n",
+            ("<ol>\n" "<li>one</li>\n" "<li>two</li>\n" "<li>three</li>\n" "</ol>\n"),
+        ],
+        [notify_letter_preview_markdown, "1.one\n" "2.two\n" "3.three\n", "<p>1.one<br>2.two<br>3.three</p>"],
         [
             notify_email_markdown,
+            "1. one\n" "2. two\n" "3. three\n",
             (
                 '<table role="presentation" style="padding: 0 0 20px 0;">'
                 "<tr>"
@@ -365,20 +371,37 @@ def test_hrule(markdown_function, expected):
             ),
         ],
         [
+            notify_email_markdown,
+            "1.one\n" "2.two\n" "3.three\n",
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+                "1.one"
+                "<br />"
+                "2.two"
+                "<br />"
+                "3.three"
+                "</p>"
+            ),
+        ],
+        [
             notify_plain_text_email_markdown,
+            "1. one\n" "2. two\n" "3. three\n",
             ("\n" "\n1. one" "\n2. two" "\n3. three"),
+        ],
+        [
+            notify_plain_text_email_markdown,
+            "1.one\n" "2.two\n" "3.three\n",
+            "\n\n1.one\n2.two\n3.three",
         ],
     ),
 )
-def test_ordered_list(markdown_function, expected):
-    assert markdown_function("1. one\n" "2. two\n" "3. three\n") == expected
-    assert markdown_function("1.one\n" "2.two\n" "3.three\n") == expected
+def test_ordered_list(markdown_function, markdown_input, expected):
+    assert markdown_function(markdown_input) == expected
 
 
 @pytest.mark.parametrize(
     "markdown",
     (
-        ("*one\n" "*two\n" "*three\n"),  # no space
         ("* one\n" "* two\n" "* three\n"),  # single space
         ("*  one\n" "*  two\n" "*  three\n"),  # two spaces
         ("*  one\n" "*  two\n" "*  three\n"),  # tab
@@ -417,6 +440,30 @@ def test_ordered_list(markdown_function, expected):
     ),
 )
 def test_unordered_list(markdown, markdown_function, expected):
+    assert markdown_function(markdown) == expected
+
+
+@pytest.mark.parametrize(
+    "markdown",
+    (("*one\n" "*two\n" "*three\n"),),  # no space
+)
+@pytest.mark.parametrize(
+    "markdown_function, expected",
+    (
+        [
+            notify_email_markdown,
+            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;"><em>one</em>two<br />*three</p>',
+        ],
+        [
+            notify_plain_text_email_markdown,
+            "\n\n_one_two\n*three",
+        ],
+    ),
+)
+def test_unordered_list_with_no_spaces(markdown, markdown_function, expected):
+    """
+    This use case emulates formatting if someone would try to write a list without a
+    space after the bullet. The result would be italized text with line breaks."""
     assert markdown_function(markdown) == expected
 
 
