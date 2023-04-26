@@ -4,6 +4,9 @@ from datetime import datetime
 from notifications_utils.clients.redis.redis_client import RedisClient
 
 TWENTY_FOUR_HOURS_IN_SECONDS = 24 * 60 * 60
+DEFAULT_VOLUME_THRESHOLD = 1000
+BR_CRITICAL_PERCENTAGE_DEFAULT = 0.1
+BR_WARNING_PERCENTAGE_DEFAULT = 0.05
 
 
 def hard_bounce_key(service_id: str):
@@ -29,6 +32,16 @@ def _current_timestamp_ms() -> int:
 class RedisBounceRate:
     def __init__(self, redis: RedisClient):
         self._redis_client = redis
+
+    def init_app(self, app, *args, **kwargs):
+        self._critical_threshold = (
+            app.config.get("BR_CRITICAL_PERCENTAGE")
+            if app.config.get("BR_CRITICAL_PERCENTAGE")
+            else BR_CRITICAL_PERCENTAGE_DEFAULT
+        )
+        self._warning_threshold = (
+            app.config.get("BR_WARNING_PERCENTAGE") if app.config.get("BR_WARNING_PERCENTAGE") else BR_WARNING_PERCENTAGE_DEFAULT
+        )
 
     def set_sliding_notifications(self, service_id: str) -> None:
         current_time = _current_timestamp_ms()
@@ -66,9 +79,9 @@ class RedisBounceRate:
         twenty_four_hours_ago = now - bounce_window
 
         # delete data older than 24 hours
-        self._redis_client.delete_from_sorted_set(hard_bounce_key(service_id), min_score=twenty_four_hours_ago, max_score=now)
+        self._redis_client.delete_from_sorted_set(hard_bounce_key(service_id), min_score=0, max_score=twenty_four_hours_ago)
         self._redis_client.delete_from_sorted_set(
-            total_notifications_key(service_id), min_score=twenty_four_hours_ago, max_score=now
+            total_notifications_key(service_id), min_score=0, max_score=twenty_four_hours_ago
         )
 
         total_hard_bounces = self._redis_client.get_length_of_sorted_set(
@@ -78,4 +91,26 @@ class RedisBounceRate:
             total_notifications_key(service_id), min_score=twenty_four_hours_ago, max_score=now
         )
 
-        return round(total_hard_bounces / (1.0 * total_notifications), 2) if (total_notifications > 0) else 0.0
+        if total_notifications < 1:
+            return 0.0
+
+        return round(total_hard_bounces / (1.0 * total_notifications), 2)
+
+    def check_bounce_rate_status(
+        self, service_id: str, volume_threshold: int = DEFAULT_VOLUME_THRESHOLD, bounce_window=_twenty_four_hour_window_ms()
+    ):
+        now = _current_timestamp_ms()
+        twenty_four_hours_ago = now - bounce_window
+        bounce_rate = self.get_bounce_rate(service_id)
+
+        total_notifications = self._redis_client.get_length_of_sorted_set(
+            total_notifications_key(service_id), min_score=twenty_four_hours_ago, max_score=now
+        )
+
+        if total_notifications < volume_threshold or bounce_rate < self._warning_threshold:
+            return "normal"
+
+        if bounce_rate >= self._critical_threshold:
+            return "critical"
+
+        return "warning"
