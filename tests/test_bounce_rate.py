@@ -64,7 +64,6 @@ def mocked_seeded_data_hours():
 def build_bounce_rate_client(mocker, better_mocked_redis_client):
     bounce_rate_client = RedisBounceRate(better_mocked_redis_client)
     mocker.patch.object(bounce_rate_client._redis_client, "add_data_to_sorted_set")
-    mocker.patch.object(bounce_rate_client._redis_client, "get_length_of_sorted_set", side_effect=[8, 20, 0, 0, 0, 8, 10, 20])
     mocker.patch.object(bounce_rate_client._redis_client, "expire")
     return bounce_rate_client
 
@@ -89,19 +88,36 @@ class TestRedisBounceRate:
             total_notifications_key(mocked_service_id), {_current_timestamp_ms(): _current_timestamp_ms()}
         )
 
-    @freeze_time("2001-01-01 12:00:00.000000")
-    def test_get_bounce_rate(self, mocked_bounce_rate_client, mocked_service_id):
-        answer = mocked_bounce_rate_client.get_bounce_rate(mocked_service_id)
-        assert answer == 0.4
+    @pytest.mark.parametrize(
+        "total_bounces, total_notifications, expected_bounce_rate",
+        [
+            (10, 100, 0.1),
+            (5, 100, 0.05),
+            (5, 1000, 0.01),  # inexact b/c we are rounding to 2 decimal places
+            (5, 10000, 0.0),  # inexact b/c we are rounding to 2 decimal places
+            (5, 100000, 0.0),  # inexact b/c we are rounding to 2 decimal places
+            (0, 100, 0),
+            (40, 100, 0.4),
+            (0, 0, 0),
+            (0, 1, 0),
+            (1, 1, 1.0),
+        ],
+    )
+    def test_get_bounce_rate(
+        self, better_mocked_bounce_rate_client, mocked_service_id, total_bounces, total_notifications, expected_bounce_rate
+    ):
 
-        answer = mocked_bounce_rate_client.get_bounce_rate(mocked_service_id)
-        assert answer == 0
+        better_mocked_bounce_rate_client.clear_bounce_rate_data(mocked_service_id)
+        now = int(datetime.datetime.now().timestamp() * 1000.0)
 
-        answer = mocked_bounce_rate_client.get_bounce_rate(mocked_service_id)
-        assert answer == 0
+        notification_data = [(now - n, now - n) for n in range(total_notifications)]
+        bounce_data = [(now - n, now - n) for n in range(total_bounces)]
 
-        answer = mocked_bounce_rate_client.get_bounce_rate(mocked_service_id)
-        assert answer == 0.5
+        better_mocked_bounce_rate_client.set_notifications_seeded(mocked_service_id, dict(notification_data))
+        better_mocked_bounce_rate_client.set_hard_bounce_seeded(mocked_service_id, dict(bounce_data))
+
+        bounce_rate = better_mocked_bounce_rate_client.get_bounce_rate(mocked_service_id)
+        assert bounce_rate == expected_bounce_rate
 
     def test_set_total_hard_bounce_seeded(
         self,
