@@ -170,8 +170,8 @@ class RedisClient:
         cache_key = prepare_value(cache_key)
         if self.active:
             try:
-                included_list = self.redis_store.zrange(cache_key, min_score, max_score, byscore=True)
-                return len(included_list) if included_list else 0
+                count = self.redis_store.zcount(cache_key, min_score, max_score)
+                return count if count else 0
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "get_length_of_sorted_set", cache_key)
                 return 0
