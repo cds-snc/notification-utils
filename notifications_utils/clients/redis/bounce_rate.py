@@ -39,13 +39,13 @@ class RedisBounceRate:
             app.config.get("BR_WARNING_PERCENTAGE") if app.config.get("BR_WARNING_PERCENTAGE") else BR_WARNING_PERCENTAGE_DEFAULT
         )
 
-    def set_sliding_notifications(self, service_id: str) -> None:
+    def set_sliding_notifications(self, service_id: str, notification_id: str) -> None:
         current_time = _current_timestamp_s()
-        self._redis_client.add_data_to_sorted_set(total_notifications_key(service_id), {current_time: current_time})
+        self._redis_client.add_data_to_sorted_set(total_notifications_key(service_id), {notification_id: current_time})
 
-    def set_sliding_hard_bounce(self, service_id: str) -> None:
+    def set_sliding_hard_bounce(self, service_id: str, notification_id: str) -> None:
         current_time = _current_timestamp_s()
-        self._redis_client.add_data_to_sorted_set(hard_bounce_key(service_id), {current_time: current_time})
+        self._redis_client.add_data_to_sorted_set(hard_bounce_key(service_id), {notification_id: current_time})
 
     def set_notifications_seeded(self, service_id: str, seeded_data: dict) -> None:
         self._redis_client.add_data_to_sorted_set(total_notifications_key(service_id), seeded_data)
