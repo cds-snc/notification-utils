@@ -6,7 +6,7 @@ import fakeredis
 from freezegun import freeze_time
 
 from notifications_utils.clients.redis.bounce_rate import (
-    _current_timestamp_ms,
+    _current_timestamp_s,
     RedisBounceRate,
     hard_bounce_key,
     total_notifications_key,
@@ -55,7 +55,7 @@ def better_mocked_bounce_rate_client(better_mocked_redis_client, mocker):
 @pytest.fixture(scope="function")
 def mocked_seeded_data_hours():
     hour_delta = datetime.timedelta(hours=1)
-    hours = [datetime.datetime.now() - hour_delta]
+    hours = [datetime.datetime.utcnow() - hour_delta]
     for i in range(23):
         hours.append(hours[i] - hour_delta)
     return hours
@@ -83,7 +83,7 @@ class TestRedisBounceRate:
         notification_id = mocked_notification_id()
         mocked_bounce_rate_client.set_sliding_hard_bounce(mocked_service_id, notification_id)
         mocked_bounce_rate_client._redis_client.add_data_to_sorted_set.assert_called_with(
-            hard_bounce_key(mocked_service_id), {notification_id: _current_timestamp_ms()}
+            hard_bounce_key(mocked_service_id), {notification_id: _current_timestamp_s()}
         )
 
     @freeze_time("2001-01-01 12:00:00.000000")
@@ -91,7 +91,7 @@ class TestRedisBounceRate:
         notification_id = mocked_notification_id()
         mocked_bounce_rate_client.set_sliding_notifications(mocked_service_id, notification_id)
         mocked_bounce_rate_client._redis_client.add_data_to_sorted_set.assert_called_with(
-            total_notifications_key(mocked_service_id), {notification_id: _current_timestamp_ms()}
+            total_notifications_key(mocked_service_id), {notification_id: _current_timestamp_s()}
         )
 
     @pytest.mark.parametrize(
@@ -113,7 +113,7 @@ class TestRedisBounceRate:
     ):
 
         better_mocked_bounce_rate_client.clear_bounce_rate_data(mocked_service_id)
-        now = int(datetime.datetime.now().timestamp() * 1000.0)
+        now = int(datetime.datetime.utcnow().timestamp())
 
         notification_data = [(mocked_notification_id(), now - n) for n in range(total_notifications)]
         bounce_data = [(mocked_notification_id(), now - n) for n in range(total_bounces)]
@@ -194,7 +194,7 @@ class TestRedisBounceRate:
         better_mocked_bounce_rate_client._critical_threshold = 0.1
         better_mocked_bounce_rate_client._warning_threshold = 0.05
         better_mocked_bounce_rate_client.clear_bounce_rate_data(mocked_service_id)
-        now = int(datetime.datetime.now().timestamp() * 1000.0)
+        now = int(datetime.datetime.utcnow().timestamp())
 
         notification_data = [(mocked_notification_id(), now - n) for n in range(total_notifications)]
         bounce_data = [(mocked_notification_id(), now - n) for n in range(total_bounces)]
