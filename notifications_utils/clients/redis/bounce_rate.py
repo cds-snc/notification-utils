@@ -26,7 +26,7 @@ def _twenty_four_hour_window_ms() -> int:
 
 
 def _current_timestamp_ms() -> int:
-    return int(datetime.now().timestamp() * 1000.0)
+    return int(datetime.utcnow().timestamp() * 1000.0)
 
 
 class RedisBounceRate:
@@ -94,7 +94,7 @@ class RedisBounceRate:
         if total_notifications < 1:
             return 0.0
 
-        return round(total_hard_bounces / (1.0 * total_notifications), 2)
+        return total_hard_bounces / (1.0 * total_notifications)
 
     def check_bounce_rate_status(
         self, service_id: str, volume_threshold: int = DEFAULT_VOLUME_THRESHOLD, bounce_window=_twenty_four_hour_window_ms()

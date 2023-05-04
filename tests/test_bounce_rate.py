@@ -99,8 +99,8 @@ class TestRedisBounceRate:
         [
             (10, 100, 0.1),
             (5, 100, 0.05),
-            (5, 1000, 0.01),  # inexact b/c we are rounding to 2 decimal places
-            (5, 10000, 0.0),  # inexact b/c we are rounding to 2 decimal places
+            (5, 1000, 0.005),
+            (5, 10000, 0.0005),
             (0, 100, 0),
             (40, 100, 0.4),
             (0, 0, 0),
