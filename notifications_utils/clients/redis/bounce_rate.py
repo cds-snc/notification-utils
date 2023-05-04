@@ -21,12 +21,8 @@ def seeding_started_key(service_id: str):
     return f"seeding_started:{service_id}"
 
 
-def _twenty_four_hour_window_ms() -> int:
-    return 24 * 60 * 60 * 1000
-
-
-def _current_timestamp_ms() -> int:
-    return int(datetime.utcnow().timestamp() * 1000.0)
+def _current_timestamp_s() -> int:
+    return int(datetime.utcnow().timestamp())
 
 
 class RedisBounceRate:
@@ -44,11 +40,11 @@ class RedisBounceRate:
         )
 
     def set_sliding_notifications(self, service_id: str) -> None:
-        current_time = _current_timestamp_ms()
+        current_time = _current_timestamp_s()
         self._redis_client.add_data_to_sorted_set(total_notifications_key(service_id), {current_time: current_time})
 
     def set_sliding_hard_bounce(self, service_id: str) -> None:
-        current_time = _current_timestamp_ms()
+        current_time = _current_timestamp_s()
         self._redis_client.add_data_to_sorted_set(hard_bounce_key(service_id), {current_time: current_time})
 
     def set_notifications_seeded(self, service_id: str, seeded_data: dict) -> None:
@@ -73,9 +69,9 @@ class RedisBounceRate:
         self._redis_client.delete(hard_bounce_key(service_id))
         self._redis_client.delete(total_notifications_key(service_id))
 
-    def get_bounce_rate(self, service_id: str, bounce_window=_twenty_four_hour_window_ms()) -> float:
+    def get_bounce_rate(self, service_id: str, bounce_window=TWENTY_FOUR_HOURS_IN_SECONDS) -> float:
         """Returns the bounce rate for a service in the last 24 hours, and deletes data older than 24 hours"""
-        now = _current_timestamp_ms()
+        now = _current_timestamp_s()
         twenty_four_hours_ago = now - bounce_window
 
         # delete data older than 24 hours
@@ -96,10 +92,29 @@ class RedisBounceRate:
 
         return total_hard_bounces / (1.0 * total_notifications)
 
+    def get_debug_data(self, service_id: str, bounce_window=TWENTY_FOUR_HOURS_IN_SECONDS):
+        "Temporary function for debugging purposes"
+        now = _current_timestamp_s()
+        twenty_four_hours_ago = now - bounce_window
+
+        total_hard_bounces = self._redis_client.get_length_of_sorted_set(
+            hard_bounce_key(service_id), min_score=twenty_four_hours_ago, max_score=now
+        )
+        total_notifications = self._redis_client.get_length_of_sorted_set(
+            total_notifications_key(service_id), min_score=twenty_four_hours_ago, max_score=now
+        )
+
+        return {
+            "total_notifications": total_notifications,
+            "total_hard_bounces": total_hard_bounces,
+            "twenty_four_hours_ago": twenty_four_hours_ago,
+            "now": now,
+        }
+
     def check_bounce_rate_status(
-        self, service_id: str, volume_threshold: int = DEFAULT_VOLUME_THRESHOLD, bounce_window=_twenty_four_hour_window_ms()
+        self, service_id: str, volume_threshold: int = DEFAULT_VOLUME_THRESHOLD, bounce_window=TWENTY_FOUR_HOURS_IN_SECONDS
     ):
-        now = _current_timestamp_ms()
+        now = _current_timestamp_s()
         twenty_four_hours_ago = now - bounce_window
         bounce_rate = self.get_bounce_rate(service_id)
 
