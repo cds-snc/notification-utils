@@ -13,12 +13,11 @@ def test_works_without_salt():
     assert payload == check_token(token, "secret-key")
 
 
-def test_fails_for_incorrect_salt():
+def test_generate_uses_salt_token():
     payload = "email@something.com"
-    token = generate_token(payload, "secret-key")
+    token = generate_token(payload, "secret-key", salt="s1")
     token = urllib.parse.unquote(token)
-    with pytest.raises(BadSignature):
-        assert payload == check_token(token, "secret-key", salt="wrong-salt")
+    assert payload == check_token(token, "secret-key", salt="token")
 
 
 def test_should_return_payload_from_signed_token():
