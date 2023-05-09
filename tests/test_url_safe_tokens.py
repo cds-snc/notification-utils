@@ -1,8 +1,9 @@
 import urllib
 
-from itsdangerous import BadSignature, SignatureExpired
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 import pytest
 
+from notifications_utils.formatters import url_encode_full_stops
 from notifications_utils.url_safe_token import generate_token, check_token
 
 
@@ -18,6 +19,13 @@ def test_generate_uses_salt_token():
     token = generate_token(payload, "secret-key", salt="s1")
     token = urllib.parse.unquote(token)
     assert payload == check_token(token, "secret-key", salt="token")
+
+
+def test_check_verifies_if_generated_with_salt_parameter():
+    payload = "email@something.com"
+    token = url_encode_full_stops(URLSafeTimedSerializer("secret-key").dumps(payload, "s1"))
+    token = urllib.parse.unquote(token)
+    assert payload == check_token(token, "secret-key", salt="s1")
 
 
 def test_should_return_payload_from_signed_token():
