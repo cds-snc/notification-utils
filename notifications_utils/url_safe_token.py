@@ -7,7 +7,7 @@ def generate_token(payload, secret, salt="token"):
     return url_encode_full_stops(URLSafeTimedSerializer(secret).dumps(payload, "token"))
 
 
-# After a day, all valid tokens will be signed with the salt "token" instead of DANGEROUS_SALT.
+# After two days all valid tokens will be signed with the salt "token" instead of DANGEROUS_SALT.
 # So we can:
 #  - stop passing the salt to check_token() in api
 #  - remove the "try / except" block below (and just return the ser.loads())
