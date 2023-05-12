@@ -1,3 +1,4 @@
+from datetime import datetime
 from urllib.parse import parse_qs
 
 import botocore
@@ -23,6 +24,18 @@ def test_s3upload_save_file_to_bucket(mocker):
     )
 
 
+def test_s3upload_save_file_to_bucket_with_expiry(mocker):
+    mocked = mocker.patch("notifications_utils.s3.resource")
+    s3upload(filedata=contents, region=region, bucket_name=bucket, file_location=location, expiry=datetime(2030, 1, 1))
+    mocked_put = mocked.return_value.Object.return_value.put
+    mocked_put.assert_called_once_with(
+        Body=contents,
+        ServerSideEncryption="AES256",
+        ContentType=content_type,
+        Expires=datetime(2030, 1, 1),
+    )
+
+
 def test_s3upload_save_file_to_bucket_with_contenttype(mocker):
     content_type = "image/png"
     mocked = mocker.patch("notifications_utils.s3.resource")
@@ -38,7 +51,7 @@ def test_s3upload_save_file_to_bucket_with_contenttype(mocker):
 def test_s3upload_raises_exception(app, mocker):
     mocked = mocker.patch("notifications_utils.s3.resource")
     response = {"Error": {"Code": 500}}
-    exception = botocore.exceptions.ClientError(response, "Bad exception")
+    exception = botocore.exceptions.ClientError(response, "Bad exception")  # type: ignore
     mocked.return_value.Object.return_value.put.side_effect = exception
     with pytest.raises(botocore.exceptions.ClientError):
         s3upload(filedata=contents, region=region, bucket_name=bucket, file_location="location")
@@ -72,7 +85,7 @@ def test_s3download_gets_file(mocker):
 def test_s3download_raises_on_error(mocker):
     mocked = mocker.patch("notifications_utils.s3.resource")
     mocked.return_value.Object.side_effect = botocore.exceptions.ClientError(
-        {"Error": {"Code": 404}},
+        {"Error": {"Code": 404}},  # type: ignore
         "Bad exception",
     )
 

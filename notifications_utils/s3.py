@@ -1,3 +1,5 @@
+from datetime import datetime
+from typing import Optional
 import urllib
 
 import botocore
@@ -5,9 +7,10 @@ from boto3 import resource
 from flask import current_app
 
 
-def s3upload(filedata, region, bucket_name, file_location, content_type="binary/octet-stream", tags=None):
+def s3upload(
+    filedata, region, bucket_name, file_location, content_type="binary/octet-stream", tags=None, expiry: Optional[datetime] = None
+):
     _s3 = resource("s3")
-
     key = _s3.Object(bucket_name, file_location)
 
     put_args = {"Body": filedata, "ServerSideEncryption": "AES256", "ContentType": content_type}
@@ -15,6 +18,9 @@ def s3upload(filedata, region, bucket_name, file_location, content_type="binary/
     if tags:
         tags = urllib.parse.urlencode(tags)
         put_args["Tagging"] = tags
+
+    if expiry:
+        put_args["Expires"] = expiry
 
     try:
         key.put(**put_args)
