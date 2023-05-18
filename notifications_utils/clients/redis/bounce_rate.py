@@ -69,6 +69,16 @@ class RedisBounceRate:
         self._redis_client.delete(hard_bounce_key(service_id))
         self._redis_client.delete(total_notifications_key(service_id))
 
+    def get_total_hard_bounces(self, service_id: str, bounce_window=TWENTY_FOUR_HOURS_IN_SECONDS) -> int:
+        now = _current_timestamp_s()
+        twenty_four_hours_ago = now - bounce_window
+
+        total_hard_bounces = self._redis_client.get_length_of_sorted_set(
+            hard_bounce_key(service_id), min_score=twenty_four_hours_ago, max_score=now
+        )
+        return total_hard_bounces
+
+
     def get_bounce_rate(self, service_id: str, bounce_window=TWENTY_FOUR_HOURS_IN_SECONDS) -> float:
         """Returns the bounce rate for a service in the last 24 hours, and deletes data older than 24 hours"""
         now = _current_timestamp_s()
@@ -80,9 +90,7 @@ class RedisBounceRate:
             total_notifications_key(service_id), min_score=0, max_score=twenty_four_hours_ago
         )
 
-        total_hard_bounces = self._redis_client.get_length_of_sorted_set(
-            hard_bounce_key(service_id), min_score=twenty_four_hours_ago, max_score=now
-        )
+        total_hard_bounces = self.get_total_hard_bounces(service_id, bounce_window)
         total_notifications = self._redis_client.get_length_of_sorted_set(
             total_notifications_key(service_id), min_score=twenty_four_hours_ago, max_score=now
         )
