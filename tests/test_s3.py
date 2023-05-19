@@ -38,7 +38,7 @@ def test_s3upload_save_file_to_bucket_with_contenttype(mocker):
 def test_s3upload_raises_exception(app, mocker):
     mocked = mocker.patch("notifications_utils.s3.resource")
     response = {"Error": {"Code": 500}}
-    exception = botocore.exceptions.ClientError(response, "Bad exception")
+    exception = botocore.exceptions.ClientError(response, "Bad exception")  # type: ignore
     mocked.return_value.Object.return_value.put.side_effect = exception
     with pytest.raises(botocore.exceptions.ClientError):
         s3upload(filedata=contents, region=region, bucket_name=bucket, file_location="location")
@@ -72,7 +72,7 @@ def test_s3download_gets_file(mocker):
 def test_s3download_raises_on_error(mocker):
     mocked = mocker.patch("notifications_utils.s3.resource")
     mocked.return_value.Object.side_effect = botocore.exceptions.ClientError(
-        {"Error": {"Code": 404}},
+        {"Error": {"Code": 404}},  # type: ignore
         "Bad exception",
     )
 
