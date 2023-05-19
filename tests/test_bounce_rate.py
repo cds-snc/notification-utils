@@ -142,6 +142,20 @@ class TestRedisBounceRate:
             total_notifications_key(mocked_service_id), seeded_data
         )
 
+    def test_get_total_notifications(self, better_mocked_bounce_rate_client: RedisBounceRate, mocked_service_id):
+        assert better_mocked_bounce_rate_client.get_total_notifications(mocked_service_id) == 0
+        better_mocked_bounce_rate_client.set_sliding_notifications(mocked_service_id, mocked_notification_id())
+        better_mocked_bounce_rate_client.set_sliding_notifications(mocked_service_id, mocked_notification_id())
+        better_mocked_bounce_rate_client.set_sliding_notifications(mocked_service_id, mocked_notification_id())
+        assert better_mocked_bounce_rate_client.get_total_notifications(mocked_service_id) == 3
+
+    def test_get_total_hard_bounces(self, better_mocked_bounce_rate_client: RedisBounceRate, mocked_service_id):
+        assert better_mocked_bounce_rate_client.get_total_hard_bounces(mocked_service_id) == 0
+        better_mocked_bounce_rate_client.set_sliding_hard_bounce(mocked_service_id, mocked_notification_id())
+        better_mocked_bounce_rate_client.set_sliding_hard_bounce(mocked_service_id, mocked_notification_id())
+        better_mocked_bounce_rate_client.set_sliding_hard_bounce(mocked_service_id, mocked_notification_id())
+        assert better_mocked_bounce_rate_client.get_total_hard_bounces(mocked_service_id) == 3
+
     def test_seeding_started_flag(self, better_mocked_bounce_rate_client, mocked_service_id):
         assert better_mocked_bounce_rate_client.get_seeding_started(mocked_service_id) is False
         better_mocked_bounce_rate_client.set_seeding_started(mocked_service_id)
