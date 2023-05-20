@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "icecream"
+version = "0.1.0"
+description = "Scans Terraform files for alarms' metadata and produce a GitHub wikipage alarms detailed list."
+authors = ["GCNotify Glaciers"]
+license = "The MIT License (https://opensource.org/license/mit/)"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pygithub = "^1.58.1"
+docopt = "^0.6.2"
+pyyaml = "^6.0"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+packages = [
+    { include = "icecream", from = "src" },
+]

@@ -1,0 +1,19 @@
+name: 'Ice Cream, you scream..'
+description: 'Scans Terraform files for alarms' metadata and produce a GitHub wikipage alarms detailed list.'
+author: 'CDS cooks'
+inputs:
+  gh-wiki-repo-url:
+    description: "GitHub wiki repository URL."
+    required: true
+  wiki-page-title:
+    description: "Wiki page title"
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.gh-wiki-repo-url }}
+    - ${{ inputs.wiki-page-title }}
+branding:
+  icon: 'phone-incoming'  
+  color: 'red'
