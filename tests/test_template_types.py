@@ -1334,7 +1334,7 @@ def test_templates_extract_placeholders(
 )
 def test_email_preview_shows_from_name(extra_args):
     template = EmailPreviewTemplate({"content": "content", "subject": "subject"}, **extra_args)
-    assert '<th class="email-message-table pl-doubleGutter text-gray-grey1">[From]</th>' in str(template)
+    assert '<th class="email-message-table pl-doubleGutter text-gray-grey1" scope="row">[From]</th>' in str(template)
     assert "Example service" in str(template)
     assert "test@example.com" not in str(template)
 
@@ -1358,7 +1358,7 @@ def test_email_preview_escapes_html_in_from_name():
 )
 def test_email_preview_shows_reply_to_address(extra_args):
     template = EmailPreviewTemplate({"content": "content", "subject": "subject"}, **extra_args)
-    assert '<th class="email-message-table pl-doubleGutter text-gray-grey1">[Reply to]</th>' in str(template)
+    assert '<th class="email-message-table pl-doubleGutter text-gray-grey1" scope="row">[Reply to]</th>' in str(template)
     assert "test@example.com" in str(template)
 
 

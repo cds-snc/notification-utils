@@ -4,7 +4,7 @@
       {% if show_recipient %}
         {% if from_name %}
           <tr>
-            <th class="email-message-table pl-doubleGutter text-gray-grey1">[From]</th>
+            <th class="email-message-table pl-doubleGutter text-gray-grey1" scope="row">[From]</th>
             <td class="email-message-table">
               {{ from_name }}
             </td>
@@ -12,21 +12,21 @@
         {% endif %}
         {% if reply_to %}
           <tr>
-            <th class="email-message-table pl-doubleGutter text-gray-grey1">[Reply to]</th>
+            <th class="email-message-table pl-doubleGutter text-gray-grey1" scope="row">[Reply to]</th>
             <td class="email-message-table">
               {{ reply_to }}
             </td>
           </tr>
         {% endif %}
         <tr>
-          <th class="email-message-table pl-doubleGutter text-gray-grey1">[To]</th>
+          <th class="email-message-table pl-doubleGutter text-gray-grey1" scope="row">[To]</th>
           <td class="email-message-table">
             {{ recipient }}
           </td>
         </tr>
       {% endif %}
       <tr class="email-message-meta m-0 text-smaller leading-tight font-normal">
-        <th class="email-message-table pl-doubleGutter text-gray-grey1">[Subject]</th>
+        <th class="email-message-table pl-doubleGutter text-gray-grey1" scope="row">[Subject]</th>
         <td class="email-message-table">
           {{ subject }}
         </td>
