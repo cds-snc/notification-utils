@@ -411,9 +411,13 @@ class HTMLEmailTemplate(WithSubjectTemplate):
                 "brand_name": self.brand_name,
             }
         )
-        
+
+    @property
+    def content_count(self):
+        return len(HTMLEmailTemplate.__str__(self))
+            
     def is_message_too_long(self):
-        return len(self.content) > EMAIL_CHAR_COUNT_LIMIT
+        return self.content_count > EMAIL_CHAR_COUNT_LIMIT
 
 
 class EmailPreviewTemplate(WithSubjectTemplate):
@@ -499,6 +503,12 @@ class EmailPreviewTemplate(WithSubjectTemplate):
             .then(normalise_whitespace)
         )
 
+    @property
+    def content_count(self):
+        return len(EmailPreviewTemplate.__str__(self))
+            
+    def is_message_too_long(self):
+        return self.content_count > EMAIL_CHAR_COUNT_LIMIT
 
 class LetterPreviewTemplate(WithSubjectTemplate):
 
