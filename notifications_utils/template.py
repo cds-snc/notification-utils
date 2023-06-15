@@ -7,7 +7,7 @@ from jinja2 import Environment, FileSystemLoader
 from flask import Markup
 from html import unescape
 
-from notifications_utils import SMS_CHAR_COUNT_LIMIT
+from notifications_utils import EMAIL_CHAR_COUNT_LIMIT, SMS_CHAR_COUNT_LIMIT
 from notifications_utils.columns import Columns
 from notifications_utils.field import Field
 from notifications_utils.formatters import (
@@ -411,6 +411,9 @@ class HTMLEmailTemplate(WithSubjectTemplate):
                 "brand_name": self.brand_name,
             }
         )
+        
+    def is_message_too_long(self):
+        return len(self.content) > EMAIL_CHAR_COUNT_LIMIT
 
 
 class EmailPreviewTemplate(WithSubjectTemplate):
