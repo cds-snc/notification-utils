@@ -158,6 +158,8 @@ class Template:
 
 
 class SMSMessageTemplate(Template):
+    CHAR_COUNT_LIMIT = SMS_CHAR_COUNT_LIMIT
+    
     def __init__(
         self,
         template,
@@ -207,7 +209,7 @@ class SMSMessageTemplate(Template):
         return get_sms_fragment_count(self.content_count, is_unicode(content_with_placeholders))
 
     def is_message_too_long(self):
-        return self.content_count > SMS_CHAR_COUNT_LIMIT
+        return self.content_count > self.CHAR_COUNT_LIMIT
 
 
 class SMSPreviewTemplate(SMSMessageTemplate):
@@ -344,6 +346,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
     jinja_template = template_env.get_template("email/email_template.jinja2")
 
     PREHEADER_LENGTH_IN_CHARACTERS = 256
+    CHAR_COUNT_LIMIT = EMAIL_CHAR_COUNT_LIMIT
 
     def __init__(
         self,
@@ -417,7 +420,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         return len(HTMLEmailTemplate.__str__(self))
             
     def is_message_too_long(self):
-        return self.content_count > EMAIL_CHAR_COUNT_LIMIT
+        return self.content_count > self.CHAR_COUNT_LIMIT
 
 
 class EmailPreviewTemplate(WithSubjectTemplate):
