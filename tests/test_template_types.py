@@ -1928,8 +1928,8 @@ def test_sms_message_too_long(template_class):
     ],
 )
 def test_email_message_too_long(template_class):
-    body = ("b" * 40000) + "((foo))"
-    template = template_class({"content": body, "subject": "abc"}, values={"foo": "c" * 10001})
+    body = ("b" * 40) + "((foo))"
+    template = template_class({"content": body, "subject": "abc"}, values={"foo": "c" * 11})
     assert template.is_message_too_long() is True
 
 

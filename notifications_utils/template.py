@@ -422,7 +422,8 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             # of the template counting content like "((name))" as 8 characters
             return len(self._template["content"])
         # this is the length of the template after placeholders have been replaced
-        return len(self.content)
+        plaintext_email = Take(Field(self.content, self.values, html="passthrough", markdown_lists=True))
+        return len(plaintext_email)
 
     def is_message_too_long(self):
         return self.content_count > self.CHAR_COUNT_LIMIT
@@ -521,7 +522,8 @@ class EmailPreviewTemplate(WithSubjectTemplate):
             # of the template counting content like "((name))" as 8 characters
             return len(self._template["content"])
         # this is the length of the template after placeholders have been replaced
-        return len(self.content)
+        plaintext_email = Take(Field(self.content, self.values, html="passthrough", markdown_lists=True))
+        return len(plaintext_email)
 
     def is_message_too_long(self):
         return self.content_count > self.CHAR_COUNT_LIMIT
