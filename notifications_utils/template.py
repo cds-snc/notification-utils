@@ -159,7 +159,7 @@ class Template:
 
 class SMSMessageTemplate(Template):
     CHAR_COUNT_LIMIT = SMS_CHAR_COUNT_LIMIT
-    
+
     def __init__(
         self,
         template,
@@ -417,13 +417,21 @@ class HTMLEmailTemplate(WithSubjectTemplate):
 
     @property
     def content_count(self):
-        return len(HTMLEmailTemplate.__str__(self))
-            
+        if self.missing_data:
+            # variables have not yet been populated, so just take the length of
+            # of the template counting content like "((name))" as 8 characters
+            return len(self._template["content"])
+        # this is the length of the template after placeholders have been replaced
+        return len(self.content)
+
     def is_message_too_long(self):
         return self.content_count > self.CHAR_COUNT_LIMIT
 
 
 class EmailPreviewTemplate(WithSubjectTemplate):
+
+    CHAR_COUNT_LIMIT = EMAIL_CHAR_COUNT_LIMIT
+
     def __init__(
         self,
         template,
@@ -508,10 +516,16 @@ class EmailPreviewTemplate(WithSubjectTemplate):
 
     @property
     def content_count(self):
-        return len(EmailPreviewTemplate.__str__(self))
-            
+        if self.missing_data:
+            # variables have not yet been populated, so just take the length of
+            # of the template counting content like "((name))" as 8 characters
+            return len(self._template["content"])
+        # this is the length of the template after placeholders have been replaced
+        return len(self.content)
+
     def is_message_too_long(self):
-        return self.content_count > EMAIL_CHAR_COUNT_LIMIT
+        return self.content_count > self.CHAR_COUNT_LIMIT
+
 
 class LetterPreviewTemplate(WithSubjectTemplate):
 
