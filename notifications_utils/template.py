@@ -7,7 +7,7 @@ from jinja2 import Environment, FileSystemLoader
 from flask import Markup
 from html import unescape
 
-from notifications_utils import SMS_CHAR_COUNT_LIMIT
+from notifications_utils import EMAIL_CHAR_COUNT_LIMIT, SMS_CHAR_COUNT_LIMIT
 from notifications_utils.columns import Columns
 from notifications_utils.field import Field
 from notifications_utils.formatters import (
@@ -158,6 +158,8 @@ class Template:
 
 
 class SMSMessageTemplate(Template):
+    CHAR_COUNT_LIMIT = SMS_CHAR_COUNT_LIMIT
+
     def __init__(
         self,
         template,
@@ -207,7 +209,7 @@ class SMSMessageTemplate(Template):
         return get_sms_fragment_count(self.content_count, is_unicode(content_with_placeholders))
 
     def is_message_too_long(self):
-        return self.content_count > SMS_CHAR_COUNT_LIMIT
+        return self.content_count > self.CHAR_COUNT_LIMIT
 
 
 class SMSPreviewTemplate(SMSMessageTemplate):
@@ -344,6 +346,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
     jinja_template = template_env.get_template("email/email_template.jinja2")
 
     PREHEADER_LENGTH_IN_CHARACTERS = 256
+    CHAR_COUNT_LIMIT = EMAIL_CHAR_COUNT_LIMIT
 
     def __init__(
         self,
@@ -412,8 +415,24 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             }
         )
 
+    @property
+    def content_count(self):
+        if self.missing_data:
+            # variables have not yet been populated, so just take the length of
+            # of the template counting content like "((name))" as 8 characters
+            return len(self._template["content"])
+        # this is the length of the template after placeholders have been replaced
+        plaintext_email = Take(Field(self.content, self.values, html="passthrough", markdown_lists=True))
+        return len(plaintext_email)
+
+    def is_message_too_long(self):
+        return self.content_count > self.CHAR_COUNT_LIMIT
+
 
 class EmailPreviewTemplate(WithSubjectTemplate):
+
+    CHAR_COUNT_LIMIT = EMAIL_CHAR_COUNT_LIMIT
+
     def __init__(
         self,
         template,
@@ -495,6 +514,19 @@ class EmailPreviewTemplate(WithSubjectTemplate):
             .then(do_nice_typography)
             .then(normalise_whitespace)
         )
+
+    @property
+    def content_count(self):
+        if self.missing_data:
+            # variables have not yet been populated, so just take the length of
+            # of the template counting content like "((name))" as 8 characters
+            return len(self._template["content"])
+        # this is the length of the template after placeholders have been replaced
+        plaintext_email = Take(Field(self.content, self.values, html="passthrough", markdown_lists=True))
+        return len(plaintext_email)
+
+    def is_message_too_long(self):
+        return self.content_count > self.CHAR_COUNT_LIMIT
 
 
 class LetterPreviewTemplate(WithSubjectTemplate):

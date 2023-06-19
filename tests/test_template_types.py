@@ -1914,10 +1914,36 @@ def test_lists_in_combination_with_other_elements_in_letters(markdown, expected)
         SMSPreviewTemplate,
     ],
 )
-def test_message_too_long(template_class):
+def test_sms_message_too_long(template_class):
     body = ("b" * 400) + "((foo))"
     template = template_class({"content": body}, prefix="a" * 100, values={"foo": "c" * 200})
     assert template.is_message_too_long() is True
+
+
+@pytest.mark.parametrize(
+    "template_class",
+    [
+        HTMLEmailTemplate,
+        EmailPreviewTemplate,
+    ],
+)
+def test_email_message_too_long(template_class):
+    body = ("b" * 40000) + "((foo))"
+    template = template_class({"content": body, "subject": "abc"}, values={"foo": "c" * 10001})
+    assert template.is_message_too_long() is True
+
+
+@pytest.mark.parametrize(
+    "template_class",
+    [
+        HTMLEmailTemplate,
+        EmailPreviewTemplate,
+    ],
+)
+def test_email_message_not_too_long(template_class):
+    body = ("b" * 40000) + "((foo))"
+    template = template_class({"content": body, "subject": "abc"}, values={"foo": "c" * 10000})
+    assert template.is_message_too_long() is False
 
 
 @pytest.mark.parametrize(
