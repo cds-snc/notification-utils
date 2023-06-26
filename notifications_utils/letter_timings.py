@@ -22,7 +22,6 @@ def set_gmt_hour(day, hour):
 
 
 def get_letter_timings(upload_time, postage="second"):
-
     LetterTimings = namedtuple("LetterTimings", "printed_by, is_printed, earliest_delivery, latest_delivery")
 
     # shift anything after 5:30pm to the next day

@@ -36,7 +36,6 @@ def test_errors_for_invalid_values(values):
 
 
 def test_matches_keys_to_placeholder_names():
-
     template = Template({"content": "hello ((name))"})
 
     template.values = {"NAME": "Chris"}

@@ -111,7 +111,6 @@ class TestRedisBounceRate:
     def test_get_bounce_rate(
         self, better_mocked_bounce_rate_client, mocked_service_id, total_bounces, total_notifications, expected_bounce_rate
     ):
-
         better_mocked_bounce_rate_client.clear_bounce_rate_data(mocked_service_id)
         now = int(datetime.datetime.utcnow().timestamp())
 

@@ -62,7 +62,6 @@ template_env = Environment(
 
 
 class Template:
-
     encoding = "utf-8"
 
     def __init__(
@@ -234,7 +233,6 @@ class SMSPreviewTemplate(SMSMessageTemplate):
         self.jinja_template = self.template_env.get_template("sms_preview_template.jinja2")
 
     def __str__(self):
-
         return Markup(
             self.jinja_template.render(
                 {
@@ -341,7 +339,6 @@ class PlainTextEmailTemplate(WithSubjectTemplate):
 
 
 class HTMLEmailTemplate(WithSubjectTemplate):
-
     # Instantiate with regular jinja for test mocking (tests expect this to exist before init)
     jinja_template = template_env.get_template("email/email_template.jinja2")
 
@@ -399,7 +396,6 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         )[: self.PREHEADER_LENGTH_IN_CHARACTERS].strip()
 
     def __str__(self):
-
         return self.jinja_template.render(
             {
                 "body": get_html_email_body(self.content, self.values, html="passthrough" if self.allow_html else "escape"),
@@ -430,7 +426,6 @@ class HTMLEmailTemplate(WithSubjectTemplate):
 
 
 class EmailPreviewTemplate(WithSubjectTemplate):
-
     CHAR_COUNT_LIMIT = EMAIL_CHAR_COUNT_LIMIT
 
     def __init__(
@@ -530,7 +525,6 @@ class EmailPreviewTemplate(WithSubjectTemplate):
 
 
 class LetterPreviewTemplate(WithSubjectTemplate):
-
     jinja_template = template_env.get_template("letter_pdf/preview.jinja2")
 
     address_block = "\n".join(
@@ -687,12 +681,10 @@ class LetterPreviewTemplate(WithSubjectTemplate):
 
 
 class LetterPrintTemplate(LetterPreviewTemplate):
-
     jinja_template = template_env.get_template("letter_pdf/print.jinja2")
 
 
 class LetterImageTemplate(LetterPreviewTemplate):
-
     jinja_template = template_env.get_template("letter_image_template.jinja2")
     first_page_number = 1
     max_page_count = 10
