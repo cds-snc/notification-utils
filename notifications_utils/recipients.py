@@ -151,7 +151,6 @@ class RecipientCSV:
         )
 
     def get_rows(self):
-
         column_headers = self._raw_column_headers  # this is for caching
         length_of_column_headers = len(column_headers)
 
@@ -160,11 +159,9 @@ class RecipientCSV:
         next(rows_as_lists_of_columns, None)  # skip the header row
 
         for index, row in enumerate(rows_as_lists_of_columns):
-
             output_dict = OrderedDict()
 
             for column_name, column_value in zip(column_headers, row):
-
                 column_value = strip_and_remove_obscure_whitespace(column_value)
 
                 if Columns.make_key(column_name) in self.recipient_column_headers_as_column_keys:
@@ -274,7 +271,6 @@ class RecipientCSV:
 
     @property
     def duplicate_recipient_column_headers(self):
-
         raw_recipient_column_headers = [
             Columns.make_key(column_header)
             for column_header in self._raw_column_headers
@@ -304,7 +300,6 @@ class RecipientCSV:
         )
 
     def _get_error_for_field(self, key, value):  # noqa: C901
-
         if self.is_optional_address_column(key):
             return
 
@@ -366,7 +361,6 @@ international_phone_info = namedtuple(  # type: ignore
 
 
 def get_international_phone_info(number):
-
     number = validate_phone_number(number, international=True)
     prefix = get_international_prefix(number)
 
@@ -393,7 +387,6 @@ def validate_local_phone_number(number, column=None):
 
 
 def validate_phone_number(number, column=None, international=False):
-
     if ";" in number:
         raise InvalidPhoneError("Not a valid number")
 

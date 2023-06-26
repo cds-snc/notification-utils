@@ -34,7 +34,6 @@ class Columns(dict):
 
 
 class Row(Columns):
-
     message_too_long = False
 
     def __init__(
@@ -46,7 +45,6 @@ class Row(Columns):
         placeholders,
         template,
     ):
-
         self.index = index
         self.recipient_column_headers = recipient_column_headers
         self.placeholders = placeholders
@@ -92,7 +90,6 @@ class Row(Columns):
 
 
 class Cell:
-
     missing_field_error = "Missing"
 
     def __init__(self, key=None, value=None, error_fn=None, placeholders=None):
