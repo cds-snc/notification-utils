@@ -18,7 +18,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = "~3.10"
-bleach = "3.3.1"
+bleach = "6.0.0"
 cachetools = "4.2.4"
 mistune = "0.8.4"
 requests = "2.31.0"
