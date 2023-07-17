@@ -35,3 +35,11 @@ def near_sms_daily_limit_cache_key(service_id):
 
 def over_sms_daily_limit_cache_key(service_id):
     return f"over-daily-limit-{sms_daily_count_cache_key(service_id)}"
+
+
+def email_daily_count_cache_key(service_id) -> str:
+    """
+    Used to keep track how many emails a service has sent in a day.
+
+    """
+    return "email-{}-{}-{}".format(str(service_id), datetime.utcnow().strftime("%Y-%m-%d"), "count")
