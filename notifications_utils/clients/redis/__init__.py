@@ -43,3 +43,19 @@ def email_daily_count_cache_key(service_id) -> str:
 
     """
     return "email-{}-{}-{}".format(str(service_id), datetime.utcnow().strftime("%Y-%m-%d"), "count")
+
+
+def near_email_daily_limit_cache_key(service_id) -> str:
+    """
+    Cache key that stores a str with the current date time indicating is the service is nearing the daily email limit.
+
+    """
+    return f"nearing-daily-email-limit-{email_daily_count_cache_key(service_id)}"
+
+
+def over_email_daily_limit_cache_key(service_id) -> str:
+    """
+    Cache key that stores a str with the current date time indicating is the service is over the daily email limit.
+
+    """
+    return f"over-daily-email-limit-{email_daily_count_cache_key(service_id)}"
