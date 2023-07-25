@@ -2,6 +2,7 @@ import re
 
 SMS_CHAR_COUNT_LIMIT = 612  # 153 * 4
 EMAIL_CHAR_COUNT_LIMIT = 50000  # the template that caused an incident on 2023-06-01 was 210,166 characters long
+TEMPLATE_NAME_CHAR_COUNT_LIMIT = 255
 
 # regexes for use in recipients.validate_email_address.
 # Valid characters taken from https://en.wikipedia.org/wiki/Email_address#Local-part
