@@ -2,10 +2,9 @@ import datetime
 from time import process_time
 import os
 import pytest
-
 from functools import partial
 from unittest import mock
-from flask import Markup
+from markupsafe import Markup
 from freezegun import freeze_time
 
 from notifications_utils.formatters import unlink_govuk_escaped
