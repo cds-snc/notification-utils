@@ -1,7 +1,5 @@
 import base64
 from io import BytesIO
-
-import pypdf
 import pytest
 from pypdf.errors import PdfReadError
 

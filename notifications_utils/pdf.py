@@ -1,4 +1,3 @@
-import pypdf
 from pypdf import PdfWriter
 from pypdf.errors import PdfReadError
 import io

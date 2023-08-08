@@ -4,7 +4,7 @@ import os
 import pytest
 from functools import partial
 from unittest import mock
-from markupsafe import Markup
+from flask import Markup
 from freezegun import freeze_time
 
 from notifications_utils.formatters import unlink_govuk_escaped

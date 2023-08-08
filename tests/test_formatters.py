@@ -1,5 +1,5 @@
 import pytest
-from markupsafe import Markup
+from flask import Markup
 
 from notifications_utils.formatters import (
     unlink_govuk_escaped,
