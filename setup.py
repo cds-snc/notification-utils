@@ -42,6 +42,8 @@ setup(
         'pyyaml==5.4.1',
         'requests>=2.26.0',
         'smartypants>=2.0.1',
-        'statsd>=3.3.0',
+        'statsd>=3.3.0'
+        'statsd>=3.3.0'
+        'MarkupSafe>=2.1.3',
     ]
 )
