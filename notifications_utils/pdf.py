@@ -1,4 +1,4 @@
-from pypdf import PdfWriter
+from pypdf import PdfWriter, PdfReader
 from pypdf.errors import PdfReadError
 import io
 
@@ -7,10 +7,10 @@ def pdf_page_count(src_pdf):
     """
     Returns number of pages in a pdf file
 
-    :param pypdf.PdfReader src_pdf: A File object or an object that supports the standard read and seek methods
+    :param PdfReader src_pdf: A File object or an object that supports the standard read and seek methods
     """
     try:
-        pdf = pypdf.PdfReader(src_pdf)
+        pdf = PdfReader(src_pdf)
     except AttributeError as e:
         raise PdfReadError("Could not open PDF file, stream is null", e)
 
@@ -24,7 +24,7 @@ def extract_page_from_pdf(src_pdf, page_number):
     :param src_pdf: File object or an object that supports the standard read and seek methods similar to a File object.
     :param page_number: The page number to retrieve (pages begin at zero)
     """
-    pdf = pypdf.PdfReader(src_pdf)
+    pdf = PdfReader(src_pdf)
 
     if len(pdf.pages) < page_number:
         raise PdfReadError("Page number requested: {} of {} does not exist in document".format(
