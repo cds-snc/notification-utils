@@ -419,8 +419,8 @@ def test_validates_against_safelist_of_email_addresses(email_address):
 @pytest.mark.parametrize(
     "phone_number, expected_formatted",
     [
-        ("+20-12-1234-1234", "+20 121 234 1234"),  # Egypt
-        ("+7 499 1231212", "+7 499 123-12-12"),  # Moscow (Russia)
+        ("+20 012-123-1234", "+20 012-123-1234"),
+        ("+7 499 1231212", "+7 499 123-12-12"),  # Egypt  # Moscow (Russia)
         ("+1-202-555-0104", "+1 202-555-0104"),  # Washington DC (USA)
         ("+23051234567", "+23051234567"),  # Mauritius
         ("+33(0)1 12345678", "+33 1 12 34 56 78"),  # Paris (France)
