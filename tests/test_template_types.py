@@ -1907,6 +1907,32 @@ def test_lists_in_combination_with_other_elements_in_letters(markdown, expected)
 @pytest.mark.parametrize(
     "template_class",
     [
+        HTMLEmailTemplate,
+        SMSMessageTemplate,
+    ],
+)
+def test_template_name_too_long(template_class):
+    template_name = "x" * 256
+    template = template_class({"name": template_name, "subject": "Subject!", "content": "content!"})
+    assert template.is_name_too_long() is True
+
+
+@pytest.mark.parametrize(
+    "template_class",
+    [
+        HTMLEmailTemplate,
+        SMSMessageTemplate,
+    ],
+)
+def test_template_name_not_too_long(template_class):
+    template_name = "x" * 255
+    template = template_class({"name": template_name, "subject": "Subject!", "content": "content!"})
+    assert template.is_name_too_long() is False
+
+
+@pytest.mark.parametrize(
+    "template_class",
+    [
         SMSMessageTemplate,
         SMSPreviewTemplate,
     ],

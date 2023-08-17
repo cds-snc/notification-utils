@@ -7,7 +7,7 @@ from jinja2 import Environment, FileSystemLoader
 from flask import Markup
 from html import unescape
 
-from notifications_utils import EMAIL_CHAR_COUNT_LIMIT, SMS_CHAR_COUNT_LIMIT
+from notifications_utils import EMAIL_CHAR_COUNT_LIMIT, SMS_CHAR_COUNT_LIMIT, TEMPLATE_NAME_CHAR_COUNT_LIMIT
 from notifications_utils.columns import Columns
 from notifications_utils.field import Field
 from notifications_utils.formatters import (
@@ -155,9 +155,13 @@ class Template:
     def is_message_too_long(self):
         return False
 
+    def is_name_too_long(self):
+        return False
+
 
 class SMSMessageTemplate(Template):
     CHAR_COUNT_LIMIT = SMS_CHAR_COUNT_LIMIT
+    NAME_CHAR_LIMIT = TEMPLATE_NAME_CHAR_COUNT_LIMIT
 
     def __init__(
         self,
@@ -209,6 +213,9 @@ class SMSMessageTemplate(Template):
 
     def is_message_too_long(self):
         return self.content_count > self.CHAR_COUNT_LIMIT
+
+    def is_name_too_long(self):
+        return len(self.name) > self.NAME_CHAR_LIMIT
 
 
 class SMSPreviewTemplate(SMSMessageTemplate):
@@ -344,6 +351,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
 
     PREHEADER_LENGTH_IN_CHARACTERS = 256
     CHAR_COUNT_LIMIT = EMAIL_CHAR_COUNT_LIMIT
+    NAME_CHAR_LIMIT = TEMPLATE_NAME_CHAR_COUNT_LIMIT
 
     def __init__(
         self,
@@ -424,9 +432,13 @@ class HTMLEmailTemplate(WithSubjectTemplate):
     def is_message_too_long(self):
         return self.content_count > self.CHAR_COUNT_LIMIT
 
+    def is_name_too_long(self):
+        return len(self.name) > self.NAME_CHAR_LIMIT
+
 
 class EmailPreviewTemplate(WithSubjectTemplate):
     CHAR_COUNT_LIMIT = EMAIL_CHAR_COUNT_LIMIT
+    NAME_CHAR_LIMIT = TEMPLATE_NAME_CHAR_COUNT_LIMIT
 
     def __init__(
         self,
@@ -522,6 +534,9 @@ class EmailPreviewTemplate(WithSubjectTemplate):
 
     def is_message_too_long(self):
         return self.content_count > self.CHAR_COUNT_LIMIT
+
+    def is_name_too_long(self):
+        return len(self.name) > self.NAME_CHAR_LIMIT
 
 
 class LetterPreviewTemplate(WithSubjectTemplate):
