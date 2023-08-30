@@ -100,6 +100,7 @@ class SanitiseSMS(SanitiseText):
 
     # Welsh characters not already included in GSM
     WELSH_NON_GSM_CHARACTERS = set("ÂâÊêÎîÔôÛûŴŵŶŷ")
+    FRENCH_NON_GSM_CHARACTESR = set("ÀÂâçÈÊêËëÎîÏïÔôŒœÙÛû₣")
 
     ALLOWED_CHARACTERS = (
         set(
@@ -108,6 +109,7 @@ class SanitiseSMS(SanitiseText):
             + "^{}\\[~]|€"  # character set extension
         )
         | WELSH_NON_GSM_CHARACTERS
+        | FRENCH_NON_GSM_CHARACTESR
     )
 
 
