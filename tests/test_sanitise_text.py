@@ -3,7 +3,7 @@ import pytest
 from notifications_utils.sanitise_text import SanitiseText, SanitiseSMS, SanitiseASCII
 
 
-@pytest.mark.parametrize("chars, cls", [("ÀÂâçÈÊêËëÎîÏïÔôŒœÙÛû₣", SanitiseSMS)])
+@pytest.mark.parametrize("chars, cls", [("ÀÂâçÈÊêËëÎîÏïÔôŒœÙÛû", SanitiseSMS)])
 def test_encode_chars_sms_fr_not_downgraded(chars, cls):
     for char in chars:
         assert cls.encode_char(char) == char
