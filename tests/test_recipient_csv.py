@@ -14,18 +14,10 @@ def _index_rows(rows):
 
 
 @pytest.mark.parametrize(
-    "file_contents,template_type,expected",
+    "file_contents,template_type,expected,user_language",
     [
-        (
-            "",
-            "sms",
-            [],
-        ),
-        (
-            "phone number",
-            "sms",
-            [],
-        ),
+        ("", "sms", [], "en"),
+        ("phone number", "sms", [], "fr"),
         (
             """
                 phone number,name
@@ -34,6 +26,7 @@ def _index_rows(rows):
             """,
             "sms",
             [[("phone number", "+1 123"), ("name", "test1")], [("phone number", "+1 456"), ("name", "test2")]],
+            "en",
         ),
         (
             """
@@ -43,6 +36,7 @@ def _index_rows(rows):
             """,
             "sms",
             [[("phone number", "+1 123"), ("name", None)], [("phone number", "+1 456"), ("name", None)]],
+            "en",
         ),
         (
             """
@@ -55,6 +49,7 @@ def _index_rows(rows):
                 [("email address", "test@example.com"), ("name", "test1")],
                 [("email address", "test2@example.com"), ("name", "test2")],
             ],
+            "en",
         ),
         (
             """
@@ -67,6 +62,7 @@ def _index_rows(rows):
                 [("email address", "test@example.com"), (None, ["test1", "red"])],
                 [("email address", "test2@example.com"), (None, ["test2", "blue"])],
             ],
+            "en",
         ),
         (
             """
@@ -81,6 +77,7 @@ def _index_rows(rows):
                 [("email address", "test2@example.com"), ("name", "test2")],
                 [("email address", "test3@example.com"), ("name", "test3")],
             ],
+            "en",
         ),
         (
             """
@@ -93,34 +90,7 @@ def _index_rows(rows):
                 [("email address", "test@example.com"), ("date", "Nov 28, 2016"), ("name", "test1")],
                 [("email address", "test2@example.com"), ("date", "Nov 29, 2016"), ("name", "test2")],
             ],
-        ),
-        (
-            """
-                address_line_1
-                Alice
-                Bob
-            """,
-            "letter",
-            [[("address_line_1", "Alice")], [("address_line_1", "Bob")]],
-        ),
-        (
-            """
-                address line 1,address line 2,address line 5,address line 6,postcode,name,thing
-                A. Name,,,,XM4 5HQ,example,example
-            """,
-            "letter",
-            [
-                [
-                    ("addressline1", "A. Name"),
-                    ("addressline2", None),
-                    # optional address rows 3 and 4 not in file
-                    ("addressline5", None),
-                    ("addressline5", None),
-                    ("postcode", "XM4 5HQ"),
-                    ("name", "example"),
-                    ("thing", "example"),
-                ]
-            ],
+            "en",
         ),
         (
             """
@@ -135,11 +105,55 @@ def _index_rows(rows):
                 [("phone number", "07900900002"), ("list", ["dog", "hog", "frog"])],
                 [("phone number", "07900900003"), ("list", ["elephant", None, None])],
             ],
+            "en",
+        ),
+        (
+            """
+                address courriel,name
+                test@example.com,test1
+                test2@example.com, test2
+            """,
+            "email",
+            [
+                [("address courriel", "test@example.com"), ("name", "test1")],
+                [("address courriel", "test2@example.com"), ("name", "test2")],
+            ],
+            "fr",
+        ),
+        (
+            """
+                numéro de téléphone, list, list, list
+                07900900001, cat, rat, gnat
+                07900900002, dog, hog, frog
+                07900900003, elephant
+            """,
+            "sms",
+            [
+                [("numéro de téléphone", "07900900001"), ("list", ["cat", "rat", "gnat"])],
+                [("numéro de téléphone", "07900900002"), ("list", ["dog", "hog", "frog"])],
+                [("numéro de téléphone", "07900900003"), ("list", ["elephant", None, None])],
+            ],
+            "fr",
+        ),
+        (
+            """
+                numéro de téléphone, list, list, list
+                07900900001, cat, rat, gnat
+                07900900002, dog, hog, frog
+                07900900003, elephant
+            """,
+            "sms",
+            [
+                [("numéro de téléphone", "07900900001"), ("list", ["cat", "rat", "gnat"])],
+                [("numéro de téléphone", "07900900002"), ("list", ["dog", "hog", "frog"])],
+                [("numéro de téléphone", "07900900003"), ("list", ["elephant", None, None])],
+            ],
+            "en",
         ),
     ],
 )
-def test_get_rows(file_contents, template_type, expected):
-    rows = list(RecipientCSV(file_contents, template_type=template_type).rows)
+def test_get_rows(file_contents, template_type, expected, user_language):
+    rows = list(RecipientCSV(file_contents, template_type=template_type, user_language=user_language).rows)
     if not expected:
         assert rows == expected
     for index, row in enumerate(expected):
@@ -399,9 +413,22 @@ def test_get_recipient_respects_order(file_contents, template_type, placeholders
 
 
 @pytest.mark.parametrize(
-    "file_contents,template_type,expected,expected_missing",
+    "file_contents,template_type,expected,expected_missing, user_language",
     [
-        ("", "sms", [], set(["phone number", "name"])),
+        ("", "sms", [], set(["phone number", "name"]), "en"),
+        ("", "email", [], set(["email address", "name"]), "en"),
+        (
+            """
+                numéro de téléphone, name
+                6502532222,test1
+                6502532222,test1
+                6502532222,test1
+            """,
+            "sms",
+            ["numéro de téléphone", "name"],
+            set(),
+            "fr",
+        ),
         (
             """
                 phone number,name
@@ -412,6 +439,7 @@ def test_get_recipient_respects_order(file_contents, template_type, placeholders
             "sms",
             ["phone number", "name"],
             set(),
+            "en",
         ),
         (
             """
@@ -420,14 +448,7 @@ def test_get_recipient_respects_order(file_contents, template_type, placeholders
             "email",
             ["email address", "name", "colour"],
             set(),
-        ),
-        (
-            """
-                address_line_1, address_line_2, postcode, name
-            """,
-            "letter",
-            ["address_line_1", "address_line_2", "postcode", "name"],
-            set(),
+            "en",
         ),
         (
             """
@@ -436,14 +457,7 @@ def test_get_recipient_respects_order(file_contents, template_type, placeholders
             "email",
             ["email address", "colour"],
             set(["name"]),
-        ),
-        (
-            """
-                address_line_1, address_line_2, name
-            """,
-            "letter",
-            ["address_line_1", "address_line_2", "name"],
-            set(["postcode"]),
+            "en",
         ),
         (
             """
@@ -452,11 +466,33 @@ def test_get_recipient_respects_order(file_contents, template_type, placeholders
             "sms",
             ["phone number", "list", "name"],
             set(),
+            "en",
+        ),
+        (
+            """
+                numéro de téléphone,list,list,name,list
+            """,
+            "sms",
+            ["numéro de téléphone", "list", "name"],
+            set(),
+            "en",
+        ),
+        (
+            """
+                list,list,name,list
+            """,
+            "sms",
+            [
+                "list",
+                "name",
+            ],
+            set(["numéro de téléphone"]),
+            "fr",
         ),
     ],
 )
-def test_column_headers(file_contents, template_type, expected, expected_missing):
-    recipients = RecipientCSV(file_contents, template_type=template_type, placeholders=["name"])
+def test_column_headers(file_contents, template_type, expected, expected_missing, user_language):
+    recipients = RecipientCSV(file_contents, template_type=template_type, placeholders=["name"], user_language=user_language)
     assert recipients.column_headers == expected
     assert recipients.missing_column_headers == expected_missing
     assert recipients.has_errors == bool(expected_missing)
@@ -469,20 +505,14 @@ def test_column_headers(file_contents, template_type, expected, expected_missing
         pytest.param("", "sms", marks=pytest.mark.xfail),
         pytest.param("name", "sms", marks=pytest.mark.xfail),
         pytest.param("email address", "sms", marks=pytest.mark.xfail),
-        pytest.param(
-            # missing postcode
-            "address_line_1, address_line_2, address_line_3, address_line_4, address_line_5",
-            "letter",
-            marks=pytest.mark.xfail,
-        ),
         ("phone number", "sms"),
         ("phone number,name", "sms"),
         ("email address", "email"),
         ("email address,name", "email"),
         ("PHONENUMBER", "sms"),
         ("email_address", "email"),
-        ("address_line_1, address_line_2, postcode", "letter"),
-        ("address_line_1, address_line_2, address_line_3, address_line_4, address_line_5, address_line_6, postcode", "letter"),
+        ("adresse courriel", "email"),
+        ("numéro de téléphone", "sms"),
     ],
 )
 def test_recipient_column(placeholders, file_contents, template_type):

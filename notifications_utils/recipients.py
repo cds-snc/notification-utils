@@ -26,8 +26,38 @@ country_code = os.getenv("PHONE_COUNTRY_CODE", "1")
 region_code = os.getenv("PHONE_REGION_CODE", "US")
 
 first_column_headings = {
-    "email": ["email address"],
-    "sms": ["phone number"],
+    "en": {
+        "email": ["email address"],
+        "sms": ["phone number"],
+        # For backwards compatibility
+        "letter": [
+            "address line 1",
+            "address line 2",
+            "address line 3",
+            "address line 4",
+            "address line 5",
+            "address line 6",
+            "postcode",
+        ],
+    },
+    "fr": {
+        "email": ["adresse courriel"],
+        "sms": ["numéro de téléphone"],
+        # For backwards compatibility
+        "letter": [
+            "address line 1",
+            "address line 2",
+            "address line 3",
+            "address line 4",
+            "address line 5",
+            "address line 6",
+            "postcode",
+        ],
+    },
+    "email": ["email address"],  # left this for backwards compatibility
+    "sms": ["phone number"],  # left this for backwards compatibility
+    "email_both": ["email address", "adresse courriel"],
+    "sms_both": ["phone number", "numéro de téléphone"],
     "letter": [
         "address line 1",
         "address line 2",
@@ -60,7 +90,9 @@ class RecipientCSV:
         remaining_messages=sys.maxsize,
         international_sms=False,
         max_rows=50000,
+        user_language="en",
     ):
+        self.user_language = user_language
         self.file_data = strip_whitespace(file_data, extra_characters=",")
         self.template_type = template_type
         self.placeholders = placeholders
@@ -114,7 +146,10 @@ class RecipientCSV:
     @template_type.setter
     def template_type(self, value):
         self._template_type = value
-        self.recipient_column_headers = first_column_headings[self.template_type]
+        self.recipient_column_headers = first_column_headings[self.user_language][self.template_type]  # type: ignore
+        self.recipient_column_headers_lang_check = (
+            first_column_headings.get("email_both") if self.template_type == "email" else first_column_headings.get("sms_both")
+        )
 
     @property
     def has_errors(self):
@@ -263,11 +298,31 @@ class RecipientCSV:
 
     @property
     def missing_column_headers(self):
-        return set(
-            key
-            for key in self.placeholders
-            if (Columns.make_key(key) not in self.column_headers_as_column_keys and not self.is_optional_address_column(key))
-        )
+        """
+        Missing headers must return the following in each case:
+
+        Eg 1: file: []
+        placeholders: [phone number, name]
+        missing: [phone number, name]
+
+        Eg 2: file: [adresse courriel]
+        placeholders: [email address]
+        missing:  []
+
+        """
+        result = set()
+        for key in self.placeholders:
+            # If the key has a different heading due to language, then we need to check that the column_headers
+            # in the file have either the same or other language. This is only for email address / phone number
+            if key in self.recipient_column_headers_lang_check:  # type: ignore
+                if not set(map(Columns.make_key, self.recipient_column_headers_lang_check)).intersection(  # type: ignore
+                    set(self.column_headers_as_column_keys)
+                ):
+                    result.add(key)
+                continue
+            elif Columns.make_key(key) not in self.column_headers_as_column_keys and not self.is_optional_address_column(key):
+                result.add(key)
+        return result
 
     @property
     def duplicate_recipient_column_headers(self):
@@ -290,13 +345,12 @@ class RecipientCSV:
 
     @property
     def has_recipient_columns(self):
-        return (
+        return set([list(self.column_headers_as_column_keys)[0]]).issubset(
             set(
                 Columns.make_key(recipient_column)
-                for recipient_column in self.recipient_column_headers
+                for recipient_column in self.recipient_column_headers_lang_check  # type: ignore
                 if not self.is_optional_address_column(recipient_column)
             )
-            <= self.column_headers_as_column_keys
         )
 
     def _get_error_for_field(self, key, value):  # noqa: C901
