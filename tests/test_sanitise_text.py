@@ -3,12 +3,16 @@ import pytest
 from notifications_utils.sanitise_text import SanitiseText, SanitiseSMS, SanitiseASCII
 
 
+@pytest.mark.parametrize("chars, cls", [("ÀÂËÎÏÔŒÙÛâçêëîïôœû", SanitiseSMS)])
+def test_encode_chars_sms_fr_not_downgraded(chars, cls):
+    for char in chars:
+        assert cls.encode_char(char) == char
+
+
 params, ids = zip(
     (("a", "a"), "ascii char (a)"),
     # ascii control char (not in GSM)
     (("\t", " "), "ascii control char not in gsm (tab)"),
-    # these are not in GSM charset so are downgraded
-    (("ç", "c"), "decomposed unicode char (C with cedilla)"),
     # these unicode chars should change to something completely different for compatibility
     (("–", "-"), "compatibility transform unicode char (EN DASH (U+2013)"),
     (("—", "-"), "compatibility transform unicode char (EM DASH (U+2014)"),
