@@ -417,6 +417,7 @@ def test_get_recipient_respects_order(file_contents, template_type, placeholders
     [
         ("", "sms", [], set(["phone number", "name"]), "en"),
         ("", "email", [], set(["email address", "name"]), "en"),
+        ("", "email", [], set(["adresse courriel", "name"]), "fr"),
         (
             """
                 numéro de téléphone, name
