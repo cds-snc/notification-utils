@@ -202,8 +202,7 @@ class RecipientCSV:
             for column_name, column_value in zip(column_headers, row):
                 column_value = strip_and_remove_obscure_whitespace(column_value)
                 if Columns.make_key(column_name) in self.recipient_column_headers_lang_check_as_column_keys:
-                    english_name = first_column_headings["en"][self.template_type][0]
-                    output_dict[english_name] = column_value or None
+                    output_dict[column_name] = column_value or None
                 else:
                     insert_or_append_to_dict(output_dict, column_name, column_value or None)
 
@@ -223,6 +222,7 @@ class RecipientCSV:
                     recipient_column_headers=self.recipient_column_headers,
                     placeholders=self.placeholders_as_column_keys,
                     template=self.template,
+                    template_type=self.template_type,
                 )
             else:
                 yield None

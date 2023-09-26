@@ -44,10 +44,16 @@ class Row(Columns):
         recipient_column_headers,
         placeholders,
         template,
+        template_type,
     ):
         self.index = index
         self.recipient_column_headers = recipient_column_headers
         self.placeholders = placeholders
+        self.template_type = template_type
+
+        self.recipient_column_heards_lang_check = (
+            ["email address", "adresse courriel"] if self.template_type == "email" else ["phone number", "numéro de téléphone"],
+        )
 
         if template:
             template.values = row_dict
