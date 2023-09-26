@@ -138,6 +138,9 @@ class RecipientCSV:
         self.recipient_column_headers_as_column_keys = [
             Columns.make_key(placeholder) for placeholder in self.recipient_column_headers
         ]
+        self.recipient_column_headers_lang_check_as_column_keys = [
+            Columns.make_key(placeholder) for placeholder in self.recipient_column_headers_lang_check
+        ]
 
     @property
     def template_type(self):
@@ -198,9 +201,9 @@ class RecipientCSV:
 
             for column_name, column_value in zip(column_headers, row):
                 column_value = strip_and_remove_obscure_whitespace(column_value)
-
-                if Columns.make_key(column_name) in self.recipient_column_headers_as_column_keys:
-                    output_dict[column_name] = column_value or None
+                if Columns.make_key(column_name) in self.recipient_column_headers_lang_check_as_column_keys:
+                    english_name = first_column_headings["en"][self.template_type][0]
+                    output_dict[english_name] = column_value or None
                 else:
                     insert_or_append_to_dict(output_dict, column_name, column_value or None)
 

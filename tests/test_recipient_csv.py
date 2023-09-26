@@ -109,14 +109,14 @@ def _index_rows(rows):
         ),
         (
             """
-                address courriel,name
+                adresse courriel,name
                 test@example.com,test1
                 test2@example.com, test2
             """,
             "email",
             [
-                [("address courriel", "test@example.com"), ("name", "test1")],
-                [("address courriel", "test2@example.com"), ("name", "test2")],
+                [("email address", "test@example.com"), ("name", "test1")],
+                [("email address", "test2@example.com"), ("name", "test2")],
             ],
             "fr",
         ),
@@ -129,9 +129,9 @@ def _index_rows(rows):
             """,
             "sms",
             [
-                [("numéro de téléphone", "07900900001"), ("list", ["cat", "rat", "gnat"])],
-                [("numéro de téléphone", "07900900002"), ("list", ["dog", "hog", "frog"])],
-                [("numéro de téléphone", "07900900003"), ("list", ["elephant", None, None])],
+                [("phone number", "07900900001"), ("list", ["cat", "rat", "gnat"])],
+                [("phone number", "07900900002"), ("list", ["dog", "hog", "frog"])],
+                [("phone number", "07900900003"), ("list", ["elephant", None, None])],
             ],
             "fr",
         ),
@@ -144,9 +144,9 @@ def _index_rows(rows):
             """,
             "sms",
             [
-                [("numéro de téléphone", "07900900001"), ("list", ["cat", "rat", "gnat"])],
-                [("numéro de téléphone", "07900900002"), ("list", ["dog", "hog", "frog"])],
-                [("numéro de téléphone", "07900900003"), ("list", ["elephant", None, None])],
+                [("phone number", "07900900001"), ("list", ["cat", "rat", "gnat"])],
+                [("phone number", "07900900002"), ("list", ["dog", "hog", "frog"])],
+                [("phone number", "07900900003"), ("list", ["elephant", None, None])],
             ],
             "en",
         ),
@@ -171,6 +171,36 @@ def test_get_rows_does_no_error_checking_of_rows_or_cells(mocker):
     recipients = RecipientCSV(
         """
             email address, name
+            a@b.com,
+            a@b.com, My Name
+            a@b.com,
+
+
+        """,
+        template_type="email",
+        placeholders=["name"],
+        max_errors_shown=3,
+    )
+
+    rows = recipients.get_rows()
+    for i in range(3):
+        assert next(rows).recipient == "a@b.com"
+
+    assert has_error_mock.called is False
+    assert has_bad_recipient_mock.called is False
+    assert has_missing_data_mock.called is False
+    assert cell_recipient_error_mock.called is False
+
+
+def test_get_rows_does_no_error_checking_of_rows_or_cells_fr(mocker):
+    has_error_mock = mocker.patch.object(Row, "has_error")
+    has_bad_recipient_mock = mocker.patch.object(Row, "has_bad_recipient")
+    has_missing_data_mock = mocker.patch.object(Row, "has_missing_data")
+    cell_recipient_error_mock = mocker.patch.object(Cell, "recipient_error")
+
+    recipients = RecipientCSV(
+        """
+            adresse courriel, name
             a@b.com,
             a@b.com, My Name
             a@b.com,
