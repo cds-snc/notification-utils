@@ -139,7 +139,7 @@ class RecipientCSV:
             Columns.make_key(placeholder) for placeholder in self.recipient_column_headers
         ]
         self.recipient_column_headers_lang_check_as_column_keys = [
-            Columns.make_key(placeholder) for placeholder in self.recipient_column_headers_lang_check
+            Columns.make_key(placeholder) for placeholder in self.recipient_column_headers_lang_check  # type: ignore
         ]
 
     @property

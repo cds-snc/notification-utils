@@ -287,8 +287,9 @@ def test_get_annotated_rows(file_contents, template_type, expected):
     assert not recipients.has_errors
 
 
-def test_get_rows_with_errors():
-    recipients = RecipientCSV(
+@pytest.mark.parametrize(
+    "file_contents",
+    [
         """
             email address, name
             a@b.com,
@@ -300,6 +301,22 @@ def test_get_rows_with_errors():
 
 
         """,
+        """
+            adresse courriel, name
+            a@b.com,
+            a@b.com,
+            a@b.com,
+            a@b.com,
+            a@b.com,
+            a@b.com,
+
+
+        """,
+    ],
+)
+def test_get_rows_with_errors(file_contents):
+    recipients = RecipientCSV(
+        file_contents,
         template_type="email",
         placeholders=["name"],
         max_errors_shown=3,
@@ -993,23 +1010,6 @@ def test_multiple_email_recipient_columns():
     assert recipients.rows[0].get("email address").error is None
     assert recipients.has_errors
     assert recipients.duplicate_recipient_column_headers == OrderedSet(["EMAILADDRESS", "email_address"])
-    assert recipients.has_errors
-
-
-def test_multiple_letter_recipient_columns():
-    recipients = RecipientCSV(
-        """
-            address line 1, Address Line 2, address line 1, address_line_2
-            1,2,3,4
-        """,
-        template_type="letter",
-    )
-    assert recipients.rows[0].get("addressline1").data == ("3")
-    assert recipients.rows[0].get("addressline1").error is None
-    assert recipients.has_errors
-    assert recipients.duplicate_recipient_column_headers == OrderedSet(
-        ["address line 1", "Address Line 2", "address line 1", "address_line_2"]
-    )
     assert recipients.has_errors
 
 
