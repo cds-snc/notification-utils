@@ -348,11 +348,13 @@ class RecipientCSV:
 
     @property
     def has_recipient_columns(self):
+        """
+        This is used to check if the first column in the csv is a recipient column
+        """
         return set([list(self.column_headers_as_column_keys)[0]]).issubset(
             set(
                 Columns.make_key(recipient_column)
                 for recipient_column in self.recipient_column_headers_lang_check  # type: ignore
-                if not self.is_optional_address_column(recipient_column)
             )
         )
 
