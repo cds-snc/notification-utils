@@ -49,9 +49,14 @@ class Row(Columns):
         self.index = index
         self.recipient_column_headers = recipient_column_headers
         self.placeholders = placeholders
-        self.template_type = template_type
+        if template_type:
+            self.template_type = template_type
+        else:
+            self.template_type = template.template_type if template else None
         self.recipient_column_hearders_lang_check = (
-            ["email address", "adresse courriel"] if self.template_type == "email" else ["phone number", "numéro de téléphone"]
+            ["email address", "adresse courriel", "to"]
+            if self.template_type == "email"
+            else ["phone number", "numéro de téléphone", "to"]
         )
 
         if template:
