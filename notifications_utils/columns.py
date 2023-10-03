@@ -44,10 +44,15 @@ class Row(Columns):
         recipient_column_headers,
         placeholders,
         template,
+        template_type=None,
     ):
         self.index = index
         self.recipient_column_headers = recipient_column_headers
         self.placeholders = placeholders
+        self.template_type = template_type
+        self.recipient_column_hearders_lang_check = (
+            ["email address", "adresse courriel"] if self.template_type == "email" else ["phone number", "numéro de téléphone"]
+        )
 
         if template:
             template.values = row_dict
@@ -69,7 +74,16 @@ class Row(Columns):
 
     @property
     def has_bad_recipient(self):
-        return any(self.get(recipient_column).recipient_error for recipient_column in self.recipient_column_headers)
+        """
+        If the column has an error in the recipient field we want
+        to return True, otherwise False
+
+        The recipient field is the first column in the csv.
+        """
+        for column in self.recipient_column_hearders_lang_check:
+            if self.get(column).recipient_error is True:
+                return True
+        return False
 
     @property
     def has_missing_data(self):
@@ -77,8 +91,18 @@ class Row(Columns):
 
     @property
     def recipient(self):
-        columns = [self.get(column).data for column in self.recipient_column_headers]
-        return columns[0] if len(columns) == 1 else columns
+        """
+        We want to return the recipient from the first column in the csv
+        The reason we use self.recipient_column_hearders_lang_check is because
+        we want to check for the column name in both english and french.
+
+        The recipient field is the first column in the csv. The column name
+        might be in english even though we are in french context and vice versa.
+        This is why we need to check both languages.
+        """
+        for column in self.recipient_column_hearders_lang_check:
+            if self.get(column).data is not None:
+                return self.get(column).data
 
     @property
     def personalisation(self):
