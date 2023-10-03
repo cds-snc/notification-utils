@@ -51,7 +51,9 @@ class Row(Columns):
         self.placeholders = placeholders
         self.template_type = template_type if template_type else template.template_type
         self.recipient_column_hearders_lang_check = (
-            ["email address", "adresse courriel", "to"] if self.template_type == "email" else ["phone number", "numéro de téléphone", "to"]
+            ["email address", "adresse courriel", "to"]
+            if self.template_type == "email"
+            else ["phone number", "numéro de téléphone", "to"]
         )
 
         if template:
