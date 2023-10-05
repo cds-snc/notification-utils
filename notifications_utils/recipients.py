@@ -349,13 +349,17 @@ class RecipientCSV:
     @property
     def has_recipient_columns(self):
         """
-        This is used to check if the first column in the csv is a recipient column
+        This is used to check the headers of the file have the required columns for the template type
         """
-        return set([list(self.column_headers_as_column_keys)[0]]).issubset(
-            set(
-                Columns.make_key(recipient_column)
-                for recipient_column in self.recipient_column_headers_lang_check  # type: ignore
+        return (
+            True
+            if set(list(self.column_headers_as_column_keys)).intersection(
+                set(
+                    Columns.make_key(recipient_column)
+                    for recipient_column in self.recipient_column_headers_lang_check  # type: ignore
+                )
             )
+            else False
         )
 
     def _get_error_for_field(self, key, value):  # noqa: C901
