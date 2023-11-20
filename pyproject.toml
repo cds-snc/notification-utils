@@ -41,7 +41,7 @@ boto3 = "1.28.84"
 werkzeug = "2.3.7"
 itsdangerous = "2.1.2"
 
-certifi = "^2023.7.22" # Not directly required: https://github.com/cds-snc/notification-utils/security/dependabot/22
+certifi = "^2023.7.22" # Pinned for security issue: https://github.com/cds-snc/notification-utils/security/dependabot/22
 
 [tool.poetry.group.test.dependencies]
 pytest = "7.4.3"
