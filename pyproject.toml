@@ -41,9 +41,9 @@ boto3 = "1.28.84"
 werkzeug = "2.3.7"
 itsdangerous = "2.1.2"
 
-# Transitive dependencies pinned for security reasons:
-certifi = "^2023.7.22" # https://github.com/cds-snc/notification-utils/security/dependabot/22
-cryptography = "^41.0.2" # https://github.com/cds-snc/notification-utils/security/dependabot/21
+# Pinned dependencies
+certifi = "^2023.7.22" # pinned for security reasons: https://github.com/cds-snc/notification-utils/security/dependabot/22
+cryptography = "^41.0.2" # pinned for security reasons: https://github.com/cds-snc/notification-utils/security/dependabot/21
 
 [tool.poetry.group.test.dependencies]
 pytest = "7.4.3"
