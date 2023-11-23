@@ -160,7 +160,6 @@ class RecipientCSV:
             self.missing_column_headers
             or self.duplicate_recipient_column_headers
             or self.more_rows_than_can_send
-            or self.more_sms_rows_than_can_send
             or self.too_many_rows
             or (not self.allowed_to_send_to)
             or any(self.rows_with_errors)
@@ -230,10 +229,6 @@ class RecipientCSV:
     @property
     def more_rows_than_can_send(self):
         return len(self) > self.remaining_messages
-
-    @property
-    def more_sms_rows_than_can_send(self):
-        return self.sms_fragment_count > self.remaining_messages
 
     @property
     def sms_fragment_count(self):

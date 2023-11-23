@@ -868,26 +868,7 @@ def test_error_if_too_many_sms_recipients():
         remaining_messages=2,
     )
     assert recipients.has_errors
-    assert recipients.more_sms_rows_than_can_send
-
-
-def test_error_if_too_many_sms_message_parts():
-    recipients = RecipientCSV(
-        "phone number,\n6502532222,",
-        placeholders=["phone_number"],
-        template_type="sms",
-        template=SMSMessageTemplate(
-            {
-                "content": 330 * "a",
-                "template_type": "sms",
-            },
-            sender=None,
-            prefix=None,
-        ),
-        remaining_messages=2,
-    )
-    assert recipients.has_errors
-    assert recipients.more_sms_rows_than_can_send
+    assert recipients.more_rows_than_can_send
 
 
 def test_dont_error_if_too_many_recipients_not_specified():
@@ -896,7 +877,6 @@ def test_dont_error_if_too_many_recipients_not_specified():
     )
     assert not recipients.has_errors
     assert not recipients.more_rows_than_can_send
-    assert not recipients.more_sms_rows_than_can_send
 
 
 @pytest.mark.parametrize(
