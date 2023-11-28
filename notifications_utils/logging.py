@@ -15,6 +15,8 @@ import logging.handlers
 LOG_FORMAT = "%(asctime)s %(app_name)s %(name)s %(levelname)s " '%(request_id)s "%(message)s" [in %(pathname)s:%(lineno)d]'
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
+regex_pattern_for_replace_api_signed_secret = "[a-zA-Z0-9]{51}\.[a-zA-Z0-9-_]{27}"  # noqa: W605
+
 logger = logging.getLogger(__name__)
 
 
@@ -200,6 +202,8 @@ class CustomLogFormatter(logging.Formatter):
     def format(self, record):
         record = self.add_fields(record)
         try:
+            # Replace the API signed secret with asterisks
+            record.msg = re.sub(regex_pattern_for_replace_api_signed_secret, "***", record.msg)
             # sometimes record.msg is an exception so this is checking for that
             if isinstance(record.msg, str):
                 record.msg += _getAdditionalLoggingDetails()
@@ -221,6 +225,8 @@ class JSONFormatter(BaseJSONFormatter):
             log_record[newkey] = log_record.pop(key)
         log_record["logType"] = "application"
         try:
+            # Replace the API signed secret with asterisks
+            log_record["message"] = re.sub(regex_pattern_for_replace_api_signed_secret, "***", log_record["message"])
             log_record["message"] = str(log_record["message"])
         except (KeyError, IndexError) as e:
             logger.exception("failed to format log message: {} not found".format(e))

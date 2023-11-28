@@ -243,3 +243,67 @@ def test_logger_adds_extra_context_details(app, mocker, debugconfig, testcases):
             assert "template_id" in errorMessage
             # ensure request data (endpoint) is shown
             assert "endpoint" in errorMessage
+
+
+@pytest.mark.parametrize("debugconfig", [True, False])
+@pytest.mark.parametrize("testcases", [("info", "warning", "error", "exception", "critical")])
+def test_logger_adds_extra_context_details_final(app, mocker, debugconfig, testcases):  # noqa
+    def createApp(app):
+        app.debug = debugconfig
+
+        api_signed_secret = "IjRlNzMxN2I0LWQwYTMtNDUzNS04NWViLTRhZWVmMjgxNTc2ZSI.KTFF78gIrz8ftQG6eMm1hjKXkz0"
+
+        @app.route("/info", methods=["POST"])
+        def info():
+            app.logger.info(f"info {api_signed_secret}")
+            return "ok"
+
+        @app.route("/warning", methods=["POST"])
+        def warning():
+            app.logger.warning(f"warning {api_signed_secret}")
+            return "ok"
+
+        @app.route("/error", methods=["POST"])
+        def error():
+            app.logger.error(f"error {api_signed_secret}")
+            return "ok"
+
+        @app.route("/exception", methods=["POST"])
+        def exception():
+            app.logger.exception(f"exception {api_signed_secret}")
+            return "ok"
+
+        @app.route("/critical", methods=["POST"])
+        def critical():
+            app.logger.critical(f"critical {api_signed_secret}")
+            return "ok"
+
+        logging.init_app(app)
+
+    createApp(app)
+
+    if debugconfig:
+        log_spy = mocker.spy(logging.CustomLogFormatter, "format")
+    else:
+        log_spy = mocker.spy(logging.JSONFormatter, "process_log_record")
+
+    with app.app_context():
+        for route in testcases:
+            app.test_client().post(
+                f"/{route}", data=json.dumps({"template_id": "1234"}), headers={"Content-Type": "application/json"}
+            )
+
+            if debugconfig:
+                errorMessage = log_spy.spy_return  # message is returned as a string when using the CustomLogFormatter
+            else:
+                errorMessage = log_spy.spy_return["message"]  # message is embedded in JSON when using the JSONFormatter
+
+            # ensure extra request details are being added
+            assert "Request details" in errorMessage
+            # ensure body data (template_id) is shown
+            assert "template_id" in errorMessage
+            # ensure request data (endpoint) is shown
+            assert "endpoint" in errorMessage
+            # ensure Secret_key not in errorMessage
+            assert "IjRlNzMxN2I0LWQwYTMtNDUzNS04NWViLTRhZWVmMjgxNTc2ZSI.KTFF78gIrz8ftQG6eMm1hjKXkz0" not in errorMessage
+            assert "***" in errorMessage
