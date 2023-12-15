@@ -448,7 +448,11 @@ def test_get_recipient_respects_order(file_contents, template_type, placeholders
     recipients = RecipientCSV(file_contents, template_type=template_type, placeholders=placeholders)
 
     for row, email in expected_recipients:
-        assert (recipients[row].index, recipients[row].recipient, recipients[row].personalisation,) == (
+        assert (
+            recipients[row].index,
+            recipients[row].recipient,
+            recipients[row].personalisation,
+        ) == (
             row,
             email,
             expected_personalisation[row],

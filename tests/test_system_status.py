@@ -54,7 +54,6 @@ def test_determine_site_status_down(mocker):
     ],
 )
 def test_determine_notification_status_for_email(mocker, email_low, email_medium, email_high, expected_result):
-
     notifications_data = [
         ["73079cb9-c169-44ea-8cf4-8d397711cc9d", email_low]
         if email_low != -1
@@ -105,7 +104,6 @@ def test_determine_notification_status_for_email(mocker, email_low, email_medium
     ],
 )
 def test_determine_notification_status_for_sms(mocker, sms_low, sms_medium, sms_high, expected_result):
-
     notifications_data = [
         ["73079cb9-c169-44ea-8cf4-8d397711cc9d", 1],
         ["c75c4539-3014-4c4c-96b5-94d326758a74", 1],
