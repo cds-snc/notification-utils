@@ -105,7 +105,6 @@ def determine_site_status(url, threshold):
         api_response_time = check_response_time(url)
         site_status = "up" if api_response_time <= threshold else "degraded"
 
-    # handle all expected exceptions
     except requests.exceptions.ConnectionError as e:
         logging.error("utils/system_status: determine_site_status({}): Error connecting to url: {}".format(url, e))
         site_status = "down"
