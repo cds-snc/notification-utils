@@ -9,6 +9,7 @@ from contextlib import suppress
 from functools import lru_cache, partial
 from itertools import islice
 from collections import OrderedDict, namedtuple
+from orderedset import OrderedSet
 from . import EMAIL_REGEX_PATTERN, hostname_part, tld_part
 from notifications_utils.formatters import strip_and_remove_obscure_whitespace, strip_whitespace
 from notifications_utils.template import Template
@@ -244,7 +245,7 @@ class RecipientCSV():
 
     @property
     def column_headers(self):
-        return list(dict.fromkeys(self._raw_column_headers))
+        return list(OrderedSet(self._raw_column_headers))
 
     @property
     def column_headers_as_column_keys(self):
@@ -269,11 +270,11 @@ class RecipientCSV():
             if Columns.make_key(column_header) in self.recipient_column_headers_as_column_keys
         ]
 
-        return {
-            column_header: None
+        return OrderedSet((
+            column_header
             for column_header in self._raw_column_headers
             if raw_recipient_column_headers.count(Columns.make_key(column_header)) > 1
-        }
+        ))
 
     def is_optional_address_column(self, key):
         return (
