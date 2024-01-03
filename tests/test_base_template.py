@@ -135,7 +135,6 @@ def test_include_placeholder_in_missing_data_if_placeholder_is_conditional(perso
     ]
 )
 def test_extracting_placeholders(template_content, template_subject, expected):
-    got = WithSubjectTemplate({"content": template_content, 'subject': template_subject}).placeholders
     assert WithSubjectTemplate({"content": template_content, 'subject': template_subject}).placeholders == expected
 
 
