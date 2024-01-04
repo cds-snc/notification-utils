@@ -79,58 +79,58 @@ def test_include_placeholder_in_missing_data_if_placeholder_is_conditional(perso
         (
             "the quick brown fox",
             "jumps",
-            []
+            set()
         ),
         (
             "the quick ((colour)) fox",
             "jumps",
-            ["colour"]
+            {"colour"}
         ),
         (
             "the quick ((colour)) ((animal))",
             "jumps",
-            ["colour", "animal"]
+            {"colour", "animal"}
         ),
         (
             "((colour)) ((animal)) ((colour)) ((animal))",
             "jumps",
-            ["colour", "animal"]
+            {"colour", "animal"}
         ),
         (
             "the quick brown fox",
             "((colour))",
-            ["colour"]
+            {"colour"}
         ),
         (
             "the quick ((colour)) ",
             "((animal))",
-            ["animal", "colour"]
+            {"animal", "colour"}
         ),
         (
             "((colour)) ((animal)) ",
             "((colour)) ((animal))",
-            ["colour", "animal"]
+            {"colour", "animal"}
         ),
         (
             "Dear ((name)), ((warning?? This is a warning))",
             "",
-            ["name", "warning"]
+            {"name", "warning"}
         ),
         (
             # Placeholder names are limited to alphanumeric characters, spaces and dashes
             "((warning? one question mark))",
             "",
-            []
+            set()
         ),
         (
             "Dear ((name)), ((warning?? This is a warning {}))",
             "",
-            ["name", "warning"]
+            {"name", "warning"}
         ),
         (
             "A conditional url: ((has_url?? [some link](http://test.me) ))",
             "",
-            ["has_url"]
+            {"has_url"}
         ),
     ]
 )

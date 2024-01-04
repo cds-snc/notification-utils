@@ -1,6 +1,5 @@
 import re
 
-from orderedset import OrderedSet
 from markupsafe import Markup
 
 from notifications_utils.columns import Columns
@@ -192,7 +191,7 @@ class Field:
 
     @property
     def placeholders(self):
-        return OrderedSet(
+        return set(
             Placeholder(body) for body in re.findall(
                 self.placeholder_pattern, self.content
             )
@@ -200,7 +199,7 @@ class Field:
 
     @property
     def placeholder_names(self):
-        return OrderedSet(placeholder.name for placeholder in self.placeholders)
+        return set(placeholder.name for placeholder in self.placeholders)
 
     @property
     def replaced(self):

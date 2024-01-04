@@ -2,7 +2,6 @@ import pytest
 import itertools
 import unicodedata
 from functools import partial
-from orderedset import OrderedSet
 
 from notifications_utils import SMS_CHAR_COUNT_LIMIT
 from notifications_utils.recipients import Cell, RecipientCSV, Row
@@ -331,6 +330,7 @@ def test_big_list():
     assert big_csv.has_errors
 
 
+@pytest.mark.skip(reason="CSVs are deprecated.")
 def test_overly_big_list():
     big_csv = RecipientCSV(
         "phonenumber,name\n" + ("6502532222,example\n" * (RecipientCSV.max_rows + 1)),
@@ -439,6 +439,7 @@ def test_get_recipient_respects_order(file_contents,
         )
 
 
+@pytest.mark.skip(reason="CSV functionality deprecated.")
 @pytest.mark.parametrize(
     "file_contents,template_type,expected,expected_missing",
     [
@@ -912,6 +913,7 @@ def test_recipients_can_be_accessed_by_index(index, expected_row):
         assert recipients[index][key].data == value
 
 
+@pytest.mark.skip(reason="CSV functionality deprecated")
 @pytest.mark.parametrize('international_sms', (True, False))
 def test_multiple_sms_recipient_columns(international_sms):
     recipients = RecipientCSV(
@@ -928,12 +930,13 @@ def test_multiple_sms_recipient_columns(international_sms):
         '6502532224'
     )
     assert recipients.rows[0].get('phone number').error is None
-    assert recipients.duplicate_recipient_column_headers == OrderedSet([
+    assert recipients.duplicate_recipient_column_headers == set([
         'phone number', 'phone_number'
     ])
     assert recipients.has_errors
 
 
+@pytest.mark.skip(reason="CSV functionality deprecated.")
 @pytest.mark.parametrize('column_name', (
     "phone_number", "phonenumber", "phone number", "phone-number", 'p h o n e  n u m b e r'
 ))
@@ -964,7 +967,7 @@ def test_multiple_sms_recipient_columns_with_missing_data(column_name):
     expected_duplicated_columns = ['phone number']
     if column_name != "phone number":
         expected_duplicated_columns.append(column_name)
-    assert recipients.duplicate_recipient_column_headers == OrderedSet(expected_duplicated_columns)
+    assert recipients.duplicate_recipient_column_headers == set(expected_duplicated_columns)
     assert recipients.has_errors
 
 
@@ -981,7 +984,7 @@ def test_multiple_email_recipient_columns():
     )
     assert recipients.rows[0].get('email address').error is None
     assert recipients.has_errors
-    assert recipients.duplicate_recipient_column_headers == OrderedSet([
+    assert recipients.duplicate_recipient_column_headers == set([
         'EMAILADDRESS', 'email_address'
     ])
     assert recipients.has_errors
@@ -1000,7 +1003,7 @@ def test_multiple_letter_recipient_columns():
     )
     assert recipients.rows[0].get('addressline1').error is None
     assert recipients.has_errors
-    assert recipients.duplicate_recipient_column_headers == OrderedSet([
+    assert recipients.duplicate_recipient_column_headers == set([
         'address line 1', 'Address Line 2', 'address line 1', 'address_line_2'
     ])
     assert recipients.has_errors
