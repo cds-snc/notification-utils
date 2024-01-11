@@ -43,6 +43,10 @@ def determine_notification_status(dbresults):  # noqa: C901
     sms_high_response_time = -1
 
     for row in dbresults:
+        # if there is no data, skip the row and it will default to down
+        if row[1] is None:
+            continue
+
         if str(row[0]) == TEMPLATES["email"]["low"]:
             email_low_response_time = row[1]
             if email_low_response_time <= THRESHOLDS["email-low"]:
@@ -124,10 +128,10 @@ def determine_notification_status(dbresults):  # noqa: C901
 
         if email_status == "down" or email_status == "degraded":
             logging.info("[system_status_email]: email is {}: {}".format(email_status, email_logging_info))
-        
+
         if sms_status == "down" or sms_status == "degraded":
             logging.info("[system_status_sms]: sms is {}: {}".format(sms_status, sms_logging_info))
-    
+
     return (email_status, sms_status)
 
 

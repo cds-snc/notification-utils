@@ -116,6 +116,41 @@ def test_determine_notification_status_for_sms(mocker, sms_low, sms_medium, sms_
     assert determine_notification_status(notifications_data) == ("up", expected_result)
 
 
+def test_determine_notification_status_for_email_down_when_no_rows():
+    notifications_data = [
+        ["73079cb9-c169-44ea-8cf4-8d397711cc9d", THRESHOLDS["email-low"]],
+        ["c75c4539-3014-4c4c-96b5-94d326758a74", None],  # no results for email medium
+        ["276da251-3103-49f3-9054-cbf6b5d74411", THRESHOLDS["email-high"]],
+        ["ab3a603b-d602-46ea-8c83-e05cb280b950", 1],  # SMS
+        ["a48b54ce-40f6-4e4a-abe8-1e2fa389455b", 1],  # SMS    # med sms
+        ["4969a9e9-ddfd-476e-8b93-6231e6f1be4a", 1],
+    ]
+
+    assert determine_notification_status(notifications_data) == ("down", "up")
+
+    notifications_data = [
+        ["73079cb9-c169-44ea-8cf4-8d397711cc9d", None],  # no results for email low
+        ["c75c4539-3014-4c4c-96b5-94d326758a74", THRESHOLDS["email-medium"]],
+        ["276da251-3103-49f3-9054-cbf6b5d74411", THRESHOLDS["email-high"]],
+        ["ab3a603b-d602-46ea-8c83-e05cb280b950", 1],  # SMS
+        ["a48b54ce-40f6-4e4a-abe8-1e2fa389455b", 1],  # SMS    # med sms
+        ["4969a9e9-ddfd-476e-8b93-6231e6f1be4a", 1],
+    ]
+
+    assert determine_notification_status(notifications_data) == ("down", "up")
+
+    notifications_data = [
+        ["73079cb9-c169-44ea-8cf4-8d397711cc9d", THRESHOLDS["email-low"]],
+        ["c75c4539-3014-4c4c-96b5-94d326758a74", THRESHOLDS["email-medium"]],
+        ["276da251-3103-49f3-9054-cbf6b5d74411", None],  # no results for email high
+        ["ab3a603b-d602-46ea-8c83-e05cb280b950", 1],  # SMS
+        ["a48b54ce-40f6-4e4a-abe8-1e2fa389455b", 1],  # SMS    # med sms
+        ["4969a9e9-ddfd-476e-8b93-6231e6f1be4a", 1],
+    ]
+
+    assert determine_notification_status(notifications_data) == ("down", "up")
+
+
 @pytest.mark.parametrize(
     "email_low, email_medium, email_high, status, log_expected",
     [
