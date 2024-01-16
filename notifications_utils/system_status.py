@@ -28,15 +28,25 @@ THRESHOLDS = {
 
 
 def determine_notification_status(dbresults):  # noqa: C901
-    # default all to down
+    # defaults
     email_status_low = "down"
     email_status_medium = "down"
     email_status_high = "down"
     sms_status_low = "down"
     sms_status_medium = "down"
     sms_status_high = "down"
+    email_low_response_time = -1
+    email_medium_response_time = -1
+    email_high_response_time = -1
+    sms_low_response_time = -1
+    sms_medium_response_time = -1
+    sms_high_response_time = -1
 
     for row in dbresults:
+        # if there is no data, skip the row and it will default to down
+        if row[1] is None:
+            continue
+
         if str(row[0]) == TEMPLATES["email"]["low"]:
             email_low_response_time = row[1]
             if email_low_response_time <= THRESHOLDS["email-low"]:
@@ -97,6 +107,31 @@ def determine_notification_status(dbresults):  # noqa: C901
     else:
         sms_status = "up"
 
+    # log all response times when any status is down or degraded
+    if email_status == "down" or email_status == "degraded" or sms_status == "down" or sms_status == "degraded":
+        email_logging_info = "high: {}/{}, medium: {}/{}, low: {}/{}".format(
+            email_status_high,
+            email_high_response_time,
+            email_status_medium,
+            email_medium_response_time,
+            email_status_low,
+            email_low_response_time,
+        )
+        sms_logging_info = "high: {}/{}, medium: {}/{}, low: {}/{}".format(
+            sms_status_high,
+            sms_high_response_time,
+            sms_status_medium,
+            sms_medium_response_time,
+            sms_status_low,
+            sms_low_response_time,
+        )
+
+        if email_status == "down" or email_status == "degraded":
+            logging.info("[system_status_email]: email is {}: {}".format(email_status, email_logging_info))
+
+        if sms_status == "down" or sms_status == "degraded":
+            logging.info("[system_status_sms]: sms is {}: {}".format(sms_status, sms_logging_info))
+
     return (email_status, sms_status)
 
 
@@ -105,11 +140,15 @@ def determine_site_status(url, threshold):
         api_response_time = check_response_time(url)
         site_status = "up" if api_response_time <= threshold else "degraded"
 
+        if site_status == "degraded":
+            logging.info("[system_status_site]: site {} is degraded: {}".format(url, api_response_time))
+
     except requests.exceptions.ConnectionError as e:
-        logging.error("utils/system_status: determine_site_status({}): Error connecting to url: {}".format(url, e))
+        logging.error("[system_status_site]: site {} is down: Error connecting to url: {}".format(url, e))
         site_status = "down"
+
     except Exception as e:
-        logging.error("utils/system_status: determine_site_status({}): unknown error: {}".format(url, e))
+        logging.error("[system_status_site]: site {} is down: unexpected error: {}".format(url, e))
         site_status = "down"
 
     return site_status
