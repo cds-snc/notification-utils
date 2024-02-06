@@ -36,10 +36,6 @@ EN_OPEN_LITERAL = "[[en]]"
 EN_CLOSE_LITERAL = "[[/en]]"
 BR_TAG = r"<br\s?/>"
 
-TAG_IMG_IRCC_COAT_OF_ARMS = r"\[\[ircc-coat-arms\]\]"  # matches [[ircc-coat-arms]]
-TAG_IMG_IRCC_GLOBAL_AFFAIRS = r"\[\[ircc-ga-seal\]\]"  # matches [[ircc-ga-seal]]
-TAG_IMG_IRCC_IRCC_SEAL = r"\[\[ircc-seal\]\]"  # matches [[ircc-seal]]
-TAG_IMG_IRCC_GC_SEAL = r"\[\[ircc-gc-seal\]\]"  # matches [[ircc-gc-seal]]
 
 mistune._block_quote_leading_pattern = re.compile(r"^ *\^ ?", flags=re.M)
 mistune.BlockGrammar.block_quote = re.compile(r"^( *\^[^\n]+(\n[^\n]+)*\n*)+")
@@ -647,94 +643,6 @@ def remove_language_divs(_content: str) -> str:
     """Remove the tags from content. This fn is for use in the email
     preheader, since this is plain text not html"""
     return remove_tags(_content, FR_OPEN, FR_CLOSE, EN_OPEN, EN_CLOSE)
-
-
-def add_img_tag(_content: str, tag, img_location, alt_text="", height=300, width=300) -> str:
-    """
-    Custom parser to add custom img in the email.
-
-    This is a custom temporary change not meant to exist for more than a few
-    weeks. This should either be removed or upgraded into a full-fledged
-    feature.
-
-    TODO: Review, remove/upgrade this functionality.
-    """
-    tag_regex = re.compile(f"{tag}")  # matches tag
-    content = tag_regex.sub(
-        r"""<div style="margin: 20px auto 30px auto;">
-          <img
-            src="{img_loc}"
-            alt="{alt}"
-            height="{h}"
-            width="{w}"
-          />
-        </div>""".format(
-            img_loc=img_location, alt=alt_text, h=str(height), w=str(width)
-        ),
-        _content,
-    )
-
-    return content
-
-
-def add_ircc_ga_seal(_content: str) -> str:
-    """
-    Custom parser to add IRCC Global Affairs seal logo.
-
-    This is a custom temporary change not meant to exist for more than a few
-    weeks. This should either be removed or upgraded into a full-fledged
-    feature.
-
-    TODO: Review, remove/upgrade this functionality.
-    """
-    img_loc = "https://assets.notification.canada.ca/gc-ircc-ga-seal.png"
-    alt_text = "Global Affairs Canada / Affaires mondiales Canada"
-    return add_img_tag(_content, TAG_IMG_IRCC_GLOBAL_AFFAIRS, img_loc, alt_text, 295, 281)
-
-
-def add_ircc_seal(_content: str) -> str:
-    """
-    Custom parser to add IRCC seal logo.
-
-    This is a custom temporary change not meant to exist for more than a few
-    weeks. This should either be removed or upgraded into a full-fledged
-    feature.
-
-    TODO: Review, remove/upgrade this functionality.
-    """
-    img_loc = "https://assets.notification.canada.ca/gc-ircc-seal.png"
-    alt_text = "Immigration, Refugees and Citizenship Canada / Immigration, Réfugiés et Citoyenneté Canada"
-    return add_img_tag(_content, TAG_IMG_IRCC_IRCC_SEAL, img_loc, alt_text, 295, 281)
-
-
-def add_ircc_gc_seal(_content: str) -> str:
-    """
-    Custom parser to add Government of Canada seal logo.
-
-    This is a custom temporary change not meant to exist for more than a few
-    weeks. This should either be removed or upgraded into a full-fledged
-    feature.
-
-    TODO: Review, remove/upgrade this functionality.
-    """
-    img_loc = "https://assets.notification.canada.ca/gc-ircc-gc-seal.png"
-    alt_text = "Government of Canada / Gouvernement du Canada"
-    return add_img_tag(_content, TAG_IMG_IRCC_GC_SEAL, img_loc, alt_text, 295, 281)
-
-
-def add_ircc_coat_of_arms(_content: str) -> str:
-    """
-    Custom parser to add IRCC coat of arms logo.
-
-    This is a custom temporary change not meant to exist for more than a few
-    weeks. This should either be removed or upgraded into a full-fledged
-    feature.
-
-    TODO: Review, remove/upgrade this functionality.
-    """
-    img_loc = "https://assets.notification.canada.ca/gc-ircc-coat-of-arms.png"
-    alt_text = "Arms of Her Majesty The Queen in Right of Canada / Armoiries de Sa Majesté la reine du Canada"
-    return add_img_tag(_content, TAG_IMG_IRCC_COAT_OF_ARMS, img_loc, alt_text, 201, 200)
 
 
 def remove_tags(_content: str, *tags) -> str:

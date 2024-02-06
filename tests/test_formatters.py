@@ -1,14 +1,9 @@
-from typing import Dict, List
 import pytest
 from flask import Markup
 
 from notifications_utils.formatters import (
     EMAIL_P_CLOSE_TAG,
     EMAIL_P_OPEN_TAG,
-    add_ircc_coat_of_arms,
-    add_ircc_ga_seal,
-    add_ircc_seal,
-    add_ircc_gc_seal,
     add_language_divs,
     add_trailing_newline,
     remove_language_divs,
@@ -1151,87 +1146,3 @@ bonjour
             testString
             == f'<div lang="fr-ca">{EMAIL_P_OPEN_TAG}Le français suis l\'anglais{EMAIL_P_CLOSE_TAG}</div><div lang="en-ca">{EMAIL_P_OPEN_TAG}hi{EMAIL_P_CLOSE_TAG}<div lang="fr-ca">{EMAIL_P_OPEN_TAG}NESTED!{EMAIL_P_CLOSE_TAG}</div></div><div lang="fr-ca">{EMAIL_P_OPEN_TAG}bonjour{EMAIL_P_CLOSE_TAG}</div>'  # noqa
         )
-
-
-@pytest.mark.parametrize(
-    "input,output_dict",
-    (
-        ("abc 123", [{"string": "abc 123", "occurances": 1}]),
-        (
-            "Hi,\n[[ircc-ga-seal]]\nBye",
-            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 1}, {"string": "Bye", "occurances": 1}],
-        ),
-        (
-            "Hi,\n[[ircc-ga-seal]]\nBye[[ircc-ga-seal]]",
-            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 2}, {"string": "Bye", "occurances": 1}],
-        ),
-    ),
-)
-def test_add_ga_seal(input: str, output_dict: List[Dict]):
-    parsed_input = add_ircc_ga_seal(input)
-    for output in output_dict:
-        assert parsed_input.count(output["string"]) == output["occurances"]
-        assert "[[ircc-" not in parsed_input
-
-
-@pytest.mark.parametrize(
-    "input,output_dict",
-    (
-        ("abc 123", [{"string": "abc 123", "occurances": 1}]),
-        (
-            "Hi,\n[[ircc-seal]]\nBye",
-            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 1}, {"string": "Bye", "occurances": 1}],
-        ),
-        (
-            "Hi,\n[[ircc-seal]]\nBye[[ircc-seal]]",
-            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 2}, {"string": "Bye", "occurances": 1}],
-        ),
-    ),
-)
-def test_add_ircc_seal(input: str, output_dict: List[Dict]):
-    parsed_input = add_ircc_seal(input)
-    for output in output_dict:
-        assert parsed_input.count(output["string"]) == output["occurances"]
-        assert "[[ircc-" not in parsed_input
-
-
-@pytest.mark.parametrize(
-    "input,output_dict",
-    (
-        ("abc 123", [{"string": "abc 123", "occurances": 1}]),
-        (
-            "Hi,\n[[ircc-gc-seal]]\nBye",
-            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 1}, {"string": "Bye", "occurances": 1}],
-        ),
-        (
-            "Hi,\n[[ircc-gc-seal]]\nBye[[ircc-gc-seal]]",
-            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 2}, {"string": "Bye", "occurances": 1}],
-        ),
-    ),
-)
-def test_add_gc_seal(input: str, output_dict: List[Dict]):
-    parsed_input = add_ircc_gc_seal(input)
-    for output in output_dict:
-        assert parsed_input.count(output["string"]) == output["occurances"]
-        assert "[[ircc-" not in parsed_input
-
-
-@pytest.mark.parametrize(
-    "input,output_dict",
-    (
-        ("abc 123", [{"string": "abc 123", "occurances": 1}]),
-        (
-            "Hi,\n[[ircc-coat-arms]]\nBye",
-            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 1}, {"string": "Bye", "occurances": 1}],
-        ),
-        (
-            "Hi,\n[[ircc-coat-arms]]\nBye[[ircc-coat-arms]]",
-            [{"string": "Hi,", "occurances": 1}, {"string": "<img", "occurances": 2}, {"string": "Bye", "occurances": 1}],
-        ),
-    ),
-)
-def test_add_ircc_coat_of_arms(input: str, output_dict: List[Dict]):
-    parsed_input = add_ircc_coat_of_arms(input)
-    for output in output_dict:
-        assert parsed_input.count(output["string"]) == output["occurances"]
-        assert "[[ircc-" not in parsed_input
