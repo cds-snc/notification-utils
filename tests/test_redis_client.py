@@ -63,6 +63,7 @@ def test_should_not_raise_exception_if_raise_set_to_false(app, caplog, mocker):
     redis_client.redis_store.get = Mock(side_effect=Exception())
     redis_client.redis_store.set = Mock(side_effect=Exception())
     redis_client.redis_store.incr = Mock(side_effect=Exception())
+    redis_client.redis_store.decrby = Mock(side_effect=Exception())
     redis_client.redis_store.pipeline = Mock(side_effect=Exception())
     redis_client.redis_store.expire = Mock(side_effect=Exception())
     redis_client.redis_store.delete = Mock(side_effect=Exception())
@@ -70,6 +71,7 @@ def test_should_not_raise_exception_if_raise_set_to_false(app, caplog, mocker):
     assert redis_client.set("set_key", "set_value") is None
     assert redis_client.incr("incr_key") is None
     assert redis_client.incrby("incrby_key", by=1) is None
+    assert redis_client.decrby("decrby_key", by=1) is None
     assert redis_client.exceeded_rate_limit("rate_limit_key", 100, 100) is False
     assert redis_client.expire("expire_key", 100) is None
     assert redis_client.delete("delete_key") is None
@@ -79,6 +81,7 @@ def test_should_not_raise_exception_if_raise_set_to_false(app, caplog, mocker):
         call.exception("Redis error performing set on set_key"),
         call.exception("Redis error performing incr on incr_key"),
         call.exception("Redis error performing incrby on incrby_key"),
+        call.exception("Redis error performing decrby on decrby_key"),
         call.exception("Redis error performing rate-limit-pipeline on rate_limit_key"),
         call.exception("Redis error performing expire on expire_key"),
         call.exception("Redis error performing delete on delete_key"),
@@ -109,6 +112,8 @@ def test_should_raise_exception_if_raise_set_to_true(app):
     with pytest.raises(Exception) as e:
         redis_client.incrby("test", by=1, raise_exception=True)
     assert str(e.value) == "incrby failed"
+    with pytest.raises(Exception) as e:
+        redis_client.decrby("test", by=1, raise_exception=True)
     with pytest.raises(Exception) as e:
         redis_client.exceeded_rate_limit("test", 100, 200, raise_exception=True)
     assert str(e.value) == "pipeline failed"
