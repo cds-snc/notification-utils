@@ -216,6 +216,8 @@ class RedisClient:
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "decrby", key)
 
+        return None
+
     def get(self, key, raise_exception=False):
         key = prepare_value(key)
         if self.active:

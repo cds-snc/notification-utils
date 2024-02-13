@@ -8,6 +8,7 @@ def requires_feature(flag):
         def wrapper(*args, **kwargs):
             if current_app.config[flag]:
                 return func(*args, **kwargs)
+            return None
 
         return wrapper
 
