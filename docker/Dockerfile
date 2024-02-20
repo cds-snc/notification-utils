@@ -6,7 +6,7 @@ ARG NO_PROXY
 
 ENV PYTHONUNBUFFERED=1 \
 	DEBIAN_FRONTEND=noninteractive \
-    POETRY_VERSION="1.3.2"
+    POETRY_VERSION="1.7.1"
 
 RUN \
 	echo "Install base packages" \
