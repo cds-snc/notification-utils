@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/vscode/devcontainers/python:0-3.10@sha256:ef9cc483a593c95e1e83f2cf00b6a0e1ec7df43344416a41ccb3a88aef27beac
 
-ENV POETRY_VERSION="1.3.2"
+ENV POETRY_VERSION="1.7.1"
 
 RUN apt-get update \
     && apt-get -y install --no-install-recommends apt-utils 2>&1 \
