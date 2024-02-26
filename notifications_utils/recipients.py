@@ -361,7 +361,9 @@ class RecipientCSV:
         if self.is_optional_address_column(key):
             return
 
-        if Columns.make_key(key) in self.recipient_column_headers_as_column_keys:
+        formatted_key = Columns.make_key(key)
+
+        if formatted_key in self.recipient_column_headers_as_column_keys:
             if value in [None, ""] or isinstance(value, list):
                 if self.duplicate_recipient_column_headers:
                     return None
@@ -372,14 +374,17 @@ class RecipientCSV:
             except (InvalidEmailError, InvalidPhoneError, InvalidAddressError) as error:
                 return str(error)
 
-        if Columns.make_key(key) not in self.placeholders_as_column_keys:
+        if formatted_key not in self.placeholders_as_column_keys:
             return
 
         if value in [None, ""]:
             return Cell.missing_field_error
 
-        if len(value) + len(self.template.content) > 612:
-            return Cell.message_too_long
+        if formatted_key in self.placeholders_as_column_keys and self.template.template_type == "sms":
+            try:
+                validate_sms_message_length(self.template.content, len(value))
+            except (ValueError) as error:
+                return str(error)
 
 
 class InvalidEmailError(Exception):
@@ -552,6 +557,12 @@ def validate_recipient(recipient, template_type: str, column=None, international
         "letter": validate_address,
     }
     return validators[template_type](recipient, column)
+
+
+def validate_sms_message_length(variable_length, template_content_length):
+    if len(variable_length) + template_content_length > 612:
+        raise ValueError("Maximum 612 characters. Some messages may be too long due to custom content.")
+    return
 
 
 @lru_cache(maxsize=32, typed=False)
