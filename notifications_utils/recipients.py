@@ -378,6 +378,9 @@ class RecipientCSV:
         if value in [None, ""]:
             return Cell.missing_field_error
 
+        if len(value) + len(self.template.content) > 612:
+            return Cell.message_too_long
+
 
 class InvalidEmailError(Exception):
     def __init__(self, message=None):

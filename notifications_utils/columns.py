@@ -63,7 +63,7 @@ class Row(Columns):
             template.values = row_dict
             self.message_too_long = template.is_message_too_long()
 
-        super().__init__(OrderedDict((key, Cell(key, value, error_fn, self.placeholders)) for key, value in row_dict.items()))
+        super().__init__(OrderedDict((key, Cell(key, value, error_fn, self.placeholders, len(template.content))) for key, value in row_dict.items()))
 
     def __getitem__(self, key):
         return super().__getitem__(key) or Cell()
@@ -87,6 +87,13 @@ class Row(Columns):
         """
         for column in self.recipient_column_hearders_lang_check:
             if self.get(column).recipient_error is True:
+                return True
+        return False
+
+    @property
+    def has_message_too_long(self) -> bool:
+        for column in self.placeholders:
+            if self.get(key=column).content_length_error is True:
                 return True
         return False
 
@@ -120,8 +127,9 @@ class Row(Columns):
 
 class Cell:
     missing_field_error = "Missing"
+    message_too_long = "Length"
 
-    def __init__(self, key=None, value=None, error_fn=None, placeholders=None):
+    def __init__(self, key=None, value=None, error_fn=None, placeholders=None, template_content_length=None):
         self.data = value
         self.error = error_fn(key, value) if error_fn else None
         self.ignore = Columns.make_key(key) not in (placeholders or [])
@@ -140,3 +148,7 @@ class Cell:
     @property
     def recipient_error(self):
         return self.error not in {None, self.missing_field_error}
+
+    @property
+    def content_length_error(self):
+        return self.error not in {None, self.message_too_long}
