@@ -251,6 +251,12 @@ def test_phone_with_semicolon(phone):
     assert "Not a valid number" == str(e.value)
 
 
+def test_phone_with_no_number():
+    with pytest.raises(InvalidPhoneError) as e:
+        validate_phone_number(None)
+    assert "Number is None" == str(e.value)
+
+
 @pytest.mark.parametrize("phone_number", valid_phone_numbers)
 @pytest.mark.parametrize(
     "validator",
