@@ -132,7 +132,6 @@ class Row(Columns):
 
 class Cell:
     missing_field_error = "Missing"
-    message_too_long = "Length"
 
     def __init__(self, key=None, value=None, error_fn=None, placeholders=None, template_content_length=None):
         self.data = value
@@ -153,7 +152,3 @@ class Cell:
     @property
     def recipient_error(self):
         return self.error not in {None, self.missing_field_error}
-
-    @property
-    def content_length_error(self):
-        return self.error not in {None, self.message_too_long}
