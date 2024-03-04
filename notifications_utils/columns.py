@@ -63,7 +63,12 @@ class Row(Columns):
             template.values = row_dict
             self.message_too_long = template.is_message_too_long()
 
-        super().__init__(OrderedDict((key, Cell(key, value, error_fn, self.placeholders, len(template.content))) for key, value in row_dict.items()))
+        super().__init__(
+            OrderedDict(
+                (key, Cell(key, value, error_fn, self.placeholders, len(template.content) if template else None))
+                for key, value in row_dict.items()
+            )
+        )
 
     def __getitem__(self, key):
         return super().__getitem__(key) or Cell()
