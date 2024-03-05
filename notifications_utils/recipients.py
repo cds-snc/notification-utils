@@ -445,6 +445,8 @@ def validate_local_phone_number(number, column=None):
 
 
 def validate_phone_number(number, column=None, international=False):
+    if number is None:
+        raise InvalidPhoneError("Number is None")
     if ";" in number:
         raise InvalidPhoneError("Not a valid number")
 
