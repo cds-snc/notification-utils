@@ -96,13 +96,6 @@ class Row(Columns):
         return False
 
     @property
-    def has_message_too_long(self) -> bool:
-        for column in self.placeholders:
-            if self.get(key=column).content_length_error is True:
-                return True
-        return False
-
-    @property
     def has_missing_data(self):
         return any(cell.error == Cell.missing_field_error for cell in self.values())
 
