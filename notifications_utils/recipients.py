@@ -583,7 +583,7 @@ def validate_sms_message_length(variable_content, template_content_length):
     variable_length = sum(1 if char in SanitiseSMS.ALLOWED_CHARACTERS else 2 for char in variable_content)
 
     if variable_length + len(template_content_length) > SMS_CHAR_COUNT_LIMIT:
-        raise ValueError("Maximum 612 characters. Some messages may be too long due to custom content.")
+        raise ValueError(f"Maximum {SMS_CHAR_COUNT_LIMIT} characters. Some messages may be too long due to custom content.")
     return
 
 
