@@ -291,7 +291,7 @@ class RecipientCSV:
                         if variable:
                             variable_length += sum(1 if char in SanitiseSMS.ALLOWED_CHARACTERS else 2 for char in str(variable))
                     total_length = variable_length + (len(self.template.content) if self.template else 0)
-                    if total_length > 612:
+                    if total_length > SMS_CHAR_COUNT_LIMIT:
                         rows_too_long.append(row)
         return (row for row in rows_too_long)
 
