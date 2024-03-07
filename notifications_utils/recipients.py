@@ -282,18 +282,16 @@ class RecipientCSV:
         Checks if the length of all variable, plus the length of the template content,
         exceeds the SMS limit of 612 characters. Counts non-GSM characters as 2.
         """
-        rows_too_long = []
         if self.rows_as_list:
             for row in self.rows_as_list:
-                if row.personalisation and self.template and self.template.placeholders:
+                if row.personalisation and self.template:
                     variable_length = 0
                     for variable in row.personalisation.as_dict_with_keys(self.template.placeholders).values():
                         if variable:
                             variable_length += sum(1 if char in SanitiseSMS.ALLOWED_CHARACTERS else 2 for char in str(variable))
                     total_length = variable_length + (len(self.template.content) if self.template else 0)
                     if total_length > SMS_CHAR_COUNT_LIMIT:
-                        rows_too_long.append(row)
-        return (row for row in rows_too_long)
+                        yield row
 
     @property
     def initial_rows_with_errors(self):
