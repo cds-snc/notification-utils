@@ -10,9 +10,9 @@ from itertools import islice
 from collections import OrderedDict, namedtuple
 from ordered_set import OrderedSet
 from typing import Callable, Dict, List
-
+from notifications_utils import SMS_CHAR_COUNT_LIMIT
 from flask import current_app
-
+from notifications_utils.sanitise_text import SanitiseSMS
 from . import EMAIL_REGEX_PATTERN, hostname_part, tld_part
 from notifications_utils.formatters import strip_and_remove_obscure_whitespace, strip_whitespace
 from notifications_utils.template import SMSMessageTemplate, Template
@@ -277,6 +277,23 @@ class RecipientCSV:
         return self._filter_rows("message_too_long")
 
     @property
+    def rows_with_combined_variable_content_too_long(self):
+        """
+        Checks if the length of all variable, plus the length of the template content,
+        exceeds the SMS limit of 612 characters. Counts non-GSM characters as 2.
+        """
+        if self.rows_as_list:
+            for row in self.rows_as_list:
+                if row.personalisation and self.template:
+                    variable_length = 0
+                    for variable in row.personalisation.as_dict_with_keys(self.template.placeholders).values():
+                        if variable:
+                            variable_length += sum(1 if char in SanitiseSMS.ALLOWED_CHARACTERS else 2 for char in str(variable))
+                    total_length = variable_length + (len(self.template.content) if self.template else 0)
+                    if total_length > SMS_CHAR_COUNT_LIMIT:
+                        yield row
+
+    @property
     def initial_rows_with_errors(self):
         return islice(self.rows_with_errors, self.max_errors_shown)
 
@@ -361,7 +378,9 @@ class RecipientCSV:
         if self.is_optional_address_column(key):
             return
 
-        if Columns.make_key(key) in self.recipient_column_headers_as_column_keys:
+        formatted_key = Columns.make_key(key)
+
+        if formatted_key in self.recipient_column_headers_as_column_keys:
             if value in [None, ""] or isinstance(value, list):
                 if self.duplicate_recipient_column_headers:
                     return None
@@ -372,11 +391,18 @@ class RecipientCSV:
             except (InvalidEmailError, InvalidPhoneError, InvalidAddressError) as error:
                 return str(error)
 
-        if Columns.make_key(key) not in self.placeholders_as_column_keys:
+        if formatted_key not in self.placeholders_as_column_keys:
             return
 
         if value in [None, ""]:
             return Cell.missing_field_error
+
+        if self.template:
+            if formatted_key in self.placeholders_as_column_keys and self.template.template_type == "sms":
+                try:
+                    validate_sms_message_length(value, self.template.content)
+                except ValueError as error:
+                    return str(error)
 
 
 class InvalidEmailError(Exception):
@@ -551,6 +577,14 @@ def validate_recipient(recipient, template_type: str, column=None, international
         "letter": validate_address,
     }
     return validators[template_type](recipient, column)
+
+
+def validate_sms_message_length(variable_content, template_content_length):
+    variable_length = sum(1 if char in SanitiseSMS.ALLOWED_CHARACTERS else 2 for char in variable_content)
+
+    if variable_length + len(template_content_length) > SMS_CHAR_COUNT_LIMIT:
+        raise ValueError(f"Maximum {SMS_CHAR_COUNT_LIMIT} characters. Some messages may be too long due to custom content.")
+    return
 
 
 @lru_cache(maxsize=32, typed=False)

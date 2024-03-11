@@ -63,7 +63,12 @@ class Row(Columns):
             template.values = row_dict
             self.message_too_long = template.is_message_too_long()
 
-        super().__init__(OrderedDict((key, Cell(key, value, error_fn, self.placeholders)) for key, value in row_dict.items()))
+        super().__init__(
+            OrderedDict(
+                (key, Cell(key, value, error_fn, self.placeholders, len(template.content) if template else None))
+                for key, value in row_dict.items()
+            )
+        )
 
     def __getitem__(self, key):
         return super().__getitem__(key) or Cell()
@@ -121,7 +126,7 @@ class Row(Columns):
 class Cell:
     missing_field_error = "Missing"
 
-    def __init__(self, key=None, value=None, error_fn=None, placeholders=None):
+    def __init__(self, key=None, value=None, error_fn=None, placeholders=None, template_content_length=None):
         self.data = value
         self.error = error_fn(key, value) if error_fn else None
         self.ignore = Columns.make_key(key) not in (placeholders or [])
