@@ -1095,6 +1095,7 @@ def test_templates_handle_html_and_redacting(
             HTMLEmailTemplate,
             {},
             [
+                mock.call(Markup("subject")),
                 mock.call('<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">' "content" "</p>"),
                 mock.call("\n\ncontent"),
                 mock.call(Markup("subject")),
