@@ -275,7 +275,7 @@ def test_subject_is_page_title():
         ),
         features="html.parser",
     )
-    assert email.select_one("title").text == "this is the subject"
+    assert email.select_one("title").text == "this is the subject"  # type: ignore
 
 
 def test_preheader_is_at_start_of_html_emails():
