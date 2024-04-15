@@ -5,7 +5,7 @@ include = '(notifications_utils|tests)/.*\.pyi?$'
 
 [tool.poetry]
 name = "notifications-utils"
-version = "52.1.6"
+version = "52.1.7"
 description = "Shared python code for Notification - Provides logging utils etc."
 authors = ["Canadian Digital Service"]
 license = "MIT license"
@@ -65,3 +65,5 @@ types-bleach = "5.0.3.1"
 types-cachetools = "5.3.0.7"
 types-redis = "4.6.0.20240106"
 types-requests = "2.31.0.20240106"
+beautifulsoup4 = "^4.12.3"
+types-beautifulsoup4 = "^4.12.0.20240229"
