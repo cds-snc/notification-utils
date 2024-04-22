@@ -908,7 +908,7 @@ def test_subject_line_gets_applied_to_correct_template_types():
 
 def test_subject_line_gets_replaced():
     template = WithSubjectTemplate({"content": "", "subject": "((name))"})
-    assert template.subject == Markup("<span class='placeholder'>((name))</span>")
+    assert template.subject == Markup("<mark class='placeholder'>((name))</mark>")
     template.values = {"name": "Jo"}
     assert template.subject == "Jo"
 

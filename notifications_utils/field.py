@@ -60,10 +60,10 @@ class Field:
     # * body of placeholder - potentially standard or conditional,
     # * closing ))
     placeholder_pattern = re.compile(r"\({2}" r"(?!\()" r"([\s\S]+?)" r"\){2}")
-    placeholder_tag = "<span class='placeholder'>(({}))</span>"
-    conditional_placeholder_tag = "<span class='placeholder-conditional'>(({}??</span>{}))"
+    placeholder_tag = "<mark class='placeholder'>(({}))</mark>"
+    conditional_placeholder_tag = "<mark class='placeholder-conditional'><span class='condition'>(({}??</span>{}))</mark>"
     placeholder_tag_translated = "<span class='placeholder-no-brackets'>[{}]</span>"
-    placeholder_tag_redacted = "<span class='placeholder-redacted'>[hidden]</span>"
+    placeholder_tag_redacted = "<mark class='placeholder-redacted'>[hidden]</mark>"
 
     def __init__(
         self,

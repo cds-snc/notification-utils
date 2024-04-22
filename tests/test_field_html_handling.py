@@ -15,9 +15,9 @@ from notifications_utils.field import Field
         (
             "string ((<em>with</em>)) html",
             {},
-            "string <span class='placeholder'>((with))</span> html",
-            "string <span class='placeholder'>((&lt;em&gt;with&lt;/em&gt;))</span> html",
-            "string <span class='placeholder'>((<em>with</em>))</span> html",
+            "string <mark class='placeholder'>((with))</mark> html",
+            "string <mark class='placeholder'>((&lt;em&gt;with&lt;/em&gt;))</mark> html",
+            "string <mark class='placeholder'>((<em>with</em>))</mark> html",
         ),
         (
             "string ((placeholder)) html",
@@ -29,19 +29,25 @@ from notifications_utils.field import Field
         (
             "string ((<em>conditional</em>??<em>placeholder</em>)) html",
             {},
-            "string <span class='placeholder-conditional'>((conditional??</span>placeholder)) html",
             (
                 "string "
-                "<span class='placeholder-conditional'>"
-                "((&lt;em&gt;conditional&lt;/em&gt;??</span>"
-                "&lt;em&gt;placeholder&lt;/em&gt;)) "
+                "<mark class='placeholder-conditional'>"
+                "<span class='condition'>((conditional??</span>"
+                "placeholder))</mark> "
                 "html"
             ),
             (
                 "string "
-                "<span class='placeholder-conditional'>"
-                "((<em>conditional</em>??</span>"
-                "<em>placeholder</em>)) "
+                "<mark class='placeholder-conditional'>"
+                "<span class='condition'>((&lt;em&gt;conditional&lt;/em&gt;??</span>"
+                "&lt;em&gt;placeholder&lt;/em&gt;))</mark> "
+                "html"
+            ),
+            (
+                "string "
+                "<mark class='placeholder-conditional'>"
+                "<span class='condition'>((<em>conditional</em>??</span>"
+                "<em>placeholder</em>))</mark> "
                 "html"
             ),
         ),

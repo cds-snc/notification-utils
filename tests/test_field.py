@@ -85,14 +85,14 @@ def test_replacement_of_placeholders(template_content: str, data: Dict[str, Any]
     "template_content,data,expected",
     [
         ("((code)) is your security code", {"code": "12345"}, "12345 is your security code"),
-        ("((code)) is your security code", {}, "<span class='placeholder-redacted'>[hidden]</span> is your security code"),
+        ("((code)) is your security code", {}, "<mark class='placeholder-redacted'>[hidden]</mark> is your security code"),
         (
             "Hey ((name)), click http://example.com/reset-password/?token=((token))",
             {"name": "Example"},
             (
                 "Hey Example, click "
                 "http://example.com/reset-password/?token="
-                "<span class='placeholder-redacted'>[hidden]</span>"
+                "<mark class='placeholder-redacted'>[hidden]</mark>"
             ),
         ),
     ],
@@ -104,11 +104,12 @@ def test_optional_redacting_of_missing_values(template_content, data, expected):
 @pytest.mark.parametrize(
     "content,expected",
     [
-        ("((colour))", "<span class='placeholder'>((colour))</span>"),
-        ("the quick ((colour)) fox", "the quick <span class='placeholder'>((colour))</span> fox"),
+        ("((colour))", "<mark class='placeholder'>((colour))</mark>"),
+        ("the quick ((colour)) fox", "the quick <mark class='placeholder'>((colour))</mark> fox"),
         (
             "((article)) quick ((colour)) ((animal))",
-            "<span class='placeholder'>((article))</span> quick <span class='placeholder'>((colour))</span> <span class='placeholder'>((animal))</span>",  # noqa
+            "<mark class='placeholder'>((article))</mark> quick "
+            "<mark class='placeholder'>((colour))</mark> <mark class='placeholder'>((animal))</mark>",
         ),
         (
             """
@@ -117,34 +118,39 @@ def test_optional_redacting_of_missing_values(template_content, data, expected):
                 ((animal))
             """,
             """
-                <span class='placeholder'>((article))</span> quick
-                <span class='placeholder'>((colour))</span>
-                <span class='placeholder'>((animal))</span>
+                <mark class='placeholder'>((article))</mark> quick
+                <mark class='placeholder'>((colour))</mark>
+                <mark class='placeholder'>((animal))</mark>
             """,
         ),
-        ("the quick (((colour))) fox", "the quick (<span class='placeholder'>((colour))</span>) fox"),
-        ("((warning?))", "<span class='placeholder'>((warning?))</span>"),
-        ("((warning? This is not a conditional))", "<span class='placeholder'>((warning? This is not a conditional))</span>"),
-        ("((warning?? This is a warning))", "<span class='placeholder-conditional'>((warning??</span> This is a warning))"),
+        ("the quick (((colour))) fox", "the quick (<mark class='placeholder'>((colour))</mark>) fox"),
+        ("((warning?))", "<mark class='placeholder'>((warning?))</mark>"),
+        ("((warning? This is not a conditional))", "<mark class='placeholder'>((warning? This is not a conditional))</mark>"),
+        (
+            "((warning?? This is a warning))",
+            "<mark class='placeholder-conditional'><span class='condition'>((warning??</span> This is a warning))</mark>",
+        ),
         (
             "((alert??With both (parenthesis) ))",
-            "<span class='placeholder-conditional'>((alert??</span>With both (parenthesis) ))",
+            "<mark class='placeholder-conditional'><span class='condition'>((alert??</span>With both (parenthesis) ))</mark>",
         ),
         (
             "((alert??Missing (right parenthesis ))",
-            "<span class='placeholder-conditional'>((alert??</span>Missing (right parenthesis ))",
+            "<mark class='placeholder-conditional'><span class='condition'>((alert??</span>Missing (right parenthesis ))</mark>",
         ),
         (
             "((alert??Missing left parenthesis) ))",
-            "<span class='placeholder-conditional'>((alert??</span>Missing left parenthesis) ))",
+            "<mark class='placeholder-conditional'><span class='condition'>((alert??</span>Missing left parenthesis) ))</mark>",
         ),
         (
             "((warning?)) and ((alert?? alert!))",
-            "<span class='placeholder'>((warning?))</span> and <span class='placeholder-conditional'>((alert??</span> alert!))",
+            "<mark class='placeholder'>((warning?))</mark> and "
+            "<mark class='placeholder-conditional'><span class='condition'>((alert??</span> alert!))</mark>",
         ),
         (
             "(((warning))) and ((alert?? alert!))",
-            "(<span class='placeholder'>((warning))</span>) and <span class='placeholder-conditional'>((alert??</span> alert!))",
+            "(<mark class='placeholder'>((warning))</mark>) and "
+            "<mark class='placeholder-conditional'><span class='condition'>((alert??</span> alert!))</mark>",
         ),
     ],
 )
@@ -155,7 +161,7 @@ def test_formatting_of_placeholders(content, expected):
 @pytest.mark.parametrize(
     "content,expected,translated,values",
     [
-        ("((colour))", "<span class='placeholder'>((colour))</span>", False, None),
+        ("((colour))", "<mark class='placeholder'>((colour))</mark>", False, None),
         ("((colour))", "<span class='placeholder-no-brackets'>[colour]</span>", True, None),
         ("((colour))", "blue", False, {"colour": "blue"}),
         ("((colour))", "blue", True, {"colour": "blue"}),
@@ -172,17 +178,17 @@ def test_formatting_of_placeholders_translated(content, expected, translated, va
         (
             "((name)) ((colour))",
             {"name": "Jo"},
-            "Jo <span class='placeholder'>((colour))</span>",
+            "Jo <mark class='placeholder'>((colour))</mark>",
         ),
         (
             "((name)) ((colour))",
             {"name": "Jo", "colour": None},
-            "Jo <span class='placeholder'>((colour))</span>",
+            "Jo <mark class='placeholder'>((colour))</mark>",
         ),
         (
             "((show_thing??thing)) ((colour))",
             {"colour": "red"},
-            "<span class='placeholder-conditional'>((show_thing??</span>thing)) red",
+            "<mark class='placeholder-conditional'><span class='condition'>((show_thing??</span>thing))</mark> red",
         ),
     ],
 )
@@ -224,13 +230,13 @@ def test_what_will_trigger_conditional_placeholder(value):
     [
         (
             {"placeholder": []},
-            "list: <span class='placeholder'>((placeholder))</span>",
-            "list: <span class='placeholder'>((placeholder))</span>",
+            "list: <mark class='placeholder'>((placeholder))</mark>",
+            "list: <mark class='placeholder'>((placeholder))</mark>",
         ),
         (
             {"placeholder": ["", ""]},
-            "list: <span class='placeholder'>((placeholder))</span>",
-            "list: <span class='placeholder'>((placeholder))</span>",
+            "list: <mark class='placeholder'>((placeholder))</mark>",
+            "list: <mark class='placeholder'>((placeholder))</mark>",
         ),
         (
             {"placeholder": ["one"]},
