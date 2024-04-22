@@ -402,6 +402,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
     def __str__(self):
         return self.jinja_template.render(
             {
+                "subject": self.subject,
                 "body": get_html_email_body(self.content, self.values, html="passthrough" if self.allow_html else "escape"),
                 "preheader": self.preheader,
                 "fip_banner_english": self.fip_banner_english,

@@ -1,6 +1,7 @@
 import datetime
 from time import process_time
 import os
+from bs4 import BeautifulSoup
 import pytest
 
 from functools import partial
@@ -263,6 +264,18 @@ def test_complete_html(complete_html, branding_should_be_present, brand_logo, br
         if brand_colour:
             assert brand_colour in email
             assert "##" not in email
+
+
+def test_subject_is_page_title():
+    email = BeautifulSoup(
+        str(
+            HTMLEmailTemplate(
+                {"content": "", "subject": "this is the subject", "template_type": "email"},
+            )
+        ),
+        features="html.parser",
+    )
+    assert email.select_one("title").text == "this is the subject"  # type: ignore
 
 
 def test_preheader_is_at_start_of_html_emails():
@@ -895,7 +908,7 @@ def test_subject_line_gets_applied_to_correct_template_types():
 
 def test_subject_line_gets_replaced():
     template = WithSubjectTemplate({"content": "", "subject": "((name))"})
-    assert template.subject == Markup("<span class='placeholder'>((name))</span>")
+    assert template.subject == Markup("<mark class='placeholder'>((name))</mark>")
     template.values = {"name": "Jo"}
     assert template.subject == "Jo"
 
@@ -922,6 +935,7 @@ def test_subject_line_gets_replaced():
             HTMLEmailTemplate,
             {},
             [
+                mock.call("subject", {}, html="escape", redact_missing_personalisation=False),
                 mock.call("content", {}, html="escape", markdown_lists=True, redact_missing_personalisation=False),
                 mock.call("content", {}, html="escape", markdown_lists=True),
             ],
@@ -1081,6 +1095,7 @@ def test_templates_handle_html_and_redacting(
             HTMLEmailTemplate,
             {},
             [
+                mock.call(Markup("subject")),
                 mock.call('<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">' "content" "</p>"),
                 mock.call("\n\ncontent"),
                 mock.call(Markup("subject")),
