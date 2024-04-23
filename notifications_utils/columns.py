@@ -149,7 +149,7 @@ class Cell:
     def recipient_error(self):
         # TODO: This is a bandaid solution. We need to establish why we are calling this Cell property on
         #       Cells that do not represent a recipient value.
-        if self.error is not None and 'Some messages may be too long due to custom content.' in self.error:
+        if self.error is not None and "Some messages may be too long due to custom content." in self.error:
             return False
 
         return self.error not in {None, self.missing_field_error}
