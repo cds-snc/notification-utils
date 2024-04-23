@@ -5,7 +5,7 @@ include = '(notifications_utils|tests)/.*\.pyi?$'
 
 [tool.poetry]
 name = "notifications-utils"
-version = "52.1.9"
+version = "52.1.10"
 description = "Shared python code for Notification - Provides logging utils etc."
 authors = ["Canadian Digital Service"]
 license = "MIT license"
