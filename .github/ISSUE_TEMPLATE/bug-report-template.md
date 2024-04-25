@@ -38,7 +38,7 @@ Is there something we can do to work around this issue in the meantime?
 
 <!--
 ## QA Considerations
-_For QA to populate. Leave blank if QA is not applicable on this ticket._
+_Populate with suggested QA actions if applicable. Leave blank if QA is not applicable on this ticket._
 -->
 
 ## Additional Info & Resources

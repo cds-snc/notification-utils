@@ -37,7 +37,7 @@ We do not need what to write showing up in tickets though, so please do not unco
 
 <!--
 ## QA Considerations
-_For QA to populate. Leave blank if QA is not applicable on this ticket._
+_Populate with suggested QA actions if applicable. Leave blank if QA is not applicable on this ticket._
 -->
 
 <!--
