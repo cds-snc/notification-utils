@@ -144,7 +144,7 @@ def test_alt_text_with_brand_text_and_fip_banner_english_shown(renderer):
             logo_with_background_colour=True,
             brand_name="Notify Logo",
             alt_text_en="alt_text_en",
-            alt_text_fr="alt_text_fr"
+            alt_text_fr="alt_text_fr",
         )
     )
     assert 'alt="alt_text_en / alt_text_fr"' in email
@@ -191,12 +191,14 @@ def test_alt_text_with_no_brand_text_and_fip_banner_french_shown(renderer):
     "logo_with_background_colour, brand_text, alt_text_en, alt_text_fr, expected_alt_text",
     [
         (True, None, None, None, 'alt="Notify Logo"'),
-        (True, "Example", 'alt_text_en', 'alt_text_fr', 'alt="alt_text_en / alt_text_fr"'),
+        (True, "Example", "alt_text_en", "alt_text_fr", 'alt="alt_text_en / alt_text_fr"'),
         (False, "Example", None, None, 'alt="Notify Logo"'),
-        (False, None, 'alt_text_en', 'alt_text_fr', 'alt="alt_text_en / alt_text_fr"'),
+        (False, None, "alt_text_en", "alt_text_fr", 'alt="alt_text_en / alt_text_fr"'),
     ],
 )
-def test_alt_text_with_no_fip_banner(logo_with_background_colour, brand_text, alt_text_en, alt_text_fr, expected_alt_text, renderer):
+def test_alt_text_with_no_fip_banner(
+    logo_with_background_colour, brand_text, alt_text_en, alt_text_fr, expected_alt_text, renderer
+):
     email = str(
         renderer(
             {"content": "hello world", "subject": ""},
