@@ -363,6 +363,8 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         brand_name=None,
         jinja_path=None,
         allow_html=False,
+        alt_text_en=None,
+        alt_text_fr=None,
     ):
         super().__init__(template, values, jinja_path=jinja_path)
         self.fip_banner_english = fip_banner_english
@@ -374,6 +376,8 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.logo_with_background_colour = logo_with_background_colour
         self.brand_name = brand_name
         self.allow_html = allow_html
+        self.alt_text_en = alt_text_en
+        self.alt_text_fr = alt_text_fr
         # set this again to make sure the correct either utils / downstream local jinja is used
         # however, don't set if we are in a test environment (to preserve the above mock)
         if "pytest" not in sys.modules:
@@ -413,6 +417,8 @@ class HTMLEmailTemplate(WithSubjectTemplate):
                 "brand_colour": self.brand_colour,
                 "logo_with_background_colour": self.logo_with_background_colour,
                 "brand_name": self.brand_name,
+                "alt_text_en": self.alt_text_en,
+                "alt_text_fr": self.alt_text_fr,
             }
         )
 
@@ -456,6 +462,8 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         logo_with_background_colour=None,
         asset_domain=None,
         allow_html=False,
+        alt_text_en=None,
+        alt_text_fr=None,
     ):
         super().__init__(
             template,
@@ -476,6 +484,8 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         self.brand_name = brand_name
         self.asset_domain = asset_domain or "assets.notification.canada.ca"
         self.allow_html = allow_html
+        self.alt_text_en = alt_text_en
+        self.alt_text_fr = alt_text_fr
 
     def __str__(self):
         return Markup(
@@ -500,6 +510,8 @@ class EmailPreviewTemplate(WithSubjectTemplate):
                     "brand_text": self.brand_text,
                     "brand_name": self.brand_name,
                     "asset_domain": self.asset_domain,
+                    "alt_text_en": self.alt_text_en,
+                    "alt_text_fr": self.alt_text_fr,
                 }
             )
         )

@@ -143,9 +143,11 @@ def test_alt_text_with_brand_text_and_fip_banner_english_shown(renderer):
             brand_text="Example",
             logo_with_background_colour=True,
             brand_name="Notify Logo",
+            alt_text_en="alt_text_en",
+            alt_text_fr="alt_text_fr",
         )
     )
-    assert 'alt=" "' in email
+    assert 'alt="alt_text_en / alt_text_fr"' in email
     assert 'alt="Notify Logo"' not in email
 
 
@@ -159,10 +161,12 @@ def test_alt_text_with_no_brand_text_and_fip_banner_english_shown(renderer):
             brand_text=None,
             logo_with_background_colour=True,
             brand_name="Notify Logo",
+            alt_text_en="alt_text_en",
+            alt_text_fr="alt_text_fr",
         )
     )
     assert 'alt="Symbol of the Government of Canada / Symbole du gouvernement du Canada"' in email
-    assert 'alt="Notify Logo"' in email
+    assert 'alt="alt_text_en / alt_text_fr"' in email
 
 
 @pytest.mark.parametrize("renderer", [HTMLEmailTemplate, EmailPreviewTemplate])
@@ -184,15 +188,17 @@ def test_alt_text_with_no_brand_text_and_fip_banner_french_shown(renderer):
 
 @pytest.mark.parametrize("renderer", [HTMLEmailTemplate, EmailPreviewTemplate])
 @pytest.mark.parametrize(
-    "logo_with_background_colour, brand_text, expected_alt_text",
+    "logo_with_background_colour, brand_text, alt_text_en, alt_text_fr, expected_alt_text",
     [
-        (True, None, 'alt="Notify Logo"'),
-        (True, "Example", 'alt=" "'),
-        (False, "Example", 'alt=" "'),
-        (False, None, 'alt="Notify Logo"'),
+        (True, None, None, None, 'alt="Notify Logo"'),
+        (True, "Example", "alt_text_en", "alt_text_fr", 'alt="alt_text_en / alt_text_fr"'),
+        (False, "Example", None, None, 'alt="Notify Logo"'),
+        (False, None, "alt_text_en", "alt_text_fr", 'alt="alt_text_en / alt_text_fr"'),
     ],
 )
-def test_alt_text_with_no_fip_banner(logo_with_background_colour, brand_text, expected_alt_text, renderer):
+def test_alt_text_with_no_fip_banner(
+    logo_with_background_colour, brand_text, alt_text_en, alt_text_fr, expected_alt_text, renderer
+):
     email = str(
         renderer(
             {"content": "hello world", "subject": ""},
@@ -201,6 +207,8 @@ def test_alt_text_with_no_fip_banner(logo_with_background_colour, brand_text, ex
             brand_text=brand_text,
             logo_with_background_colour=logo_with_background_colour,
             brand_name="Notify Logo",
+            alt_text_en=alt_text_en,
+            alt_text_fr=alt_text_fr,
         )
     )
 
