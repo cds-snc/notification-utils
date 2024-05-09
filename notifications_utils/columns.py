@@ -129,7 +129,7 @@ class Row(Columns):
 class Cell:
     missing_field_error = "Missing"
 
-    def __init__(self, key=None, value=None, error_fn=None, placeholders=None, template_content_length=None):
+    def __init__(self, key=None, value=None, error_fn=None, placeholders=None):
         self.data = value
         self.error = error_fn(key, value) if error_fn else None
         self.ignore = Columns.make_key(key) not in (placeholders or [])
