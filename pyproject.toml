@@ -36,8 +36,13 @@ smartypants = "2.0.1"
 pypdf2 = "1.28.6"
 py_w3c = "0.3.1"
 # required by both api and admin
+<<<<<<< Updated upstream
 awscli = "1.32.100"
 boto3 = "1.34.100"
+=======
+awscli = "1.32.99"
+boto3 = "1.34.99"
+>>>>>>> Stashed changes
 werkzeug = "2.3.7"
 itsdangerous = "2.1.2"
 
