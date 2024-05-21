@@ -1,5 +1,5 @@
 # Container image that runs your code
-FROM ubuntu:22.04@sha256:2b7412e6465c3c7fc5bb21d3e6f1917c167358449fecac8176c6e496e5c1f05f
+FROM ubuntu:22.04@sha256:a6d2b38300ce017add71440577d5b0a90460d0e57fd7aec21dd0d1b0761bbfb2
 
 RUN apt update
 RUN apt install -y python3-pip python3 git libmagic-dev
