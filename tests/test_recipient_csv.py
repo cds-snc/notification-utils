@@ -1,3 +1,4 @@
+from math import floor
 import pytest
 import itertools
 import unicodedata
@@ -745,29 +746,57 @@ def test_recipient_safelist(file_contents, template_type, safelist, count_of_row
     assert recipients.allowed_to_send_to
 
 
-def test_detects_rows_which_result_in_overly_long_messages():
+@pytest.mark.parametrize(
+    "template_content, csv, error_rows",
+    [
+        (
+            "((placeholder))",
+            f"""
+                phone number,placeholder
+                6502532222,1
+                6502532222,{"a" * (SMS_CHAR_COUNT_LIMIT - 1)}
+                6502532223,{"a" * SMS_CHAR_COUNT_LIMIT}
+                6502532224,{"a" * (SMS_CHAR_COUNT_LIMIT + 1)}
+            """,
+            {3},
+        ),
+        (  # Placeholder + content length should not exceed SMS_CHAR_COUNT_LIMIT. 72 = content length - placeholder text
+            "((placeholder)) This is template content. Believe it or not there are character limits.",
+            f"""
+            phone number,placeholder
+            6502532222,1
+            6502532222,{'a' * (SMS_CHAR_COUNT_LIMIT + 1)}
+            6502532222,{'a'* (SMS_CHAR_COUNT_LIMIT - 72)}
+            6502532222,{'a' * (SMS_CHAR_COUNT_LIMIT - 73) }
+            """,
+            {1},
+        ),
+        (
+            "((placeholder1)) This is template content.((placeholder2)) Believe it or not there are character limits.",
+            f"""
+            phone number,placeholder1,placeholder2
+            6502532222,1
+            6502532222,{'a' * (floor(SMS_CHAR_COUNT_LIMIT / 2))},{'a' * (floor(SMS_CHAR_COUNT_LIMIT / 2) + 1)}
+            6502532222,{'a'* (floor(SMS_CHAR_COUNT_LIMIT / 2))},{'a' * (floor(SMS_CHAR_COUNT_LIMIT / 2) - 72)}
+            6502532222,{'a' * (floor(SMS_CHAR_COUNT_LIMIT / 2)) },{'a' * (floor(SMS_CHAR_COUNT_LIMIT / 2) - 73)}
+            """,
+            {1},
+        ),
+    ],
+)
+def test_detects_rows_which_result_in_overly_long_messages(template_content, csv, error_rows):
     template = SMSMessageTemplate(
-        {"content": "((placeholder))", "template_type": "sms"},
+        {"content": template_content, "template_type": "sms"},
         sender=None,
         prefix=None,
     )
     recipients = RecipientCSV(
-        """
-            phone number,placeholder
-            6502532222,1
-            6502532222,{one_under}
-            6502532223,{exactly}
-            6502532224,{one_over}
-        """.format(
-            one_under="a" * (SMS_CHAR_COUNT_LIMIT - 1),
-            exactly="a" * SMS_CHAR_COUNT_LIMIT,
-            one_over="a" * (SMS_CHAR_COUNT_LIMIT + 1),
-        ),
+        csv,
         template_type=template.template_type,
         template=template,
     )
-    assert _index_rows(recipients.rows_with_errors) == {3}
-    assert _index_rows(recipients.rows_with_message_too_long) == {3}
+    assert _index_rows(recipients.rows_with_errors) == error_rows
+    assert _index_rows(recipients.rows_with_message_too_long) == error_rows
     assert recipients.has_errors
 
 
