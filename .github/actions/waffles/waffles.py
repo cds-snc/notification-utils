@@ -25,21 +25,20 @@ Example:
 
 import importlib
 import importlib.util
+import re
 import sys
 import urllib.parse
 import uuid
-
 from dataclasses import dataclass
-from docopt import docopt
-from flask import Flask
 from os.path import join
 from pathlib import Path
-import re
 from types import ModuleType
 from typing import Any, List, NewType
 from urllib import request
 from urllib.error import URLError
 
+from docopt import docopt
+from flask import Flask
 from notifications_utils.base64_uuid import uuid_to_base64
 
 ModuleName = NewType("ModuleName", str)

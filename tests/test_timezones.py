@@ -2,9 +2,13 @@ from datetime import datetime
 
 import pytest
 import pytz
-
-from notifications_utils.timezones import convert_est_to_utc, convert_utc_to_est, utc_string_to_aware_gmt_datetime
-from notifications_utils.timezones import convert_local_timezone_to_utc, convert_utc_to_local_timezone
+from notifications_utils.timezones import (
+    convert_est_to_utc,
+    convert_local_timezone_to_utc,
+    convert_utc_to_est,
+    convert_utc_to_local_timezone,
+    utc_string_to_aware_gmt_datetime,
+)
 
 
 @pytest.mark.parametrize(

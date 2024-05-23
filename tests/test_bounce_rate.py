@@ -1,13 +1,13 @@
 import datetime
 import uuid
-import pytest
 from unittest.mock import Mock
-import fakeredis
-from freezegun import freeze_time
 
+import fakeredis
+import pytest
+from freezegun import freeze_time
 from notifications_utils.clients.redis.bounce_rate import (
-    _current_timestamp_s,
     RedisBounceRate,
+    _current_timestamp_s,
     hard_bounce_key,
     total_notifications_key,
 )

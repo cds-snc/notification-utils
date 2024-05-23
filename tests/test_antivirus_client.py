@@ -1,7 +1,7 @@
 import io
-import requests
-import pytest
 
+import pytest
+import requests
 from notifications_utils.clients.antivirus.antivirus_client import AntivirusClient, AntivirusError
 
 

@@ -1,8 +1,7 @@
-import pytest
-import pytz
-
 from datetime import datetime
 
+import pytest
+import pytz
 from freezegun import freeze_time
 from notifications_utils.letter_timings import get_letter_timings, letter_can_be_cancelled
 
