@@ -11,6 +11,7 @@
 		"SHELL": "/bin/zsh"
 	},
 	"settings": {
+		"python.linting.": true,
 		"python.pythonPath": "/usr/local/bin/python",
 	},
 	"extensions": [
@@ -20,7 +21,7 @@
 		"eamodio.gitlens",
 		"GitHub.copilot",
 		"tamasfe.even-better-toml",
-		"ms-python.pylint"
+		"charliermarsh.ruff",
 	],
 	"postCreateCommand": "notify-dev-entrypoint.sh",
 }
