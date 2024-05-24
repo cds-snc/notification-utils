@@ -19,8 +19,10 @@ Usage:
     --base-url=<url>:           Base URL used to hit the application with discovered Flask endpoints.
 
 Example:
-        waffles.py list --app-loc /Projects/cds/notification-document-download-api --app-lib doc-api-env/Lib/site-packages --flask-mod application --flask-prop application
-        waffles.py iron --base-url=https://api.document.notification.canada.ca --app-loc /Projects/cds/notification-document-download-api --app-lib doc-api-env/Lib/site-packages --flask-mod application --flask-prop application
+        waffles.py list --app-loc /Projects/cds/notification-document-download-api \
+            --app-lib doc-api-env/Lib/site-packages --flask-mod application --flask-prop application
+        waffles.py iron --base-url=https://api.document.notification.canada.ca --app-loc /Projects/cds/notification-document-download-api \
+            --app-lib doc-api-env/Lib/site-packages --flask-mod application --flask-prop application
 """
 
 import importlib
