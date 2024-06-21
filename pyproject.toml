@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "notifications-utils"
-version = "52.2.5"
+version = "52.2.7"
 description = "Shared python code for Notification - Provides logging utils etc."
 authors = ["Canadian Digital Service"]
 license = "MIT license"
@@ -14,7 +14,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.dependencies]
 python = "~3.10.9"
 # required by both api and admin
-awscli = "1.32.100"
+awscli = "1.33.5"
 bleach = "6.1.0"
 boto3 = "1.34.100"
 cachetools = "4.2.4"
@@ -24,7 +24,7 @@ certifi = "^2023.7.22"       # pinned for security reasons: https://github.com/c
 cryptography = "^42.0.3"     # https://github.com/cds-snc/notification-utils/security/dependabot/31
 Flask = "2.3.3"
 Flask-Redis = "0.4.0"
-itsdangerous = "2.1.2"
+itsdangerous = "2.2.0"
 Jinja2 = "^3.0.0"
 markupsafe = "2.1.5"
 mistune = "0.8.4"
@@ -38,29 +38,28 @@ PyYAML = "6.0.1"
 requests = "2.31.0"
 smartypants = "2.0.1"
 statsd = "3.3.0"
-werkzeug = "2.3.7"
+werkzeug = "3.0.3"
 
 [tool.poetry.group.test.dependencies]
 beautifulsoup4 = "^4.12.3"
 click = "8.1.7"
 fakeredis = "^2.10.3"
-freezegun = "1.4.0"
-mypy = "1.8.0"
+freezegun = "1.5.1"
+mypy = "1.10.0"
 pytest = "7.4.4"
 pytest-cov = "2.12.1"
-pytest-mock = "3.12.0"
+pytest-mock = "3.14.0"
 pytest-xdist = "2.5.0"
-requests-mock = "1.11.0"
+requests-mock = "1.12.1"
 ruff = "^0.2.1"
 types-beautifulsoup4 = "^4.12.0.20240229"
 types-bleach = "5.0.3.1"
 types-cachetools = "5.3.0.7"
-types-python-dateutil = "2.8.19.20240106"
+types-python-dateutil = "2.9.0.20240316"
 types-pytz = "2022.7.1.2"
 types-PyYAML = "6.0.12.20240311"
 types-redis = "4.6.0.20240425"
-types-requests = "2.31.0.20240406"
-
+types-requests = "2.32.0.20240602"
 
 [tool.ruff]
 target-version = "py310"
