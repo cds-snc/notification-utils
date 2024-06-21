@@ -1,8 +1,8 @@
-import pytest
-from flask import Flask
-
-import requests_mock
 from unittest.mock import Mock
+
+import pytest
+import requests_mock
+from flask import Flask
 
 
 class FakeService:

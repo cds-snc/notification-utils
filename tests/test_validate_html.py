@@ -1,5 +1,4 @@
 import pytest
-
 from notifications_utils.validate_html import check_if_string_contains_valid_html
 
 

@@ -1,7 +1,8 @@
+import io
+
 import PyPDF2
 from PyPDF2 import PdfFileWriter
 from PyPDF2.utils import PdfReadError
-import io
 
 
 def pdf_page_count(src_pdf):

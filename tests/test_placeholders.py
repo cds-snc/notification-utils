@@ -1,7 +1,6 @@
 import re
 
 import pytest
-
 from notifications_utils.field import Placeholder
 
 

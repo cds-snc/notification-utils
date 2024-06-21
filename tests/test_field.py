@@ -1,5 +1,6 @@
-import pytest
 from typing import Any, Dict
+
+import pytest
 from notifications_utils.field import Field, str2bool
 
 

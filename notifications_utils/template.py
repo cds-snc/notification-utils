@@ -1,51 +1,50 @@
 import math
 import sys
-from os import path
 from datetime import datetime
-
-from jinja2 import Environment, FileSystemLoader
-from flask import Markup
 from html import unescape
+from os import path
+
+from flask import Markup
+from jinja2 import Environment, FileSystemLoader
 
 from notifications_utils import EMAIL_CHAR_COUNT_LIMIT, SMS_CHAR_COUNT_LIMIT, TEMPLATE_NAME_CHAR_COUNT_LIMIT
 from notifications_utils.columns import Columns
 from notifications_utils.field import Field
 from notifications_utils.formatters import (
-    unlink_govuk_escaped,
-    nl2br,
-    nl2li,
     add_language_divs,
     add_prefix,
+    add_trailing_newline,
     autolink_sms,
-    notify_email_markdown,
-    notify_email_preheader_markdown,
-    notify_plain_text_email_markdown,
-    notify_letter_preview_markdown,
-    remove_empty_lines,
-    sms_encode,
     escape_html,
     escape_lang_tags,
-    strip_dvla_markup,
-    strip_pipes,
-    remove_whitespace_before_punctuation,
-    remove_language_divs,
     make_quotes_smart,
-    replace_hyphens_with_en_dashes,
-    replace_hyphens_with_non_breaking_hyphens,
-    tweak_dvla_list_markup,
-    strip_leading_whitespace,
-    add_trailing_newline,
+    nl2br,
+    nl2li,
     normalise_newlines,
     normalise_whitespace,
+    notify_email_markdown,
+    notify_email_preheader_markdown,
+    notify_letter_preview_markdown,
+    notify_plain_text_email_markdown,
+    remove_empty_lines,
+    remove_language_divs,
     remove_smart_quotes_from_email_addresses,
+    remove_whitespace_before_punctuation,
+    replace_hyphens_with_en_dashes,
+    replace_hyphens_with_non_breaking_hyphens,
+    sms_encode,
+    strip_dvla_markup,
+    strip_leading_whitespace,
+    strip_pipes,
     strip_unsupported_characters,
+    tweak_dvla_list_markup,
+    unlink_govuk_escaped,
 )
+from notifications_utils.sanitise_text import SanitiseSMS
 from notifications_utils.strftime_codes import no_pad_day
 from notifications_utils.take import Take
 from notifications_utils.template_change import TemplateChange
-from notifications_utils.sanitise_text import SanitiseSMS
 from notifications_utils.validate_html import check_if_string_contains_valid_html
-
 
 template_env = Environment(
     loader=FileSystemLoader(
@@ -196,9 +195,7 @@ class SMSMessageTemplate(Template):
         return len(
             (
                 # we always want to call SMSMessageTemplate.__str__ regardless of subclass, to avoid any html formatting
-                SMSMessageTemplate.__str__(self)
-                if self._values
-                else sms_encode(add_prefix(self.content.strip(), self.prefix))
+                SMSMessageTemplate.__str__(self) if self._values else sms_encode(add_prefix(self.content.strip(), self.prefix))
             ).encode(self.encoding)
         )
 

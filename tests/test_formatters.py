@@ -1,32 +1,31 @@
 import pytest
 from flask import Markup
-
 from notifications_utils.formatters import (
     EMAIL_P_CLOSE_TAG,
     EMAIL_P_OPEN_TAG,
     add_language_divs,
     add_trailing_newline,
-    remove_language_divs,
-    unlink_govuk_escaped,
+    escape_html,
+    escape_lang_tags,
+    formatted_list,
+    make_quotes_smart,
+    nl2li,
+    normalise_whitespace,
     notify_email_markdown,
     notify_letter_preview_markdown,
     notify_plain_text_email_markdown,
+    remove_language_divs,
+    remove_smart_quotes_from_email_addresses,
+    remove_whitespace_before_punctuation,
+    replace_hyphens_with_en_dashes,
     sms_encode,
-    formatted_list,
+    strip_and_remove_obscure_whitespace,
     strip_dvla_markup,
     strip_pipes,
-    escape_html,
-    escape_lang_tags,
-    remove_whitespace_before_punctuation,
-    make_quotes_smart,
-    replace_hyphens_with_en_dashes,
-    tweak_dvla_list_markup,
-    nl2li,
-    strip_whitespace,
-    strip_and_remove_obscure_whitespace,
-    remove_smart_quotes_from_email_addresses,
     strip_unsupported_characters,
-    normalise_whitespace,
+    strip_whitespace,
+    tweak_dvla_list_markup,
+    unlink_govuk_escaped,
 )
 from notifications_utils.take import Take
 from notifications_utils.template import HTMLEmailTemplate, PlainTextEmailTemplate, SMSMessageTemplate, SMSPreviewTemplate
@@ -977,21 +976,18 @@ def test_strip_and_remove_obscure_whitespace_only_removes_normal_whitespace_from
 
 
 def test_remove_smart_quotes_from_email_addresses():
-    assert (
-        remove_smart_quotes_from_email_addresses(
-            """
+    assert remove_smart_quotes_from_email_addresses(
+        """
         line one’s quote
         first.o’last@example.com is someone’s email address
         line ‘three’
     """
-        )
-        == (
-            """
+    ) == (
+        """
         line one’s quote
         first.o'last@example.com is someone’s email address
         line ‘three’
     """
-        )
     )
 
 

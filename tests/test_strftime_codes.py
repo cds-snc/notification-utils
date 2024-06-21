@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
-from notifications_utils.strftime_codes import no_pad_code, no_pad_day, no_pad_hour12, no_pad_hour24, no_pad_month
 
+from notifications_utils.strftime_codes import no_pad_code, no_pad_day, no_pad_hour12, no_pad_hour24, no_pad_month
 
 LINUX = "linux"
 WINDOWS = "windows"

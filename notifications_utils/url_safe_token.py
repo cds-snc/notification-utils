@@ -1,6 +1,8 @@
-from itsdangerous import URLSafeTimedSerializer
-from notifications_utils.formatters import url_encode_full_stops
 from typing import Any, List
+
+from itsdangerous import URLSafeTimedSerializer
+
+from notifications_utils.formatters import url_encode_full_stops
 
 
 def generate_token(payload: Any, secret: str | List[str]) -> str:

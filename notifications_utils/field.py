@@ -1,15 +1,15 @@
 import re
 from typing import Any, Callable, Dict, List, Literal, Optional
 
-from ordered_set import OrderedSet
 from flask import Markup
+from ordered_set import OrderedSet
 
 from notifications_utils.columns import Columns
 from notifications_utils.formatters import (
-    unescaped_formatted_list,
-    strip_html,
     escape_html,
     strip_dvla_markup,
+    strip_html,
+    unescaped_formatted_list,
 )
 
 

@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import ANY
+
+import pytest
 from notifications_utils.statsd_decorators import statsd, statsd_catch
 
 

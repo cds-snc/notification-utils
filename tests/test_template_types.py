@@ -1,26 +1,25 @@
 import datetime
-from time import process_time
 import os
-from bs4 import BeautifulSoup
-import pytest
-
 from functools import partial
+from time import process_time
 from unittest import mock
+
+import pytest
+from bs4 import BeautifulSoup
 from flask import Markup
 from freezegun import freeze_time
-
 from notifications_utils.formatters import unlink_govuk_escaped
 from notifications_utils.template import (
-    Template,
+    EmailPreviewTemplate,
     HTMLEmailTemplate,
-    LetterPreviewTemplate,
     LetterImageTemplate,
+    LetterPreviewTemplate,
+    LetterPrintTemplate,
     PlainTextEmailTemplate,
     SMSMessageTemplate,
     SMSPreviewTemplate,
+    Template,
     WithSubjectTemplate,
-    EmailPreviewTemplate,
-    LetterPrintTemplate,
 )
 
 

@@ -1,26 +1,28 @@
+import csv
+import os
 import re
 import sys
-import csv
-import phonenumbers
-import os
-from io import StringIO
+from collections import OrderedDict, namedtuple
 from contextlib import suppress
 from functools import lru_cache, partial
+from io import StringIO
 from itertools import islice
-from collections import OrderedDict, namedtuple
-from ordered_set import OrderedSet
 from typing import Callable, Dict, List
-from notifications_utils import SMS_CHAR_COUNT_LIMIT
+
+import phonenumbers
 from flask import current_app
-from notifications_utils.sanitise_text import SanitiseSMS
-from . import EMAIL_REGEX_PATTERN, hostname_part, tld_part
+from ordered_set import OrderedSet
+
+from notifications_utils import SMS_CHAR_COUNT_LIMIT
+from notifications_utils.columns import Cell, Columns, Row
 from notifications_utils.formatters import strip_and_remove_obscure_whitespace, strip_whitespace
-from notifications_utils.template import SMSMessageTemplate, Template
-from notifications_utils.columns import Columns, Row, Cell
 from notifications_utils.international_billing_rates import (
     INTERNATIONAL_BILLING_RATES,
 )
+from notifications_utils.sanitise_text import SanitiseSMS
+from notifications_utils.template import SMSMessageTemplate, Template
 
+from . import EMAIL_REGEX_PATTERN, hostname_part, tld_part
 
 country_code = os.getenv("PHONE_COUNTRY_CODE", "1")
 region_code = os.getenv("PHONE_REGION_CODE", "US")
@@ -139,7 +141,8 @@ class RecipientCSV:
             Columns.make_key(placeholder) for placeholder in self.recipient_column_headers
         ]
         self.recipient_column_headers_lang_check_as_column_keys = [
-            Columns.make_key(placeholder) for placeholder in self.recipient_column_headers_lang_check  # type: ignore
+            Columns.make_key(placeholder)
+            for placeholder in self.recipient_column_headers_lang_check  # type: ignore
         ]
 
     @property

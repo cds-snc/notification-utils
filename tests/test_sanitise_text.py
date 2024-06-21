@@ -1,6 +1,5 @@
 import pytest
-
-from notifications_utils.sanitise_text import SanitiseText, SanitiseSMS, SanitiseASCII
+from notifications_utils.sanitise_text import SanitiseASCII, SanitiseSMS, SanitiseText
 
 
 @pytest.mark.parametrize("chars, cls", [("ÀÂËÎÏÔŒÙÛâçêëîïôœû", SanitiseSMS)])

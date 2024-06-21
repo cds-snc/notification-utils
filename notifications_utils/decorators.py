@@ -1,5 +1,6 @@
-from flask import current_app
 from functools import wraps
+
+from flask import current_app
 
 
 def requires_feature(flag):
