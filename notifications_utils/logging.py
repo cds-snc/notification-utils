@@ -46,7 +46,7 @@ def init_app(app, statsd_client=None):
     if app.config['NOTIFY_ENVIRONMENT'] == 'production':
       app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
     else:
-      app.config.setdefault('NOTIFY_LOG_LEVEL', 'DEBUG')
+      app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
 
     # app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
     app.config.setdefault('NOTIFY_APP_NAME', 'none')
@@ -87,6 +87,7 @@ def init_app(app, statsd_client=None):
     ensure_log_path_exists(app.config['NOTIFY_LOG_PATH'])
     the_handler = get_handler(app)
     loglevel = logging.getLevelName(app.config['NOTIFY_LOG_LEVEL'])
+    print("This is the log level", loglevel)
     loggers = [app.logger, logging.getLogger('utils')]
     for the_logger, handler in product(loggers, [the_handler]):
         the_logger.addHandler(handler)
