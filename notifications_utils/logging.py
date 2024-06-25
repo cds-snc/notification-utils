@@ -47,7 +47,7 @@ def init_app(app, statsd_client=None):
       app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
     else:
       app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
-
+    breakpoint()
     # app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
     app.config.setdefault('NOTIFY_APP_NAME', 'none')
     app.config.setdefault('NOTIFY_LOG_PATH', './log/application.log')
