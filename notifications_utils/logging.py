@@ -81,8 +81,10 @@ def init_app(app, statsd_client=None):
 
     ensure_log_path_exists(app.config['NOTIFY_LOG_PATH'])
     the_handler = get_handler(app)
+
     loglevel = logging.getLevelName(app.config['NOTIFY_LOG_LEVEL'])
     print("This is the log level", loglevel)
+
     loggers = [app.logger, logging.getLogger('utils')]
     for the_logger, handler in product(loggers, [the_handler]):
         the_logger.addHandler(handler)
@@ -115,7 +117,9 @@ def is_200_static_log(log) -> bool:
 def get_handler(app):
     stream_handler = logging.StreamHandler(sys.stdout)
 
+    # stream_handler.setLevel(logging.getLevelName(app.config['NOTIFY_LOG_LEVEL']))
     stream_handler.setLevel(logging.getLevelName(app.config['NOTIFY_LOG_LEVEL']))
+    print("THIS IS THE APPNAMEFILTER variable", logging.getLevelName(app.config['NOTIFY_LOG_LEVEL']))
     stream_handler.addFilter(AppNameFilter(app.config['NOTIFY_APP_NAME']))
     stream_handler.addFilter(RequestIdFilter())
 
