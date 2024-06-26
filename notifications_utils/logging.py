@@ -42,13 +42,12 @@ def build_statsd_line(extra_fields):
 
 
 def init_app(app, statsd_client=None):
-    return False
+
     app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
     app.config.setdefault('NOTIFY_APP_NAME', 'none')
     app.config.setdefault('NOTIFY_LOG_PATH', './log/application.log')
 
-    if True:
-        raise ValueError(f"IN NOTIFICATION-UTILS: NOTIFY_LOG_LEVEL value = {app.config['NOTIFY_LOG_LEVEL']}, app.logging level = {app.logging.level}")
+    print("WHAT IS NOTIFY_LOG_LEVEL 1", app.config['NOTIFY_LOG_LEVEL'])
 
     @app.after_request
     def after_request(response):
@@ -87,12 +86,13 @@ def init_app(app, statsd_client=None):
 
     # Add to see log level while running local 
     loglevel = logging.getLevelName(app.config['NOTIFY_LOG_LEVEL'])
-    print("This is the log level", loglevel)
+    print("WHAT IS NOTIFY_LOG_LEVEL 2", app.config['NOTIFY_LOG_LEVEL'])
 
     loggers = [app.logger, logging.getLogger('utils')]
     for the_logger, handler in product(loggers, [the_handler]):
         the_logger.addHandler(handler)
         the_logger.setLevel(loglevel)
+        print("WHAT IS LOG LEVEL FOR the_logger", the_logger.level)
 
     logging.getLogger('boto3').setLevel(logging.WARNING)
     logging.getLogger('s3transfer').setLevel(logging.WARNING)
@@ -124,6 +124,8 @@ def get_handler(app):
     stream_handler.setLevel(logging.getLevelName(app.config['NOTIFY_LOG_LEVEL']))
     stream_handler.addFilter(AppNameFilter(app.config['NOTIFY_APP_NAME']))
     stream_handler.addFilter(RequestIdFilter())
+
+    print("WHAT IS THE stream_handler", stream_handler.__dict__)
 
     if app.debug:
         # Human readable stdout logs that omit static route 200 responses
