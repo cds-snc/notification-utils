@@ -82,6 +82,7 @@ def init_app(app, statsd_client=None):
     ensure_log_path_exists(app.config['NOTIFY_LOG_PATH'])
     the_handler = get_handler(app)
 
+    # Add to see log level while running local 
     loglevel = logging.getLevelName(app.config['NOTIFY_LOG_LEVEL'])
     print("This is the log level", loglevel)
 
@@ -89,6 +90,7 @@ def init_app(app, statsd_client=None):
     for the_logger, handler in product(loggers, [the_handler]):
         the_logger.addHandler(handler)
         the_logger.setLevel(logging.INFO)
+
     logging.getLogger('boto3').setLevel(logging.WARNING)
     logging.getLogger('s3transfer').setLevel(logging.WARNING)
     app.logger.info("Logging configured")
