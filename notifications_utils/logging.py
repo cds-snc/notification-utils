@@ -114,11 +114,6 @@ def is_200_static_log(log) -> bool:
 
 def get_handler(app):
     stream_handler = logging.StreamHandler(sys.stdout)
-    
-    if app.config['NOTIFY_ENVIRONMENT'] == 'production':
-      app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
-    else:
-      app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
 
     stream_handler.setLevel(logging.getLevelName(app.config['NOTIFY_LOG_LEVEL']))
     stream_handler.addFilter(AppNameFilter(app.config['NOTIFY_APP_NAME']))
