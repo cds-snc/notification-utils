@@ -117,13 +117,12 @@ def is_200_static_log(log) -> bool:
 def get_handler(app):
     stream_handler = logging.StreamHandler(sys.stdout)
 
-    # stream_handler.setLevel(logging.getLevelName(app.config['NOTIFY_LOG_LEVEL']))
     stream_handler.setLevel(logging.getLevelName(app.config['NOTIFY_LOG_LEVEL']))
-    print("THIS IS THE APPNAMEFILTER variable", logging.getLevelName(app.config['NOTIFY_LOG_LEVEL']))
     stream_handler.addFilter(AppNameFilter(app.config['NOTIFY_APP_NAME']))
     stream_handler.addFilter(RequestIdFilter())
 
     if app.debug:
+        print("debug is true")
         # Human readable stdout logs that omit static route 200 responses
         logging.getLogger('werkzeug').addFilter(is_200_static_log)
         stream_handler.setFormatter(logging.Formatter(LOG_FORMAT, TIME_FORMAT))
