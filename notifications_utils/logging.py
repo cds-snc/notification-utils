@@ -88,7 +88,7 @@ def init_app(app, statsd_client=None):
     loggers = [app.logger, logging.getLogger('utils')]
     for the_logger, handler in product(loggers, [the_handler]):
         the_logger.addHandler(handler)
-        the_logger.setLevel(loglevel)
+        the_logger.setLevel(logging.INFO)
     logging.getLogger('boto3').setLevel(logging.WARNING)
     logging.getLogger('s3transfer').setLevel(logging.WARNING)
     app.logger.info("Logging configured")
