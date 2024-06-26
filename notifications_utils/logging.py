@@ -46,6 +46,10 @@ def init_app(app, statsd_client=None):
     app.config.setdefault('NOTIFY_APP_NAME', 'none')
     app.config.setdefault('NOTIFY_LOG_PATH', './log/application.log')
 
+    print("HIT NOTIFICATION-UTILS LOGGING INIT_APP")
+    print("NOTIFICATION-UTILS LOG LEVEL:", app.logging.level)
+    print("NOTIFICATION-UTILS NOTIFY_LOG_LEVEL", app.config['NOTIFY_LOG_LEVEL'])
+
     @app.after_request
     def after_request(response):
         extra_fields = {
