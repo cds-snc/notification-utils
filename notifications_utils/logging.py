@@ -1,11 +1,13 @@
 import logging
+import os
 import sys
-from flask import request, g
-from flask.ctx import has_request_context
 from itertools import product
 from pathlib import Path
-from pythonjsonlogger.jsonlogger import JsonFormatter
 from time import monotonic
+
+from flask import request, g
+from flask.ctx import has_request_context
+from pythonjsonlogger.jsonlogger import JsonFormatter
 
 
 # The "application" and "requestId" fields are non-standard LogRecord attributes added below in the
@@ -42,7 +44,8 @@ def build_statsd_line(extra_fields):
 
 
 def init_app(app, statsd_client=None):
-    app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
+    set_log_level(app)
+
     app.config.setdefault('NOTIFY_APP_NAME', 'none')
     app.config.setdefault('NOTIFY_LOG_PATH', './log/application.log')
 
@@ -87,7 +90,19 @@ def init_app(app, statsd_client=None):
         the_logger.setLevel(loglevel)
     logging.getLogger('boto3').setLevel(logging.WARNING)
     logging.getLogger('s3transfer').setLevel(logging.WARNING)
-    app.logger.info("Logging configured")
+
+    app.logger.info("Logging configured. The log level has been set to %s", app.logger.level)
+
+
+def set_log_level(app):
+    """
+    For production environment, set log level to INFO.
+    For all other environment, set log level to DEBUG.
+    """
+    if os.environ['NOTIFY_ENVIRONMENT'] == 'production':
+        app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
+    else:
+        app.config.setdefault('NOTIFY_LOG_LEVEL', 'DEBUG')
 
 
 def ensure_log_path_exists(path):
