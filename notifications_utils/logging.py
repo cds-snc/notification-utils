@@ -45,13 +45,12 @@ def build_statsd_line(extra_fields):
 
 def init_app(app, statsd_client=None):
 
+    # For production environment, set log level to INFO 
+    # For all other environment, set log level to DEBUG
     if os.environ['NOTIFY_ENVIRONMENT'] == 'production':
       app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
     else:
       app.config.setdefault('NOTIFY_LOG_LEVEL', 'DEBUG')
-    
-    print("NOTIFCATION-UTILS WHAT IS NOTIFY_ENVIRONMENT", os.environ['NOTIFY_ENVIRONMENT'])
-    print("NOTIFICATION-UTILS WHAT IS NOTIFY_LOG_LEVEL", app.config['NOTIFY_LOG_LEVEL'] )
   
     app.config.setdefault('NOTIFY_APP_NAME', 'none')
     app.config.setdefault('NOTIFY_LOG_PATH', './log/application.log')
@@ -90,19 +89,15 @@ def init_app(app, statsd_client=None):
 
     ensure_log_path_exists(app.config['NOTIFY_LOG_PATH'])
     the_handler = get_handler(app)
-
     loglevel = logging.getLevelName(app.config['NOTIFY_LOG_LEVEL'])
-
     loggers = [app.logger, logging.getLogger('utils')]
     for the_logger, handler in product(loggers, [the_handler]):
         the_logger.addHandler(handler)
         the_logger.setLevel(loglevel)
-
     logging.getLogger('boto3').setLevel(logging.WARNING)
     logging.getLogger('s3transfer').setLevel(logging.WARNING)
 
-    print("NOTIFICATION-UTILS WHAT APPLICATION.LOGGER.LEVEL", app.logger.level)
-    app.logger.info("Logging configured")
+    app.logger.info("Logging configured. The log level has been set to %s", app.logger.level) 
 
 
 def ensure_log_path_exists(path):
