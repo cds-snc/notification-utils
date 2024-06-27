@@ -2,8 +2,34 @@ import json
 import logging as builtin_logging
 import os
 import uuid
+import pytest
 from notifications_utils import logging
 from pythonjsonlogger.jsonlogger import JsonFormatter
+
+
+class App:
+    def __init__(self, config=None, debug=False):
+        self.config = config or {}
+        self.debug = debug
+
+
+@pytest.fixture(autouse=True)
+def app(tmpdir, debug=True):
+    return App(config={
+        'NOTIFY_LOG_PATH': str(tmpdir / 'foo'),
+        'NOTIFY_APP_NAME': 'bar',
+        'NOTIFY_LOG_LEVEL': 'DEBUG',
+    }, debug=debug)
+
+
+@pytest.fixture(autouse=True)
+def reset_environment():
+    original_env = os.environ.get('NOTIFY_ENVIRONMENT', None)
+    yield
+    if original_env is not None:
+        os.environ['NOTIFY_ENVIRONMENT'] = original_env
+    else:
+        os.environ.pop('NOTIFY_ENVIRONMENT', None)
 
 
 def test_should_build_complete_log_line():
@@ -92,17 +118,10 @@ def test_should_build_statsd_line_without_service_id_or_time_taken():
     assert logging.build_statsd_line(extra_fields) == "method.endpoint.200"
 
 
-def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir):
-    class App:
-        config = {
-            'NOTIFY_LOG_PATH': str(tmpdir / 'foo'),
-            'NOTIFY_APP_NAME': 'bar',
-            'NOTIFY_LOG_LEVEL': 'ERROR'
-        }
-        debug = True
-
-    app = App()
-
+def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app):
+    del app.config['NOTIFY_LOG_PATH']
+    app.debug = True
+    
     handler = logging.get_handler(app)
 
     assert type(handler) == builtin_logging.StreamHandler
@@ -124,17 +143,8 @@ def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir):
     assert message.endswith(f' {application} the_name debug id "Hello, Cornelius.  Line 42." [in the_path:1999]')
 
 
-def test_get_handler_sets_up_logging_appropriately_without_debug(tmpdir):
-    class App:
-        config = {
-            # make a tempfile called foo
-            'NOTIFY_LOG_PATH': str(tmpdir / 'foo'),
-            'NOTIFY_APP_NAME': 'bar',
-            'NOTIFY_LOG_LEVEL': 'ERROR'
-        }
-        debug = False
-
-    app = App()
+def test_get_handler_sets_up_logging_appropriately_without_debug(app):
+    app.debug = False
     handler = logging.get_handler(app)
     assert type(handler) == builtin_logging.StreamHandler
     assert type(handler.formatter) == JsonFormatter
@@ -162,28 +172,15 @@ def test_get_handler_sets_up_logging_appropriately_without_debug(tmpdir):
     assert message_dict["lineno"] == 1999
 
 
-class App:
-    def __init__(self):
-        self.config = {}
+def test_set_log_level_production(app, reset_environment):
+    del app.config['NOTIFY_LOG_LEVEL'] 
 
-def reset_environment(app):
-    os.environ.pop('NOTIFY_ENVIRONMENT', None)
-    app.config.pop('NOTIFY_LOG_LEVEL', None)
-
-def test_set_log_level_production():
-    app = App()
     os.environ['NOTIFY_ENVIRONMENT'] = 'production'
-    
     logging.set_log_level(app)
     assert app.config['NOTIFY_LOG_LEVEL'] == 'INFO'
-    
-    reset_environment(app)
 
-def test_set_log_level_non_production():
-    app = App()
+
+def test_set_log_level_non_production(app, reset_environment):
     os.environ['NOTIFY_ENVIRONMENT'] = 'development'
-    
     logging.set_log_level(app)
     assert app.config['NOTIFY_LOG_LEVEL'] == 'DEBUG'
-    
-    reset_environment(app)
