@@ -172,7 +172,7 @@ def test_get_handler_sets_up_logging_appropriately_without_debug(app):
     assert message_dict["lineno"] == 1999
 
 
-def test_set_log_level_production(app, reset_environment):
+def test_it_set_log_level_production(app, reset_environment):
     del app.config['NOTIFY_LOG_LEVEL'] 
 
     os.environ['NOTIFY_ENVIRONMENT'] = 'production'
@@ -180,7 +180,7 @@ def test_set_log_level_production(app, reset_environment):
     assert app.config['NOTIFY_LOG_LEVEL'] == 'INFO'
 
 
-def test_set_log_level_non_production(app, reset_environment):
+def test_it_set_log_level_non_production(app, reset_environment):
     os.environ['NOTIFY_ENVIRONMENT'] = 'development'
     logging.set_log_level(app)
     assert app.config['NOTIFY_LOG_LEVEL'] == 'DEBUG'
