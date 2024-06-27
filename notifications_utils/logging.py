@@ -1,12 +1,14 @@
 import logging
 import os
 import sys
-from flask import request, g
-from flask.ctx import has_request_context
 from itertools import product
 from pathlib import Path
-from pythonjsonlogger.jsonlogger import JsonFormatter
 from time import monotonic
+
+from flask import request, g
+from flask.ctx import has_request_context
+from pythonjsonlogger.jsonlogger import JsonFormatter
+
 
 # The "application" and "requestId" fields are non-standard LogRecord attributes added below in the
 # "get_handler" function via filters.  If this causes errors, logging is misconfigured.

@@ -2,6 +2,7 @@ import json
 import logging as builtin_logging
 import os
 import uuid
+
 import pytest
 from notifications_utils import logging
 from pythonjsonlogger.jsonlogger import JsonFormatter
