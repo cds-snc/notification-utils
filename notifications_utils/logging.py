@@ -1,3 +1,4 @@
+from email.mime import application
 import logging
 import sys
 from flask import request, g
@@ -47,6 +48,9 @@ def init_app(app, statsd_client=None):
       app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
     else:
       app.config.setdefault('NOTIFY_LOG_LEVEL', 'DEBUG')
+    
+    print("NOTIFCATION-UTILS WHAT IS NOTIFY_ENVIRONMENT", app.config['NOTIFY_ENVIRONMENT'] )
+    print("NOTIFICATION-UTILS WHAT IS NOTIFY_LOG_LEVEL", app.config['NOTIFY_LOG_LEVEL'] )
   
     app.config.setdefault('NOTIFY_APP_NAME', 'none')
     app.config.setdefault('NOTIFY_LOG_PATH', './log/application.log')
@@ -95,6 +99,8 @@ def init_app(app, statsd_client=None):
 
     logging.getLogger('boto3').setLevel(logging.WARNING)
     logging.getLogger('s3transfer').setLevel(logging.WARNING)
+
+    print("NOTIFICATION-UTILS WHAT APPLICATION.LOGGER.LEVEL", app.logger.level)
     app.logger.info("Logging configured")
 
 
