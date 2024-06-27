@@ -120,8 +120,8 @@ def test_should_build_statsd_line_without_service_id_or_time_taken():
 
 def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app):
     del app.config['NOTIFY_LOG_PATH']
+
     app.debug = True
-    
     handler = logging.get_handler(app)
 
     assert type(handler) == builtin_logging.StreamHandler
@@ -173,7 +173,7 @@ def test_get_handler_sets_up_logging_appropriately_without_debug(app):
 
 
 def test_it_set_log_level_production(app, reset_environment):
-    del app.config['NOTIFY_LOG_LEVEL'] 
+    del app.config['NOTIFY_LOG_LEVEL']
 
     os.environ['NOTIFY_ENVIRONMENT'] = 'production'
     logging.set_log_level(app)
