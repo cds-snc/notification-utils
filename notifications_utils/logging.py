@@ -1,5 +1,6 @@
 from email.mime import application
 import logging
+import os
 import sys
 from flask import request, g
 from flask.ctx import has_request_context
@@ -44,7 +45,7 @@ def build_statsd_line(extra_fields):
 
 def init_app(app, statsd_client=None):
 
-    if app.config['NOTIFY_ENVIRONMENT'] == 'production':
+    if os.environ['NOTIFY_ENVIRONMENT'] == 'production':
       app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
     else:
       app.config.setdefault('NOTIFY_LOG_LEVEL', 'DEBUG')
