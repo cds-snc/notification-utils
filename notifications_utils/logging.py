@@ -8,7 +8,6 @@ from pathlib import Path
 from pythonjsonlogger.jsonlogger import JsonFormatter
 from time import monotonic
 
-
 # The "application" and "requestId" fields are non-standard LogRecord attributes added below in the
 # "get_handler" function via filters.  If this causes errors, logging is misconfigured.
 #     https://docs.python.org/3.8/library/logging.html#logrecord-attributes
@@ -43,14 +42,8 @@ def build_statsd_line(extra_fields):
 
 
 def init_app(app, statsd_client=None):
+    set_log_level(app)
 
-    # For production environment, set log level to INFO 
-    # For all other environment, set log level to DEBUG
-    if os.environ['NOTIFY_ENVIRONMENT'] == 'production':
-      app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
-    else:
-      app.config.setdefault('NOTIFY_LOG_LEVEL', 'DEBUG')
-  
     app.config.setdefault('NOTIFY_APP_NAME', 'none')
     app.config.setdefault('NOTIFY_LOG_PATH', './log/application.log')
 
@@ -96,7 +89,16 @@ def init_app(app, statsd_client=None):
     logging.getLogger('boto3').setLevel(logging.WARNING)
     logging.getLogger('s3transfer').setLevel(logging.WARNING)
 
-    app.logger.info("Logging configured. The log level has been set to %s", app.logger.level) 
+    app.logger.info("Logging configured. The log level has been set to %s", app.logger.level)
+
+
+def set_log_level(app):
+    # For production environment, set log level to INFO
+    # For all other environment, set log level to DEBUG
+    if os.environ['NOTIFY_ENVIRONMENT'] == 'production':
+        app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
+    else:
+        app.config.setdefault('NOTIFY_LOG_LEVEL', 'DEBUG')
 
 
 def ensure_log_path_exists(path):
