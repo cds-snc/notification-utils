@@ -1,5 +1,6 @@
 import json
 import logging as builtin_logging
+import os
 import uuid
 from notifications_utils import logging
 from pythonjsonlogger.jsonlogger import JsonFormatter
@@ -159,3 +160,30 @@ def test_get_handler_sets_up_logging_appropriately_without_debug(tmpdir):
     assert message_dict["message"] == "Hello, Cornelius.  Line 42."
     assert message_dict["pathname"] == "the_path"
     assert message_dict["lineno"] == 1999
+
+
+class App:
+    def __init__(self):
+        self.config = {}
+
+def reset_environment(app):
+    os.environ.pop('NOTIFY_ENVIRONMENT', None)
+    app.config.pop('NOTIFY_LOG_LEVEL', None)
+
+def test_set_log_level_production():
+    app = App()
+    os.environ['NOTIFY_ENVIRONMENT'] = 'production'
+    
+    logging.set_log_level(app)
+    assert app.config['NOTIFY_LOG_LEVEL'] == 'INFO'
+    
+    reset_environment(app)
+
+def test_set_log_level_non_production():
+    app = App()
+    os.environ['NOTIFY_ENVIRONMENT'] = 'development'
+    
+    logging.set_log_level(app)
+    assert app.config['NOTIFY_LOG_LEVEL'] == 'DEBUG'
+    
+    reset_environment(app)
