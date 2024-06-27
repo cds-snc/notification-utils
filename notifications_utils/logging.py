@@ -1,4 +1,3 @@
-from email.mime import application
 import logging
 import os
 import sys
