@@ -95,8 +95,10 @@ def init_app(app, statsd_client=None):
 
 
 def set_log_level(app):
-    # For production environment, set log level to INFO
-    # For all other environment, set log level to DEBUG
+    """
+    For production environment, set log level to INFO.
+    For all other environment, set log level to DEBUG.
+    """
     if os.environ['NOTIFY_ENVIRONMENT'] == 'production':
         app.config.setdefault('NOTIFY_LOG_LEVEL', 'INFO')
     else:
