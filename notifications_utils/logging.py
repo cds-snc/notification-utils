@@ -50,7 +50,7 @@ def init_app(app, statsd_client=None):
     else:
       app.config.setdefault('NOTIFY_LOG_LEVEL', 'DEBUG')
     
-    print("NOTIFCATION-UTILS WHAT IS NOTIFY_ENVIRONMENT", app.config['NOTIFY_ENVIRONMENT'] )
+    print("NOTIFCATION-UTILS WHAT IS NOTIFY_ENVIRONMENT", os.environ['NOTIFY_ENVIRONMENT'])
     print("NOTIFICATION-UTILS WHAT IS NOTIFY_LOG_LEVEL", app.config['NOTIFY_LOG_LEVEL'] )
   
     app.config.setdefault('NOTIFY_APP_NAME', 'none')
