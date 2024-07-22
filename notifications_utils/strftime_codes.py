@@ -22,7 +22,6 @@
 
 import platform
 
-
 NO_PAD_POSIX_CHAR = "-"
 NO_PAD_WINDOWS_CHAR = "#"
 

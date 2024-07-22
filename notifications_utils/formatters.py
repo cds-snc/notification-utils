@@ -1,16 +1,17 @@
-import string
 import re
-from typing import List
+import string
 import urllib
-
-import mistune
-import bleach
 from itertools import count
-from flask import Markup
-from . import email_with_smart_quotes_regex
-from notifications_utils.sanitise_text import SanitiseSMS
-import smartypants
+from typing import List
 
+import bleach
+import mistune
+import smartypants
+from flask import Markup
+
+from notifications_utils.sanitise_text import SanitiseSMS
+
+from . import email_with_smart_quotes_regex
 
 LINK_STYLE = "word-wrap: break-word;"
 

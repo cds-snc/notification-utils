@@ -5,8 +5,7 @@ from time import monotonic
 from unittest.mock import call
 
 import pytest
-from flask import request, g
-
+from flask import g, request
 from notifications_utils import logging
 
 

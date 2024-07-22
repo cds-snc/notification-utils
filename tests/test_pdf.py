@@ -3,10 +3,10 @@ from io import BytesIO
 
 import PyPDF2
 import pytest
+from notifications_utils.pdf import extract_page_from_pdf, pdf_page_count
 from PyPDF2.utils import PdfReadError
 
-from notifications_utils.pdf import pdf_page_count, extract_page_from_pdf
-from tests.pdf_consts import one_page_pdf, multi_page_pdf, not_pdf
+from tests.pdf_consts import multi_page_pdf, not_pdf, one_page_pdf
 
 
 def test_pdf_page_count_src_pdf_is_null():

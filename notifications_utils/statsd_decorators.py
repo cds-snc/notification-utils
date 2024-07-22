@@ -1,8 +1,8 @@
 import functools
-
-from flask import current_app
 from time import monotonic
 from typing import Type
+
+from flask import current_app
 
 
 def statsd(namespace):

@@ -3,8 +3,8 @@ import uuid
 from time import time
 from typing import Any, Dict
 
-from flask_redis import FlaskRedis
 from flask import current_app
+from flask_redis import FlaskRedis
 
 # expose redis exceptions so that they can be caught
 from redis.exceptions import RedisError  # noqa

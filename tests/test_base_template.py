@@ -1,7 +1,7 @@
+from unittest.mock import PropertyMock, patch
+
 import pytest
-from unittest.mock import PropertyMock
-from unittest.mock import patch
-from notifications_utils.template import Template, SMSMessageTemplate, SMSPreviewTemplate, WithSubjectTemplate
+from notifications_utils.template import SMSMessageTemplate, SMSPreviewTemplate, Template, WithSubjectTemplate
 
 
 def test_class():

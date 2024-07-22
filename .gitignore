@@ -63,5 +63,8 @@ target/
 /cache
 /venv
 
+# Ruff formatter cache
+.ruff_cache/
+
 # Linux and Mac Dev Environment
 .DS_Store

@@ -1,13 +1,13 @@
-from math import floor
-import pytest
 import itertools
 import unicodedata
 from functools import partial
-from ordered_set import OrderedSet
+from math import floor
 
+import pytest
 from notifications_utils import SMS_CHAR_COUNT_LIMIT
 from notifications_utils.recipients import Cell, RecipientCSV, Row
 from notifications_utils.template import SMSMessageTemplate
+from ordered_set import OrderedSet
 
 
 def _index_rows(rows):
@@ -979,9 +979,7 @@ def test_multiple_sms_recipient_columns_with_missing_data(column_name):
         """
             names, phone number, {}
             "Joanna and Steve", 07900 900111
-        """.format(
-            column_name
-        ),
+        """.format(column_name),
         template_type="sms",
         international_sms=True,
     )

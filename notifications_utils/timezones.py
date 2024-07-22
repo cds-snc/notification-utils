@@ -1,8 +1,7 @@
 import os
 
-from dateutil import parser
 import pytz
-
+from dateutil import parser
 
 local_timezone = pytz.timezone(os.getenv("TIMEZONE", "America/Toronto"))
 

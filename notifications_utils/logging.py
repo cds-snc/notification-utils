@@ -1,16 +1,15 @@
-from itertools import product
-from pathlib import Path
+import logging
+import logging.handlers
 import re
 import sys
-
-from flask import request, g
-from flask.ctx import has_request_context
-from pythonjsonlogger.jsonlogger import JsonFormatter as BaseJSONFormatter
+from itertools import product
+from pathlib import Path
 from time import monotonic
 from typing import Any
 
-import logging
-import logging.handlers
+from flask import g, request
+from flask.ctx import has_request_context
+from pythonjsonlogger.jsonlogger import JsonFormatter as BaseJSONFormatter
 
 LOG_FORMAT = "%(asctime)s %(app_name)s %(name)s %(levelname)s " '%(request_id)s "%(message)s" [in %(pathname)s:%(lineno)d]'
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
