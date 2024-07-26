@@ -21,3 +21,7 @@ poetry completions zsh > ~/.zfunc/_poetry
 
 # Install dependencies
 poetry install
+
+# Install pre-commit hooks
+git config --global --add safe.directory /workspaces/notification-utils
+poetry run pre-commit install
