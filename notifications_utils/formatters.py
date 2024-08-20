@@ -1,3 +1,4 @@
+import os
 import string
 import re
 import urllib
@@ -10,7 +11,7 @@ from . import email_with_smart_quotes_regex
 from notifications_utils.sanitise_text import SanitiseSMS
 import smartypants
 
-
+PARAGRAPH_STYLE = 'Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;'
 LINK_STYLE = 'word-wrap: break-word; color: #004795;'
 
 OBSCURE_WHITESPACE = (
@@ -285,6 +286,83 @@ def strip_unsupported_characters(value):
 def normalise_whitespace(value):
     # leading and trailing whitespace removed, all inner whitespace becomes a single space
     return ' '.join(strip_and_remove_obscure_whitespace(value).split())
+
+
+def get_action_links(html: str) -> list[str]:
+    """Get the action links from the html email body and return them as a list. (insert_action_link helper)"""
+    # set regex to find action link in html, should look like this:
+    # &gt;&gt;<a ...>link_text</a>
+    action_link_regex = re.compile(
+        r'(>|(&gt;)){2}(<a style=".+?" href=".+?"( title=".+?")? target="_blank">)(.*?</a>)'
+    )
+
+    return re.findall(action_link_regex, html)
+
+
+def get_img_link() -> str:
+    """Get action link image url for the current environment. (insert_action_link helper)"""
+    env_map = {
+        'production': 'prod',
+        'staging': 'staging',
+        'performance': 'staging',
+    }
+    # default to dev if NOTIFY_ENVIRONMENT isn't provided
+    img_env = env_map.get(os.environ.get('NOTIFY_ENVIRONMENT'), 'dev')
+    return f'https://{img_env}-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
+
+
+def insert_action_link(html: str) -> str:
+    """
+    Finds an action link and replaces it with the desired format. The action link is placed on it's own line, the link
+    image is inserted into the link, and the styling is updated appropriately.
+    """
+    # common html used
+    p_start = f'<p style="{PARAGRAPH_STYLE}">'
+    p_end = '</p>'
+
+    action_link_list = get_action_links(html)
+
+    img_link = get_img_link()
+
+    for item in action_link_list:
+        # Puts the action link in a new <p> tag with appropriate styling.
+        # item[0] and item[1] values will be '&gt;' symbols
+        # item[2] is the html link <a ...> tag info
+        # item[-1] is the link text and end of the link tag </a>
+        action_link = (
+            f'{item[2]}<img src="{img_link}" alt="call to action img" '
+            f'style="vertical-align: middle;"> <b>{item[-1][:-4]}</b></a>'
+        )
+
+        action_link_p_tags = f'{p_start}{action_link}{p_end}'
+
+        # get the text around the action link if there is any
+        # ensure there are only two items in list with maxsplit
+        before_link, after_link = html.split("".join(item), maxsplit=1)
+
+        # value is the converted action link if there's nothing around it, otherwise <p> tags will need to be
+        # closed / open around the action link
+        if before_link == p_start and after_link == p_end:
+            # action link exists on its own, unlikely to happen
+            html = action_link_p_tags
+        elif before_link.endswith(p_start) and after_link.startswith(p_end):
+            # an action link on it's own line, as it should be
+            html = f'{before_link}{action_link}{after_link}'
+        elif before_link.endswith(p_start):
+            # action link is on a newline, but has something after it on that line
+            html = f'{before_link}{action_link}{p_end}{p_start}{after_link}'
+        elif after_link == p_end:
+            # paragraph ends with action link
+            html = f'{before_link}{"</p>" if "<p" in before_link else ""}{action_link_p_tags}'
+        else:
+            # there's text before and after the action link within the paragraph
+            html = (
+                f'{before_link}{"</p>" if "<p" in before_link else ""}'
+                f'{action_link_p_tags}'
+                f'{p_start}{after_link}'
+            )
+
+    return html
 
 
 class NotifyLetterMarkdownPreviewRenderer(mistune.Renderer):

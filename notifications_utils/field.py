@@ -56,6 +56,8 @@ class Placeholder:
 
 class Field:
     placeholder_pattern = re.compile(
+        # this is simply the below regex on one line for easier analysis
+        # r'\({2}([\w \-]+(?:\?{2}.*?(?!\({2}[\w \-]+\){2}.*?))?)\){2}'
         r'\({2}'        # opening ((
         r'('            # start capture group
         r'[\w \-]+'     # placeholder name that allows only alpha numberic characters, space and dash

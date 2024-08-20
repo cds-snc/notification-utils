@@ -20,7 +20,7 @@ from notifications_utils.formatters import (
     strip_and_remove_obscure_whitespace,
     remove_smart_quotes_from_email_addresses,
     strip_unsupported_characters,
-    normalise_whitespace
+    normalise_whitespace,
 )
 from notifications_utils.template import (
     HTMLEmailTemplate,
@@ -665,7 +665,9 @@ def test_pluses_dont_render_as_lists(markdown_function, expected):
             '\nnew paragraph'
         ),
     ],
-))
+),
+    ids=['notify_letter_preview_markdown', 'notify_email_markdown', 'notify_plain_text_email_markdown']
+)
 def test_paragraphs(markdown_function, expected):
     assert markdown_function(
         'line one\n'
