@@ -1,4 +1,3 @@
-import pytest
 from notifications_utils.clients.redis.cache_keys import CACHE_KEYS, CACHE_KEYS_ALL
 
 
