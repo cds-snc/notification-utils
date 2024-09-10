@@ -59,6 +59,7 @@ clean-docker-containers: ## Clean up any remaining docker containers
 format:
 	ruff check --select I --fix .
 	ruff format .
+	ruff check
 	poetry run mypy .
 	poetry sort
 
