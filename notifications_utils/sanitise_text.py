@@ -13,8 +13,8 @@ class SanitiseText:
         "’": "'",  # RIGHT SINGLE QUOTATION MARK (U+2019)
         "“": '"',  # LEFT DOUBLE QUOTATION MARK (U+201C)
         "”": '"',  # RIGHT DOUBLE QUOTATION MARK (U+201D)
-        "\u200B": "",  # ZERO WIDTH SPACE (U+200B)
-        "\u00A0": "",  # NON BREAKING WHITE SPACE (U+200B)
+        "\u200b": "",  # ZERO WIDTH SPACE (U+200B)
+        "\u00a0": "",  # NON BREAKING WHITE SPACE (U+200B)
         "\t": " ",  # TAB
     }
 
