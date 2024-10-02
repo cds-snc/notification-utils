@@ -168,9 +168,9 @@ def test_preserves_whitespace_when_making_links(markdown_function, expected_outp
 @pytest.mark.parametrize(
     "template_content,expected",
     [
-        ("gov.uk", "gov.\u200Buk"),
-        ("GOV.UK", "GOV.\u200BUK"),
-        ("Gov.uk", "Gov.\u200Buk"),
+        ("gov.uk", "gov.\u200buk"),
+        ("GOV.UK", "GOV.\u200bUK"),
+        ("Gov.uk", "Gov.\u200buk"),
         ("https://gov.uk", "https://gov.uk"),
         ("https://www.gov.uk", "https://www.gov.uk"),
         ("www.gov.uk", "www.gov.uk"),
@@ -951,7 +951,7 @@ def test_make_list_from_linebreaks():
         """
         \t    bar
     """,
-        " \u180E\u200B \u200C bar \u200D \u2060\uFEFF ",
+        " \u180e\u200b \u200c bar \u200d \u2060\ufeff ",
     ],
 )
 def test_strip_whitespace(value):
@@ -963,7 +963,7 @@ def test_strip_whitespace(value):
     [
         "notifications-email",
         "  \tnotifications-email \x0c ",
-        "\rn\u200Coti\u200Dfi\u200Bcati\u2060ons-\u180Eemai\uFEFFl\uFEFF",
+        "\rn\u200coti\u200dfi\u200bcati\u2060ons-\u180eemai\ufeffl\ufeff",
     ],
 )
 def test_strip_and_remove_obscure_whitespace(value):
@@ -996,7 +996,7 @@ def test_strip_unsupported_characters():
 
 
 def test_normalise_whitespace():
-    assert normalise_whitespace("\u200C Your tax   is\ndue\n\n") == "Your tax is due"
+    assert normalise_whitespace("\u200c Your tax   is\ndue\n\n") == "Your tax is due"
 
 
 class TestAddLanguageDivs:

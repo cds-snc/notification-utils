@@ -65,8 +65,8 @@ def test_get_handlers_sets_up_logging_appropriately_with_debug(tmpdir):
     handlers = logging.get_handlers(app)
 
     assert len(handlers) == 1
-    assert type(handlers[0]) == builtin_logging.StreamHandler
-    assert type(handlers[0].formatter) == logging.CustomLogFormatter
+    assert type(handlers[0]) is builtin_logging.StreamHandler
+    assert type(handlers[0].formatter) is logging.CustomLogFormatter
     assert not (tmpdir / "foo").exists()
 
 
@@ -85,8 +85,8 @@ def test_get_handlers_sets_up_logging_appropriately_without_debug(tmpdir):
     handlers = logging.get_handlers(app)
 
     assert len(handlers) == 1
-    assert type(handlers[0]) == builtin_logging.StreamHandler
-    assert type(handlers[0].formatter) == logging.JSONFormatter
+    assert type(handlers[0]) is builtin_logging.StreamHandler
+    assert type(handlers[0].formatter) is logging.JSONFormatter
 
     # assert type(handlers[1]) == builtin_logging_handlers.WatchedFileHandler
     # assert type(handlers[1].formatter) == logging.JSONFormatter

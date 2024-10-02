@@ -16,12 +16,12 @@ from . import email_with_smart_quotes_regex
 LINK_STYLE = "word-wrap: break-word;"
 
 OBSCURE_WHITESPACE = (
-    "\u180E"  # Mongolian vowel separator
-    "\u200B"  # zero width space
-    "\u200C"  # zero width non-joiner
-    "\u200D"  # zero width joiner
+    "\u180e"  # Mongolian vowel separator
+    "\u200b"  # zero width space
+    "\u200c"  # zero width non-joiner
+    "\u200d"  # zero width joiner
     "\u2060"  # word joiner
-    "\uFEFF"  # zero width non-breaking space
+    "\ufeff"  # zero width non-breaking space
 )
 
 EMAIL_P_OPEN_TAG = '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
@@ -85,7 +85,7 @@ url = re.compile(mistune.InlineGrammar.url.pattern[1:])
 
 
 def unlink_govuk_escaped(message):
-    return re.sub(govuk_not_a_link, r"\1" + ".\u200B" + r"\2", message)  # Unicode zero-width space
+    return re.sub(govuk_not_a_link, r"\1" + ".\u200b" + r"\2", message)  # Unicode zero-width space
 
 
 def nl2br(value):

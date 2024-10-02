@@ -484,9 +484,9 @@ def test_HTML_template_has_URLs_replaced_with_links(content, html_snippet):
 @pytest.mark.parametrize(
     "template_content,expected",
     [
-        ("gov.uk", "gov.\u200Buk"),
-        ("GOV.UK", "GOV.\u200BUK"),
-        ("Gov.uk", "Gov.\u200Buk"),
+        ("gov.uk", "gov.\u200buk"),
+        ("GOV.UK", "GOV.\u200bUK"),
+        ("Gov.uk", "Gov.\u200buk"),
         ("https://gov.uk", "https://gov.uk"),
         ("https://www.gov.uk", "https://www.gov.uk"),
         ("www.gov.uk", "www.gov.uk"),
@@ -2064,7 +2064,7 @@ def test_whitespace_in_subjects(template_class, subject, extra_args):
 )
 def test_whitespace_in_subject_placeholders(template_class):
     assert (
-        template_class({"content": "", "subject": "\u200C Your tax   ((status))"}, values={"status": " is\ndue "}).subject
+        template_class({"content": "", "subject": "\u200c Your tax   ((status))"}, values={"status": " is\ndue "}).subject
         == "Your tax is due"
     )
 
