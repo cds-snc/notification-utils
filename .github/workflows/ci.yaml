@@ -7,13 +7,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@main
-    - name: docker://python:3.12
-      uses: docker://python:3.12  # utils is currently 3.12 so we need to use 3.12 in ci
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.12
 
     - name: Install poetry
       env:
         POETRY_VERSION: "1.7.1"
       run: pip install poetry==${POETRY_VERSION} poetry-plugin-sort && poetry --version
+
+    - name: Use Python 3.12 for Poetry
+      run: poetry env use python3.12
 
     - name: Install requirements
       run: poetry install
