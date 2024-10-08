@@ -75,7 +75,7 @@
         </p>
       {% endif %}
 
-      <div style="padding: 0 10px">
+      <div style="padding: 0 10px" dir={{ 'rtl' if text_direction_rtl else 'ltr' }}>
         {{ body }}
       </div>
 
