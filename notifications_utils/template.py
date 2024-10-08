@@ -418,7 +418,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
                 "brand_name": self.brand_name,
                 "alt_text_en": self.alt_text_en,
                 "alt_text_fr": self.alt_text_fr,
-                "text_direction_rtl": self.text_direction_rtl
+                "text_direction_rtl": self.text_direction_rtl,
             }
         )
 
