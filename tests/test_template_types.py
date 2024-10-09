@@ -2256,26 +2256,27 @@ def test_image_not_present_if_no_logo(template_class):
     # can't test that the html doesn't move in utils - tested in template preview instead
     assert "<img" not in str(template_class({"content": "Foo", "subject": "Subject"}, logo_file_name=None))
 
+
 @pytest.mark.parametrize(
     "template, expected_direction",
     [
         (
             {
-                "content": "hello world", 
+                "content": "hello world",
                 "subject": "",
                 "text_direction_rtl": True,
             },
-            "rtl"
+            "rtl",
         ),
         (
             {
-                "content": "hello world", 
+                "content": "hello world",
                 "subject": "",
                 "text_direction_rtl": False,
             },
-            "ltr"
-        )
-    ]
+            "ltr",
+        ),
+    ],
 )
 def test_template_shown_in_correct_direction(template, expected_direction):
     html_template = HTMLEmailTemplate(template)
