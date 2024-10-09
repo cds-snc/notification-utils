@@ -2255,3 +2255,33 @@ def test_image_class_applied_to_logo(template_class, filename, expected_html_cla
 def test_image_not_present_if_no_logo(template_class):
     # can't test that the html doesn't move in utils - tested in template preview instead
     assert "<img" not in str(template_class({"content": "Foo", "subject": "Subject"}, logo_file_name=None))
+
+@pytest.mark.parametrize(
+    "template, expected_direction",
+    [
+        (
+            {
+                "content": "hello world", 
+                "subject": "",
+                "text_direction_rtl": True,
+            },
+            "rtl"
+        ),
+        (
+            {
+                "content": "hello world", 
+                "subject": "",
+                "text_direction_rtl": False,
+            },
+            "ltr"
+        )
+    ]
+)
+def test_template_shown_in_correct_direction(template, expected_direction):
+    html_template = HTMLEmailTemplate(template)
+    preview_template = EmailPreviewTemplate(template)
+
+    assert html_template.text_direction_rtl == (expected_direction == "rtl")
+    assert preview_template.text_direction_rtl == (expected_direction == "rtl")
+    assert f'dir="{expected_direction}"' in str(html_template)
+    assert f'dir="{expected_direction}"' in str(preview_template)
