@@ -351,13 +351,10 @@ def test_hrule(markdown_function, expected):
                 '<table role="presentation" style="padding: 0 0 20px 0;">'
                 "<tr>"
                 '<td style="font-family: Helvetica, Arial, sans-serif;">'
-                '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
-                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-                'line-height: 25px; color: #0B0C0C;">one</li>'
-                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-                'line-height: 25px; color: #0B0C0C;">two</li>'
-                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-                'line-height: 25px; color: #0B0C0C;">three</li>'
+                '<ol style="padding: 0; list-style-type: decimal; margin-inline-start: 20px;">'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">one</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">two</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">three</li>'
                 "</ol>"
                 "</td>"
                 "</tr>"
@@ -414,13 +411,10 @@ def test_ordered_list(markdown_function, markdown_input, expected):
                 '<table role="presentation" style="padding: 0 0 20px 0;">'
                 "<tr>"
                 '<td style="font-family: Helvetica, Arial, sans-serif;">'
-                '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
-                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-                'line-height: 25px; color: #0B0C0C;">one</li>'
-                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-                'line-height: 25px; color: #0B0C0C;">two</li>'
-                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-                'line-height: 25px; color: #0B0C0C;">three</li>'
+                '<ul style="padding: 0; list-style-type: disc; margin-inline-start: 20px;">'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">one</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">two</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">three</li>'
                 "</ul>"
                 "</td>"
                 "</tr>"
@@ -506,8 +500,8 @@ def test_pluses_dont_render_as_lists(markdown_function, expected):
             "* **title**: description",
             '<table role="presentation" style="padding: 0 0 20px 0;">'
             '<tr><td style="font-family: Helvetica, Arial, sans-serif;">'
-            '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">'
+            '<ul style="padding: 0; list-style-type: disc; margin-inline-start: 20px;">'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">'
             "<strong>title</strong>: description</li></ul></td></tr></table>",
         ],
     ),
@@ -1065,7 +1059,7 @@ bonjour
 1. item 2
 1. item 3
 [[/fr]]""",
-            f'<div lang="fr-ca">{EMAIL_P_OPEN_TAG}Le français suis l\'anglais{EMAIL_P_CLOSE_TAG}</div><div lang="en-ca"><table role="presentation" style="padding: 0 0 20px 0;"><tr><td style="font-family: Helvetica, Arial, sans-serif;"><ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;"><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 1</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 2</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 3</li></ul></td></tr></table></div><div lang="fr-ca">{EMAIL_P_OPEN_TAG}bonjour{EMAIL_P_CLOSE_TAG}<table role="presentation" style="padding: 0 0 20px 0;"><tr><td style="font-family: Helvetica, Arial, sans-serif;"><ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;"><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 1</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 2</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 3</li></ol></td></tr></table></div>',  # noqa
+            f'<div lang="fr-ca">{EMAIL_P_OPEN_TAG}Le français suis l\'anglais{EMAIL_P_CLOSE_TAG}</div><div lang="en-ca"><table role="presentation" style="padding: 0 0 20px 0;"><tr><td style="font-family: Helvetica, Arial, sans-serif;"><ul style="padding: 0; list-style-type: disc; margin-inline-start: 20px;"><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">item 1</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">item 2</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">item 3</li></ul></td></tr></table></div><div lang="fr-ca">{EMAIL_P_OPEN_TAG}bonjour{EMAIL_P_CLOSE_TAG}<table role="presentation" style="padding: 0 0 20px 0;"><tr><td style="font-family: Helvetica, Arial, sans-serif;"><ol style="padding: 0; list-style-type: decimal; margin-inline-start: 20px;"><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">item 1</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">item 2</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">item 3</li></ol></td></tr></table></div>',  # noqa
         ),
         ("[[en]]No closing tag", f"{EMAIL_P_OPEN_TAG}[[en]]No closing tag{EMAIL_P_CLOSE_TAG}"),
         ("No opening tag[[/en]]", f"{EMAIL_P_OPEN_TAG}No opening tag[[/en]]{EMAIL_P_CLOSE_TAG}"),
