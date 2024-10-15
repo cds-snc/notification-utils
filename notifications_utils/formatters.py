@@ -417,7 +417,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
                 '<table role="presentation" style="padding: 0 0 20px 0;">'
                 "<tr>"
                 '<td style="font-family: Helvetica, Arial, sans-serif;">'
-                '<ol style="padding: 0; list-style-type: decimal; margin-inline-start: 20px;">'
+                '<ol style="margin: 0; padding: 0; list-style-type: decimal; margin-inline-start: 20px;">'
                 "{}"
                 "</ol>"
                 "</td>"
@@ -429,7 +429,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
                 '<table role="presentation" style="padding: 0 0 20px 0;">'
                 "<tr>"
                 '<td style="font-family: Helvetica, Arial, sans-serif;">'
-                '<ul style="padding: 0; list-style-type: disc; margin-inline-start: 20px;">'
+                '<ul style="margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;">'
                 "{}"
                 "</ul>"
                 "</td>"
