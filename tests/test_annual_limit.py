@@ -224,3 +224,29 @@ def test_increment_email_failed(mock_annual_limit_client, mock_notification_coun
     for field in mock_notification_count_types:
         if field != EMAIL_FAILED:
             assert mock_annual_limit_client.get_notification_count(mocked_service_id, field) == 1
+
+
+@freeze_time("2024-10-25 12:00:00.000000")
+def test_check_has_warning_been_sent(mock_annual_limit_client, mocked_service_id):
+    mock_annual_limit_client.set_annual_limit_status(mocked_service_id, NEAR_SMS_LIMIT, datetime.utcnow())
+    mock_annual_limit_client.set_annual_limit_status(mocked_service_id, NEAR_EMAIL_LIMIT, datetime.utcnow())
+
+    assert mock_annual_limit_client.check_has_warning_been_sent(mocked_service_id, "sms") == datetime.utcnow().strftime(
+        "%Y-%m-%d"
+    )
+    assert mock_annual_limit_client.check_has_warning_been_sent(mocked_service_id, "email") == datetime.utcnow().strftime(
+        "%Y-%m-%d"
+    )
+
+
+@freeze_time("2024-10-25 12:00:00.000000")
+def test_check_has_over_limit_been_sent(mock_annual_limit_client, mocked_service_id):
+    mock_annual_limit_client.set_annual_limit_status(mocked_service_id, OVER_SMS_LIMIT, datetime.utcnow())
+    mock_annual_limit_client.set_annual_limit_status(mocked_service_id, OVER_EMAIL_LIMIT, datetime.utcnow())
+
+    assert mock_annual_limit_client.check_has_over_limit_been_sent(mocked_service_id, "sms") == datetime.utcnow().strftime(
+        "%Y-%m-%d"
+    )
+    assert mock_annual_limit_client.check_has_over_limit_been_sent(mocked_service_id, "email") == datetime.utcnow().strftime(
+        "%Y-%m-%d"
+    )

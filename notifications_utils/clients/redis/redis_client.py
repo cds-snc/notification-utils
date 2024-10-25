@@ -235,7 +235,7 @@ class RedisClient:
 
         if self.active:
             try:
-                return self.redis_store.hset(key, field, value)
+                self.redis_store.hset(key, field, value)
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "set_hash_value", key)
 
