@@ -417,7 +417,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
                 '<table role="presentation" style="padding: 0 0 20px 0;">'
                 "<tr>"
                 '<td style="font-family: Helvetica, Arial, sans-serif;">'
-                '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
+                '<ol style="margin: 0; padding: 0; list-style-type: decimal; margin-inline-start: 20px;">'
                 "{}"
                 "</ol>"
                 "</td>"
@@ -429,7 +429,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
                 '<table role="presentation" style="padding: 0 0 20px 0;">'
                 "<tr>"
                 '<td style="font-family: Helvetica, Arial, sans-serif;">'
-                '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
+                '<ul style="margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;">'
                 "{}"
                 "</ul>"
                 "</td>"
@@ -440,8 +440,8 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
 
     def list_item(self, text):
         return (
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-            'line-height: 25px; color: #0B0C0C;">'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; '
+            'line-height: 25px; color: #0B0C0C; text-align:start;">'
             "{}"
             "</li>"
         ).format(text.strip())

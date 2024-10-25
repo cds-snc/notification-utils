@@ -375,6 +375,8 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.allow_html = allow_html
         self.alt_text_en = alt_text_en
         self.alt_text_fr = alt_text_fr
+        self.text_direction_rtl = template.get("text_direction_rtl", False)
+
         # set this again to make sure the correct either utils / downstream local jinja is used
         # however, don't set if we are in a test environment (to preserve the above mock)
         if "pytest" not in sys.modules:
@@ -416,6 +418,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
                 "brand_name": self.brand_name,
                 "alt_text_en": self.alt_text_en,
                 "alt_text_fr": self.alt_text_fr,
+                "text_direction_rtl": self.text_direction_rtl,
             }
         )
 
@@ -483,6 +486,7 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         self.allow_html = allow_html
         self.alt_text_en = alt_text_en
         self.alt_text_fr = alt_text_fr
+        self.text_direction_rtl = template.get("text_direction_rtl", False)
 
     def __str__(self):
         return Markup(
@@ -509,6 +513,7 @@ class EmailPreviewTemplate(WithSubjectTemplate):
                     "asset_domain": self.asset_domain,
                     "alt_text_en": self.alt_text_en,
                     "alt_text_fr": self.alt_text_fr,
+                    "text_direction_rtl": self.text_direction_rtl,
                 }
             )
         )
