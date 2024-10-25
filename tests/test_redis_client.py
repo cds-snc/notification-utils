@@ -167,6 +167,22 @@ def test_should_build_rate_limit_cache_key(sample_service):
     assert rate_limit_cache_key(sample_service.id, "TEST") == "{}-TEST".format(sample_service.id)
 
 
+def test_get_hash_field(mocked_redis_client):
+    key = "12345"
+    field = "template-1111"
+    mocked_redis_client.redis_store.hget = Mock(return_value=b"8")
+    assert mocked_redis_client.get_hash_field(key, field) == b"8"
+    mocked_redis_client.redis_store.hget.assert_called_with(key, field)
+
+
+def test_set_hash_value(mocked_redis_client):
+    key = "12345"
+    field = "template-1111"
+    value = 8
+    mocked_redis_client.set_hash_value(key, field, value)
+    mocked_redis_client.redis_store.hset.assert_called_with(key, field, value)
+
+
 def test_decrement_hash_value_should_decrement_value_by_one_for_key(mocked_redis_client):
     key = "12345"
     value = "template-1111"

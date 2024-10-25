@@ -245,20 +245,25 @@ class RedisClient:
     def increment_hash_value(self, key, value, raise_exception=False, incr_by=1):
         key = prepare_value(key)
         value = prepare_value(value)
+
         if self.active:
             try:
                 return self.redis_store.hincrby(key, value, incr_by)
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "increment_hash_value", key)
+        return None
 
     def get_hash_field(self, key, field, raise_exception=False):
         key = prepare_value(key)
         field = prepare_value(field)
+
         if self.active:
             try:
                 return self.redis_store.hget(key, field)
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "get_hash_field", key)
+
+        return None
 
     def get_all_from_hash(self, key, raise_exception=False):
         key = prepare_value(key)
