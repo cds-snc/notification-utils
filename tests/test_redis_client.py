@@ -40,6 +40,7 @@ def build_redis_client(app, mocked_redis_pipeline, mocker):
     mocker.patch.object(redis_client.redis_store, "set")
     mocker.patch.object(redis_client.redis_store, "hincrby")
     mocker.patch.object(redis_client.redis_store, "hgetall", return_value={b"template-1111": b"8", b"template-2222": b"8"})
+    mocker.patch.object(redis_client.redis_store, "hset")
     mocker.patch.object(redis_client.redis_store, "hmset")
     mocker.patch.object(redis_client.redis_store, "expire")
     mocker.patch.object(redis_client.redis_store, "delete")
