@@ -1,4 +1,4 @@
-"""This module is used to calculate the bounce rate for a service. It uses Redis to store the total number of hard bounces"""
+"""This module stores daily notification counts and annual limit statuses for a service in Redis."""
 
 from datetime import datetime
 
