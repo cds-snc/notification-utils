@@ -81,6 +81,20 @@ class RedisClient:
             return self.scripts["delete-keys-by-pattern"](args=[pattern])
         return 0
 
+    def bulk_set_hash_fields(self, pattern, mapping, raise_exception=False):
+        """
+        Bulk set hash fields.
+        :param pattern: the pattern to match keys
+        :param mappting: the mapping of fields to set
+        :param raise_exception: True if we should allow the exception to bubble up
+        """
+        if self.active:
+            try:
+                for key in self.redis_store.scan_iter(pattern):
+                    self.redis_store.hmset(key, mapping)
+            except Exception as e:
+                self.__handle_exception(e, raise_exception, "bulk_set_hash_fields", pattern)
+
     def exceeded_rate_limit(self, cache_key, limit, interval, raise_exception=False):
         """
         Rate limiting.

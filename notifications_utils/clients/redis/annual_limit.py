@@ -58,6 +58,16 @@ class RedisAnnualLimit:
         """
         return decode_byte_dict(self._redis_client.get_all_from_hash(notifications_key(service_id)))
 
+    def reset_all_notification_counts(self):
+        """
+        Resets all daily notification metrics for all services. Uses non-blocking scan_iter method to avoid locking the Redis server.
+        """
+        pattern = notifications_key("*")  # All notification keys regardless of service_id
+
+        self._redis_client.bulk_set_hash_fields(
+            pattern, ({"email_delivered": 0, "email_failed": 0, "sms_delivered": 0, "sms_failed": 0})
+        )
+
     def clear_notification_counts(self, service_id: str):
         """
         Clears all daily notification metrics for a service.

@@ -127,6 +127,31 @@ def test_clear_notification_counts(mock_annual_limit_client, mock_notification_c
     assert len(mock_annual_limit_client.get_all_notification_counts(mocked_service_id)) == 0
 
 
+@pytest.mark.parametrize(
+    "service_ids",
+    [
+        [
+            str(uuid.uuid4()),
+            str(uuid.uuid4()),
+            str(uuid.uuid4()),
+            str(uuid.uuid4()),
+        ]
+    ],
+)
+def test_bulk_reset_notification_counts(mock_annual_limit_client, mock_notification_count_types, service_ids):
+    for service_id in service_ids:
+        for field in mock_notification_count_types:
+            mock_annual_limit_client.increment_notification_count(service_id, field)
+        assert len(mock_annual_limit_client.get_all_notification_counts(service_id)) == 4
+
+    mock_annual_limit_client.reset_all_notification_counts()
+
+    for service_id in service_ids:
+        assert len(mock_annual_limit_client.get_all_notification_counts(service_id)) == 4
+        for field in mock_notification_count_types:
+            assert mock_annual_limit_client.get_notification_count(service_id, field) == 0
+
+
 def test_set_annual_limit_status(mock_annual_limit_client, mocked_service_id):
     mock_annual_limit_client.set_annual_limit_status(mocked_service_id, NEAR_SMS_LIMIT, datetime.utcnow())
     result = mock_annual_limit_client.get_annual_limit_status(mocked_service_id, NEAR_SMS_LIMIT)

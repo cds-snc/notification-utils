@@ -184,6 +184,51 @@ def test_set_hash_value(mocked_redis_client):
     mocked_redis_client.redis_store.hset.assert_called_with(key, field, value)
 
 
+@pytest.mark.parametrize(
+    "hash, updates, expected",
+    [
+        (
+            {
+                "key1": {
+                    "field1": "value1",
+                    "field2": 2,
+                    "field3": "value3".encode("utf-8"),
+                },
+                "key2": {
+                    "field1": "value1",
+                    "field2": 2,
+                    "field3": "value3".encode("utf-8"),
+                },
+                "key3": {
+                    "field1": "value1",
+                    "field2": 2,
+                    "field3": "value3".encode("utf-8"),
+                },
+            },
+            {
+                "field1": "value2",
+                "field2": 3,
+                "field3": "value4".encode("utf-8"),
+            },
+            {
+                b"field1": b"value2",
+                b"field2": b"3",
+                b"field3": b"value4",
+            },
+        )
+    ],
+)
+def test_bulk_set_hash_fields(better_mocked_redis_client, hash, updates, expected):
+    for key, fields in hash.items():
+        for field, value in fields.items():
+            better_mocked_redis_client.set_hash_value(key, field, value)
+
+    better_mocked_redis_client.bulk_set_hash_fields("key*", mapping=updates)
+
+    for key, _ in hash.items():
+        assert better_mocked_redis_client.redis_store.hgetall(key) == expected
+
+
 def test_decrement_hash_value_should_decrement_value_by_one_for_key(mocked_redis_client):
     key = "12345"
     value = "template-1111"
