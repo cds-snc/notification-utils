@@ -113,37 +113,13 @@ class RedisClient:
                     key = prepare_value(key)
                     pipe.hdel(key, *fields)
                 result = pipe.execute()
+                # TODO: May need to double check that the pipeline result count matches the number of hashes deleted
+                # and retry any failures
                 return result
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "expire_hash_fields", hashes)
-
-    def set_hash_fields_by_pattern_or_keys(self, mapping, keys: str | list = None, raise_exception=False):
-        """
-        Bulk set hash fields.
-        :param pattern: the pattern to match keys or a list of keys to set
-        :param mappting: the mapping of fields to set
-        :param raise_exception: True if we should allow the exception to bubble up
-        """
-        if self.active:
-            try:
-                for key in self.redis_store.hscan_iter(keys):
-                    self.redis_store.hmset(key, mapping)
-            except Exception as e:
-                self.__handle_exception(e, raise_exception, "bulk_set_hash_fields", keys)
-
-    def set_hash_fields_by_keys(self, keys, mapping, raise_exception=False):
-        """
-        Bulk set hash fields.
-        :param pattern: the pattern to match keys
-        :param mappting: the mapping of fields to set
-        :param raise_exception: True if we should allow the exception to bubble up
-        """
-        if self.active:
-            try:
-                for key in self.redis_store.scan_iter(keys):
-                    self.redis_store.hmset(key, mapping)
-            except Exception as e:
-                self.__handle_exception(e, raise_exception, "bulk_set_hash_fields", keys)
+        else:
+            return False
 
     def exceeded_rate_limit(self, cache_key, limit, interval, raise_exception=False):
         """
