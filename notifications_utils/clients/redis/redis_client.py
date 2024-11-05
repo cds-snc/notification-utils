@@ -81,7 +81,57 @@ class RedisClient:
             return self.scripts["delete-keys-by-pattern"](args=[pattern])
         return 0
 
-    def bulk_set_hash_fields(self, pattern, mapping, raise_exception=False):
+    def delete_hash_fields(self, hashes: (str | list), fields: list = None, raise_exception=False):
+        """Deletes fields from the specified hashes. if fields is `None`, then all fields from the hashes are deleted, deleting the hash entirely.
+
+        Args:
+            hashes (str|list): The hash pattern or list of hash keys to delete fields from.
+            fields (list): A list of fields to delete from the hashes. If `None`, then all fields are deleted.
+
+        Returns:
+            _type_: _description_
+        """
+        if self.active:
+            try:
+                hashes = [prepare_value(h) for h in hashes] if isinstance(hashes, list) else prepare_value(hashes)
+                # When fields are passed in, use the list as is
+                # When hashes is a list, and no fields are passed in, fetch the fields from the first hash in the list
+                # otherwise we know we're going scan iterate over a pattern so we'll fetch the fields on the first pass in the loop below
+                fields = (
+                    [prepare_value(f) for f in fields]
+                    if fields is not None
+                    else self.redis_store.hkeys(hashes[0])
+                    if isinstance(hashes, list)
+                    else None
+                )
+                # Use a pipeline to atomically delete fields from each hash.
+                pipe = self.redis_store.pipeline()
+                # if hashes is not a list, we're scan iterating over keys matching a pattern
+                for key in hashes if isinstance(hashes, list) else self.redis_store.scan_iter(hashes):
+                    if not fields:
+                        fields = self.redis_store.hkeys(key)
+                    key = prepare_value(key)
+                    pipe.hdel(key, *fields)
+                result = pipe.execute()
+                return result
+            except Exception as e:
+                self.__handle_exception(e, raise_exception, "expire_hash_fields", hashes)
+
+    def set_hash_fields_by_pattern_or_keys(self, mapping, keys: str | list = None, raise_exception=False):
+        """
+        Bulk set hash fields.
+        :param pattern: the pattern to match keys or a list of keys to set
+        :param mappting: the mapping of fields to set
+        :param raise_exception: True if we should allow the exception to bubble up
+        """
+        if self.active:
+            try:
+                for key in self.redis_store.hscan_iter(keys):
+                    self.redis_store.hmset(key, mapping)
+            except Exception as e:
+                self.__handle_exception(e, raise_exception, "bulk_set_hash_fields", keys)
+
+    def set_hash_fields_by_keys(self, keys, mapping, raise_exception=False):
         """
         Bulk set hash fields.
         :param pattern: the pattern to match keys
@@ -90,10 +140,10 @@ class RedisClient:
         """
         if self.active:
             try:
-                for key in self.redis_store.scan_iter(pattern):
+                for key in self.redis_store.scan_iter(keys):
                     self.redis_store.hmset(key, mapping)
             except Exception as e:
-                self.__handle_exception(e, raise_exception, "bulk_set_hash_fields", pattern)
+                self.__handle_exception(e, raise_exception, "bulk_set_hash_fields", keys)
 
     def exceeded_rate_limit(self, cache_key, limit, interval, raise_exception=False):
         """
