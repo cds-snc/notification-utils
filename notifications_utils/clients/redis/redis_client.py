@@ -119,8 +119,7 @@ class RedisClient:
                 return result
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "expire_hash_fields", hashes)
-        else:
-            return False
+        return False
 
     def bulk_set_hash_fields(self, mapping, pattern=None, key=None, raise_exception=False):
         """
@@ -135,9 +134,10 @@ class RedisClient:
                     for key in self.redis_store.scan_iter(pattern):
                         self.redis_store.hmset(key, mapping)
                 if key:
-                    self.redis_store.hmset(key, mapping)
+                    return self.redis_store.hmset(key, mapping)
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "bulk_set_hash_fields", pattern)
+        return False
 
     def exceeded_rate_limit(self, cache_key, limit, interval, raise_exception=False):
         """
@@ -293,9 +293,11 @@ class RedisClient:
 
         if self.active:
             try:
-                self.redis_store.hset(key, field, value)
+                return self.redis_store.hset(key, field, value)
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "set_hash_value", key)
+
+        return None
 
     def decrement_hash_value(self, key, value, raise_exception=False):
         return self.increment_hash_value(key, value, raise_exception, incr_by=-1)
@@ -331,6 +333,8 @@ class RedisClient:
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "get_all_from_hash", key)
 
+        return None
+
     def set_hash_and_expire(self, key, values, expire_in_seconds, raise_exception=False):
         key = prepare_value(key)
         values = {prepare_value(k): prepare_value(v) for k, v in values.items()}
@@ -340,6 +344,8 @@ class RedisClient:
                 return self.redis_store.expire(key, expire_in_seconds)
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "set_hash_and_expire", key)
+
+        return None
 
     def expire(self, key, expire_in_seconds, raise_exception=False):
         key = prepare_value(key)
