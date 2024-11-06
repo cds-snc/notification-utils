@@ -15,8 +15,8 @@ from notifications_utils.clients.redis.annual_limit import (
     SMS_DELIVERED,
     SMS_FAILED,
     RedisAnnualLimit,
+    annual_limit_notifications_key,
     annual_limit_status_key,
-    notifications_key,
 )
 from notifications_utils.clients.redis.redis_client import RedisClient
 
@@ -79,7 +79,7 @@ def mocked_service_id():
 
 def test_notifications_key(mocked_service_id):
     expected_key = f"annual-limit:{mocked_service_id}:notifications"
-    assert notifications_key(mocked_service_id) == expected_key
+    assert annual_limit_notifications_key(mocked_service_id) == expected_key
 
 
 def test_annual_limits_key(mocked_service_id):
