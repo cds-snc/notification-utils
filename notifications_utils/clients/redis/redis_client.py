@@ -1,7 +1,7 @@
 import numbers
 import uuid
 from time import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from flask import current_app
 from flask_redis import FlaskRedis
@@ -82,7 +82,7 @@ class RedisClient:
         return 0
 
     # TODO: Refactor and simplify this to use HEXPIRE when we upgrade Redis to 7.4.0
-    def delete_hash_fields(self, hashes: (str | list), fields: list = None, raise_exception=False):
+    def delete_hash_fields(self, hashes: (str | list), fields: Optional[list] = None, raise_exception=False):
         """Deletes fields from the specified hashes. if fields is `None`, then all fields from the hashes are deleted, deleting the hash entirely.
 
         Args:

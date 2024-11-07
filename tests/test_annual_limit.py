@@ -147,9 +147,7 @@ def test_bulk_reset_notification_counts(mock_annual_limit_client, mock_notificat
     mock_annual_limit_client.reset_all_notification_counts()
 
     for service_id in service_ids:
-        assert len(mock_annual_limit_client.get_all_notification_counts(service_id)) == 4
-        for field in mock_notification_count_types:
-            assert mock_annual_limit_client.get_notification_count(service_id, field) == 0
+        assert len(mock_annual_limit_client.get_all_notification_counts(service_id)) == 0
 
 
 def test_set_annual_limit_status(mock_annual_limit_client, mocked_service_id):
