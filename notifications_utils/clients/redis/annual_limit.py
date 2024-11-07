@@ -102,6 +102,9 @@ class RedisAnnualLimit:
 
         self._redis_client.delete_hash_fields(hashes=hashes)
 
+    def seed_annual_limit_notifications(self, service_id: str, mapping: dict):
+        self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_key(service_id), mapping=mapping)
+
     def was_seeded_today(self, service_id):
         last_seeded_time = self.get_seeded_at(service_id)
         return last_seeded_time == datetime.utcnow().strftime("%Y-%m-%d") if last_seeded_time else False
