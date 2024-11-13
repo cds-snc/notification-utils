@@ -7,8 +7,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@main
-    - name: docker://python:3.10
-      uses: docker://python:3.10  # utils is currently 3.10 so we need to use 3.10 in ci
+    - name: docker://python:3.12
+      uses: docker://python:3.12  # utils is currently 3.12 so we need to use 3.12 in ci
 
     - name: Install poetry
       env:
@@ -22,7 +22,7 @@ jobs:
       working-directory: ${{ github.workspace }}
       shell: bash
       run: |
-        mkdir -p "${{ github.workspace }}/env/" && cp -fR $(poetry env list | poetry env info -p)/lib/python3.10/site-packages "${{ github.workspace }}/env/"
+        mkdir -p "${{ github.workspace }}/env/" && cp -fR $(poetry env list | poetry env info -p)/lib/python3.12/site-packages "${{ github.workspace }}/env/"
 
     - name: Bootstrap and run tests
       working-directory: ${{ github.workspace }}
