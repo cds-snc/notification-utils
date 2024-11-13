@@ -15,8 +15,8 @@ from notifications_utils.clients.redis.annual_limit import (
     SMS_DELIVERED,
     SMS_FAILED,
     RedisAnnualLimit,
+    annual_limit_notifications_key,
     annual_limit_status_key,
-    notifications_key,
 )
 from notifications_utils.clients.redis.redis_client import RedisClient
 
@@ -79,7 +79,7 @@ def mocked_service_id():
 
 def test_notifications_key(mocked_service_id):
     expected_key = f"annual-limit:{mocked_service_id}:notifications"
-    assert notifications_key(mocked_service_id) == expected_key
+    assert annual_limit_notifications_key(mocked_service_id) == expected_key
 
 
 def test_annual_limits_key(mocked_service_id):
@@ -125,6 +125,29 @@ def test_clear_notification_counts(mock_annual_limit_client, mock_notification_c
     assert len(mock_annual_limit_client.get_all_notification_counts(mocked_service_id)) == 4
     mock_annual_limit_client.clear_notification_counts(mocked_service_id)
     assert len(mock_annual_limit_client.get_all_notification_counts(mocked_service_id)) == 0
+
+
+@pytest.mark.parametrize(
+    "service_ids",
+    [
+        [
+            str(uuid.uuid4()),
+            str(uuid.uuid4()),
+            str(uuid.uuid4()),
+            str(uuid.uuid4()),
+        ]
+    ],
+)
+def test_bulk_reset_notification_counts(mock_annual_limit_client, mock_notification_count_types, service_ids):
+    for service_id in service_ids:
+        for field in mock_notification_count_types:
+            mock_annual_limit_client.increment_notification_count(service_id, field)
+        assert len(mock_annual_limit_client.get_all_notification_counts(service_id)) == 4
+
+    mock_annual_limit_client.reset_all_notification_counts()
+
+    for service_id in service_ids:
+        assert len(mock_annual_limit_client.get_all_notification_counts(service_id)) == 0
 
 
 def test_set_annual_limit_status(mock_annual_limit_client, mocked_service_id):
