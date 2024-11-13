@@ -174,6 +174,29 @@ def test_clear_annual_limit_statuses(mock_annual_limit_client, mock_annual_limit
 
 
 @freeze_time("2024-10-25 12:00:00.000000")
+@pytest.mark.parametrize("seeded_at_value, expected_value", [(b"2024-10-25", True), (None, False)])
+def test_was_seeded_today(mock_annual_limit_client, seeded_at_value, expected_value, mocked_service_id, mocker):
+    mocker.patch.object(mock_annual_limit_client._redis_client, "get_hash_field", return_value=seeded_at_value)
+    result = mock_annual_limit_client.was_seeded_today(mocked_service_id)
+    assert result == expected_value
+
+
+@freeze_time("2024-10-25 12:00:00.000000")
+def test_set_seeded_at(mock_annual_limit_client, mocked_service_id):
+    mock_annual_limit_client.set_seeded_at(mocked_service_id)
+    result = mock_annual_limit_client.get_seeded_at(mocked_service_id)
+    assert result == datetime.utcnow().strftime("%Y-%m-%d")
+
+
+@freeze_time("2024-10-25 12:00:00.000000")
+@pytest.mark.parametrize("seeded_at_value, expected_value", [(b"2024-10-25", "2024-10-25"), (None, None)])
+def test_get_seeded_at(mock_annual_limit_client, seeded_at_value, expected_value, mocked_service_id, mocker):
+    mocker.patch.object(mock_annual_limit_client._redis_client, "get_hash_field", return_value=seeded_at_value)
+    result = mock_annual_limit_client.get_seeded_at(mocked_service_id)
+    assert result == expected_value
+
+
+@freeze_time("2024-10-25 12:00:00.000000")
 def test_set_nearing_sms_limit(mock_annual_limit_client, mocked_service_id):
     mock_annual_limit_client.set_nearing_sms_limit(mocked_service_id)
     result = mock_annual_limit_client.get_annual_limit_status(mocked_service_id, NEAR_SMS_LIMIT)

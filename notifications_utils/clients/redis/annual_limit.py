@@ -64,7 +64,7 @@ def decode_byte_dict(dict: dict, value_type=str):
     # Check if expected_value_type is one of the allowed types
     if value_type not in {int, float, str}:
         raise ValueError("expected_value_type must be int, float, or str")
-    return {key.decode("utf-8"): value_type(value.decode("utf-8")) for key, value in dict.items()}
+    return {key.decode("utf-8"): value_type(value.decode("utf-8")) for key, value in dict.items() if dict.items()}
 
 
 class RedisAnnualLimit:
@@ -110,7 +110,8 @@ class RedisAnnualLimit:
         return last_seeded_time == datetime.utcnow().strftime("%Y-%m-%d") if last_seeded_time else False
 
     def get_seeded_at(self, service_id: str):
-        return self._redis_client.get_hash_field(annual_limit_status_key(service_id), SEEDED_AT).decode("utf-8")
+        seeded_at = self._redis_client.get_hash_field(annual_limit_status_key(service_id), SEEDED_AT)
+        return seeded_at and seeded_at.decode("utf-8")
 
     def set_seeded_at(self, service_id):
         self._redis_client.set_hash_value(annual_limit_status_key(service_id), SEEDED_AT, datetime.utcnow().strftime("%Y-%m-%d"))
