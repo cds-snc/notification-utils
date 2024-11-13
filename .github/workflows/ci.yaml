@@ -6,9 +6,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@main
-    - name: docker://python:3.12
-      uses: docker://python:3.12  # utils is currently 3.12 so we need to use 3.12 in ci
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+    - name: Set up Python 3.12
+      uses: actions/setup-python@b64ffcaf5b410884ad320a9cfac8866006a109aa # v4.8.0
+      with:
+        python-version: '3.12'
+    - name: Upgrade pip
+      run: python -m pip install --upgrade pip
+
+    # - uses: actions/checkout@main
+    # - name: docker://python:3.12
+    #   uses: docker://python:3.12  # utils is currently 3.12 so we need to use 3.12 in ci
 
     - name: Install poetry
       env:
