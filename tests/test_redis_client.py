@@ -33,6 +33,27 @@ def better_mocked_redis_client(app):
     return redis_client
 
 
+@pytest.fixture(scope="function")
+def mocked_hash_structure():
+    return {
+        "key1": {
+            "field1": "value1",
+            "field2": 2,
+            "field3": "value3".encode("utf-8"),
+        },
+        "key2": {
+            "field1": "value1",
+            "field2": 2,
+            "field3": "value3".encode("utf-8"),
+        },
+        "key3": {
+            "field1": "value1",
+            "field2": 2,
+            "field3": "value3".encode("utf-8"),
+        },
+    }
+
+
 def build_redis_client(app, mocked_redis_pipeline, mocker):
     redis_client = RedisClient()
     redis_client.init_app(app)
@@ -40,6 +61,7 @@ def build_redis_client(app, mocked_redis_pipeline, mocker):
     mocker.patch.object(redis_client.redis_store, "set")
     mocker.patch.object(redis_client.redis_store, "hincrby")
     mocker.patch.object(redis_client.redis_store, "hgetall", return_value={b"template-1111": b"8", b"template-2222": b"8"})
+    mocker.patch.object(redis_client.redis_store, "hset")
     mocker.patch.object(redis_client.redis_store, "hmset")
     mocker.patch.object(redis_client.redis_store, "expire")
     mocker.patch.object(redis_client.redis_store, "delete")
@@ -167,44 +189,6 @@ def test_should_build_rate_limit_cache_key(sample_service):
     assert rate_limit_cache_key(sample_service.id, "TEST") == "{}-TEST".format(sample_service.id)
 
 
-def test_decrement_hash_value_should_decrement_value_by_one_for_key(mocked_redis_client):
-    key = "12345"
-    value = "template-1111"
-
-    mocked_redis_client.decrement_hash_value(key, value, -1)
-    mocked_redis_client.redis_store.hincrby.assert_called_with(key, value, -1)
-
-
-def test_incr_hash_value_should_increment_value_by_one_for_key(mocked_redis_client):
-    key = "12345"
-    value = "template-1111"
-
-    mocked_redis_client.increment_hash_value(key, value)
-    mocked_redis_client.redis_store.hincrby.assert_called_with(key, value, 1)
-
-
-def test_get_all_from_hash_returns_hash_for_key(mocked_redis_client):
-    key = "12345"
-    assert mocked_redis_client.get_all_from_hash(key) == {b"template-1111": b"8", b"template-2222": b"8"}
-    mocked_redis_client.redis_store.hgetall.assert_called_with(key)
-
-
-def test_set_hash_and_expire(mocked_redis_client):
-    key = "hash-key"
-    values = {"key": 10}
-    mocked_redis_client.set_hash_and_expire(key, values, 1)
-    mocked_redis_client.redis_store.hmset.assert_called_with(key, values)
-    mocked_redis_client.redis_store.expire.assert_called_with(key, 1)
-
-
-def test_set_hash_and_expire_converts_values_to_valid_types(mocked_redis_client):
-    key = "hash-key"
-    values = {uuid.UUID(int=0): 10}
-    mocked_redis_client.set_hash_and_expire(key, values, 1)
-    mocked_redis_client.redis_store.hmset.assert_called_with(key, {"00000000-0000-0000-0000-000000000000": 10})
-    mocked_redis_client.redis_store.expire.assert_called_with(key, 1)
-
-
 @freeze_time("2001-01-01 12:00:00.000000")
 def test_should_add_correct_calls_to_the_pipe(mocked_redis_client, mocked_redis_pipeline):
     mocked_redis_client.exceeded_rate_limit("key", 100, 100)
@@ -315,3 +299,131 @@ class TestRedisSortedSets:
         better_mocked_redis_client.active = False
         ret = better_mocked_redis_client.get_length_of_sorted_set("cache_key", min_score=0, max_score=100)
         assert ret == 0
+
+
+class TestRedisHashes:
+    @pytest.mark.parametrize(
+        "hash_key, fields_to_delete, expected_deleted, check_if_no_longer_exists",
+        [
+            ("test:hash:key1", ["field1", "field2"], 2, False),  # Delete specific fields in a hash
+            ("test:hash:key1", None, 3, True),  # Delete All fields in a specific hash
+            ("test:hash:*", ["field1", "field2"], 6, False),  # Delete specific fields in a group of hashes
+            ("test:hash:*", None, 9, True),  # Delete All fields in a group of hashes
+        ],
+    )
+    def test_delete_hash_fields(
+        self,
+        better_mocked_redis_client,
+        hash_key,
+        fields_to_delete,
+        expected_deleted,
+        check_if_no_longer_exists,
+        mocked_hash_structure,
+    ):
+        # set up the hashes to be deleted
+        for key, fields in mocked_hash_structure.items():
+            better_mocked_redis_client.bulk_set_hash_fields(key=f"test:hash:{key}", mapping=fields)
+
+        num_deleted = better_mocked_redis_client.delete_hash_fields(hashes=hash_key, fields=fields_to_delete)
+
+        # Deleting all hash fields by pattern
+        if check_if_no_longer_exists and "*" in hash_key:
+            for key in mocked_hash_structure.keys():
+                assert better_mocked_redis_client.redis_store.exists(f"test:hash:{key}") == 0
+        # Deleting a specific hash
+        elif check_if_no_longer_exists:
+            assert better_mocked_redis_client.redis_store.exists(f"test:hash:{hash_key}") == 0
+
+        # Make sure we've deleted the correct number of fields
+        assert sum(num_deleted) == expected_deleted
+
+    def test_get_hash_field(self, mocked_redis_client):
+        key = "12345"
+        field = "template-1111"
+        mocked_redis_client.redis_store.hget = Mock(return_value=b"8")
+        assert mocked_redis_client.get_hash_field(key, field) == b"8"
+        mocked_redis_client.redis_store.hget.assert_called_with(key, field)
+
+    def test_set_hash_value(self, mocked_redis_client):
+        key = "12345"
+        field = "template-1111"
+        value = 8
+        mocked_redis_client.set_hash_value(key, field, value)
+        mocked_redis_client.redis_store.hset.assert_called_with(key, field, value)
+
+    @pytest.mark.parametrize(
+        "hash, updates, expected",
+        [
+            (
+                {
+                    "key1": {
+                        "field1": "value1",
+                        "field2": 2,
+                        "field3": "value3".encode("utf-8"),
+                    },
+                    "key2": {
+                        "field1": "value1",
+                        "field2": 2,
+                        "field3": "value3".encode("utf-8"),
+                    },
+                    "key3": {
+                        "field1": "value1",
+                        "field2": 2,
+                        "field3": "value3".encode("utf-8"),
+                    },
+                },
+                {
+                    "field1": "value2",
+                    "field2": 3,
+                    "field3": "value4".encode("utf-8"),
+                },
+                {
+                    b"field1": b"value2",
+                    b"field2": b"3",
+                    b"field3": b"value4",
+                },
+            )
+        ],
+    )
+    def test_bulk_set_hash_fields(self, better_mocked_redis_client, hash, updates, expected):
+        for key, fields in hash.items():
+            for field, value in fields.items():
+                better_mocked_redis_client.set_hash_value(key, field, value)
+
+        better_mocked_redis_client.bulk_set_hash_fields(pattern="key*", mapping=updates)
+
+        for key, _ in hash.items():
+            assert better_mocked_redis_client.redis_store.hgetall(key) == expected
+
+    def test_decrement_hash_value_should_decrement_value_by_one_for_key(self, mocked_redis_client):
+        key = "12345"
+        value = "template-1111"
+
+        mocked_redis_client.decrement_hash_value(key, value, -1)
+        mocked_redis_client.redis_store.hincrby.assert_called_with(key, value, -1)
+
+    def test_incr_hash_value_should_increment_value_by_one_for_key(self, mocked_redis_client):
+        key = "12345"
+        value = "template-1111"
+
+        mocked_redis_client.increment_hash_value(key, value)
+        mocked_redis_client.redis_store.hincrby.assert_called_with(key, value, 1)
+
+    def test_get_all_from_hash_returns_hash_for_key(self, mocked_redis_client):
+        key = "12345"
+        assert mocked_redis_client.get_all_from_hash(key) == {b"template-1111": b"8", b"template-2222": b"8"}
+        mocked_redis_client.redis_store.hgetall.assert_called_with(key)
+
+    def test_set_hash_and_expire(self, mocked_redis_client):
+        key = "hash-key"
+        values = {"key": 10}
+        mocked_redis_client.set_hash_and_expire(key, values, 1)
+        mocked_redis_client.redis_store.hmset.assert_called_with(key, values)
+        mocked_redis_client.redis_store.expire.assert_called_with(key, 1)
+
+    def test_set_hash_and_expire_converts_values_to_valid_types(self, mocked_redis_client):
+        key = "hash-key"
+        values = {uuid.UUID(int=0): 10}
+        mocked_redis_client.set_hash_and_expire(key, values, 1)
+        mocked_redis_client.redis_store.hmset.assert_called_with(key, {"00000000-0000-0000-0000-000000000000": 10})
+        mocked_redis_client.redis_store.expire.assert_called_with(key, 1)
