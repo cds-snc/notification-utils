@@ -113,10 +113,18 @@ def test_get_notification_count(mock_annual_limit_client, mocked_service_id):
     assert result == 1
 
 
+def test_get_notification_count_returns_none_when_field_does_not_exist(mock_annual_limit_client, mocked_service_id):
+    assert mock_annual_limit_client.get_notification_count(mocked_service_id, SMS_DELIVERED) is None
+
+
 def test_get_all_notification_counts(mock_annual_limit_client, mock_notification_count_types, mocked_service_id):
     for field in mock_notification_count_types:
         mock_annual_limit_client.increment_notification_count(mocked_service_id, field)
     assert len(mock_annual_limit_client.get_all_notification_counts(mocked_service_id)) == 4
+
+
+def test_get_all_notification_counts_returns_none_if_fields_do_not_exist(mock_annual_limit_client, mocked_service_id):
+    assert mock_annual_limit_client.get_all_notification_counts(mocked_service_id) is None
 
 
 def test_clear_notification_counts(mock_annual_limit_client, mock_notification_count_types, mocked_service_id):
@@ -124,7 +132,7 @@ def test_clear_notification_counts(mock_annual_limit_client, mock_notification_c
         mock_annual_limit_client.increment_notification_count(mocked_service_id, field)
     assert len(mock_annual_limit_client.get_all_notification_counts(mocked_service_id)) == 4
     mock_annual_limit_client.clear_notification_counts(mocked_service_id)
-    assert len(mock_annual_limit_client.get_all_notification_counts(mocked_service_id)) == 0
+    assert mock_annual_limit_client.get_all_notification_counts(mocked_service_id) is None
 
 
 @pytest.mark.parametrize(
@@ -147,7 +155,7 @@ def test_bulk_reset_notification_counts(mock_annual_limit_client, mock_notificat
     mock_annual_limit_client.reset_all_notification_counts()
 
     for service_id in service_ids:
-        assert len(mock_annual_limit_client.get_all_notification_counts(service_id)) == 0
+        assert mock_annual_limit_client.get_all_notification_counts(service_id) is None
 
 
 def test_set_annual_limit_status(mock_annual_limit_client, mocked_service_id):
@@ -164,13 +172,28 @@ def test_get_annual_limit_status(mock_annual_limit_client, mocked_service_id):
     assert result == near_limit_date.strftime("%Y-%m-%d")
 
 
+def test_get_annual_limit_status_returns_none_when_fields_do_not_exist(mock_annual_limit_client, mocked_service_id):
+    assert mock_annual_limit_client.get_annual_limit_status(mocked_service_id, NEAR_SMS_LIMIT) is None
+
+
+@freeze_time("2024-10-25 12:00:00.000000")
+def test_get_all_annual_limit_statuses(mock_annual_limit_client, mock_annual_limit_statuses, mocked_service_id):
+    for status in mock_annual_limit_statuses:
+        mock_annual_limit_client.set_annual_limit_status(mocked_service_id, status, datetime.utcnow())
+    assert len(mock_annual_limit_client.get_all_annual_limit_statuses(mocked_service_id)) == 4
+
+
+def test_get_all_annual_limit_statuses_returns_none_when_fields_do_not_exist(mock_annual_limit_client, mocked_service_id):
+    assert mock_annual_limit_client.get_all_annual_limit_statuses(mocked_service_id) is None
+
+
 @freeze_time("2024-10-25 12:00:00.000000")
 def test_clear_annual_limit_statuses(mock_annual_limit_client, mock_annual_limit_statuses, mocked_service_id):
     for status in mock_annual_limit_statuses:
         mock_annual_limit_client.set_annual_limit_status(mocked_service_id, status, datetime.utcnow())
     assert len(mock_annual_limit_client.get_all_annual_limit_statuses(mocked_service_id)) == 4
     mock_annual_limit_client.clear_annual_limit_statuses(mocked_service_id)
-    assert len(mock_annual_limit_client.get_all_annual_limit_statuses(mocked_service_id)) == 0
+    assert mock_annual_limit_client.get_all_annual_limit_statuses(mocked_service_id) is None
 
 
 @freeze_time("2024-10-25 12:00:00.000000")
@@ -194,6 +217,10 @@ def test_get_seeded_at(mock_annual_limit_client, seeded_at_value, expected_value
     mocker.patch.object(mock_annual_limit_client._redis_client, "get_hash_field", return_value=seeded_at_value)
     result = mock_annual_limit_client.get_seeded_at(mocked_service_id)
     assert result == expected_value
+
+
+def test_get_seeded_at_returns_none_when_field_does_not_exist(mock_annual_limit_client, mocked_service_id):
+    assert mock_annual_limit_client.get_seeded_at(mocked_service_id) is None
 
 
 @freeze_time("2024-10-25 12:00:00.000000")
