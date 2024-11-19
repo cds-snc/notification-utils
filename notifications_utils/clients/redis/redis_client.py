@@ -125,7 +125,7 @@ class RedisClient:
         """
         Bulk set hash fields.
         :param pattern: the pattern to match keys
-        :param mappting: the mapping of fields to set
+        :param mapping: the mapping of fields to set
         :param raise_exception: True if we should allow the exception to bubble up
         """
         if self.active:
