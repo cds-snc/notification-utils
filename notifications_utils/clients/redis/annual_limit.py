@@ -32,7 +32,7 @@ EMAIL_DELIVERED = "email_delivered"
 SMS_FAILED = "sms_failed"
 EMAIL_FAILED = "email_failed"
 
-NOTIFICATIONS = [SMS_DELIVERED, EMAIL_DELIVERED, SMS_FAILED, EMAIL_FAILED]
+NOTIFICATION_FIELDS = [SMS_DELIVERED, EMAIL_DELIVERED, SMS_FAILED, EMAIL_FAILED]
 
 NEAR_SMS_LIMIT = "near_sms_limit"
 NEAR_EMAIL_LIMIT = "near_email_limit"
@@ -40,7 +40,7 @@ OVER_SMS_LIMIT = "over_sms_limit"
 OVER_EMAIL_LIMIT = "over_email_limit"
 SEEDED_AT = "seeded_at"
 
-STATUSES = [NEAR_SMS_LIMIT, NEAR_EMAIL_LIMIT, OVER_SMS_LIMIT, OVER_EMAIL_LIMIT]
+STATUS_FIELDS = [NEAR_SMS_LIMIT, NEAR_EMAIL_LIMIT, OVER_SMS_LIMIT, OVER_EMAIL_LIMIT]
 
 
 def annual_limit_notifications_key(service_id):
@@ -57,16 +57,42 @@ def annual_limit_status_key(service_id):
     return f"annual-limit:{service_id}:status"
 
 
-def decode_byte_dict(byte_dict: dict, value_type=str):
+def prepare_byte_dict(byte_dict: dict, value_type=str, required_keys=None):
     """
     Redis-py returns byte strings for keys and values. This function decodes them to UTF-8 strings.
     """
     # Check if expected_value_type is one of the allowed types
     if value_type not in {int, float, str}:
         raise ValueError("expected_value_type must be int, float, or str")
-    if byte_dict is None or not byte_dict.items():
-        return None
-    return {key.decode("utf-8"): value_type(value.decode("utf-8")) for key, value in byte_dict.items()}
+
+    decoded_dict = (
+        {key.decode("utf-8"): value_type(value.decode("utf-8")) for key, value in byte_dict.items()} if byte_dict else {}
+    )
+
+    if required_keys:
+        for key in required_keys:
+            default_value = 0 if value_type in {int, float} else None
+            decoded_dict.setdefault(key, default_value)
+    return decoded_dict
+
+
+def init_missing_keys(
+    required_keys: list,
+    value_type=str,
+    incomplete_dict: dict = {},
+):
+    """Ensures that all expected keys are present in dicts returned from this module. Initializes empty values to defaults if not.
+
+    Args:
+        incomplete_dict (dict): A dictionary to check for required keys.
+        required_keys (list): The keys that must be present in the dictionary.
+        value_type (_type_, optional): The datatype of the values in the dict. Defaults to str.
+
+    Raises:
+        ValueError: If the value_type is not int, float, or str.
+    """
+    if value_type not in {int, float, str}:
+        raise ValueError("expected_value_type must be int, float, or str")
 
 
 class RedisAnnualLimit:
@@ -91,13 +117,15 @@ class RedisAnnualLimit:
         Retrieves the specified daily notification count for a service. (e.g. SMS_DELIVERED, EMAIL_FAILED, etc.)
         """
         count = self._redis_client.get_hash_field(annual_limit_notifications_key(service_id), field)
-        return count and int(count.decode("utf-8"))
+        return 0 if not count else int(count.decode("utf-8"))
 
     def get_all_notification_counts(self, service_id: str):
         """
         Retrieves all daily notification metrics for a service.
         """
-        return decode_byte_dict(self._redis_client.get_all_from_hash(annual_limit_notifications_key(service_id)), int)
+        return prepare_byte_dict(
+            self._redis_client.get_all_from_hash(annual_limit_notifications_key(service_id)), int, NOTIFICATION_FIELDS
+        )
 
     def reset_all_notification_counts(self, service_ids=None):
         """Resets all daily notification metrics.
@@ -112,7 +140,7 @@ class RedisAnnualLimit:
             else [annual_limit_notifications_key(service_id) for service_id in service_ids]
         )
 
-        self._redis_client.delete_hash_fields(hashes=hashes)
+        self._redis_client.delete_hash_fields(hashes=hashes, fields=NOTIFICATION_FIELDS)
 
     def seed_annual_limit_notifications(self, service_id: str, mapping: dict):
         """Seeds annual limit notifications for a service.
@@ -187,7 +215,7 @@ class RedisAnnualLimit:
         Returns:
             dict | None: A dictionary of annual limit statuses or None if no statuses are found
         """
-        return decode_byte_dict(self._redis_client.get_all_from_hash(annual_limit_status_key(service_id)))
+        return prepare_byte_dict(self._redis_client.get_all_from_hash(annual_limit_status_key(service_id)), str, STATUS_FIELDS)
 
     def clear_annual_limit_statuses(self, service_id: str):
         self._redis_client.expire(f"{annual_limit_status_key(service_id)}", -1)
@@ -237,3 +265,19 @@ class RedisAnnualLimit:
         """
         field_to_fetch = OVER_SMS_LIMIT if message_type == "sms" else OVER_EMAIL_LIMIT
         return self.get_annual_limit_status(service_id, field_to_fetch)
+
+    def delete_all_annual_limit_hashes(self, service_ids=None):
+        """
+        THIS SHOULD NOT BE CALLED IN CODE. This is a helper method for testing purposes only.
+        Clears all annual limit hashes in Redis
+
+        Args:
+            service_ids (Optional): A list of service_ids to clear annual limit hashes for. Clears all services if None.
+        """
+        if not service_ids:
+            self._redis_client.delete_cache_keys_by_pattern(annual_limit_notifications_key("*"))
+            self._redis_client.delete_cache_keys_by_pattern(annual_limit_status_key("*"))
+        else:
+            for service_id in service_ids:
+                self._redis_client.delete(annual_limit_notifications_key(service_id))
+                self._redis_client.delete(annual_limit_status_key(service_id))
