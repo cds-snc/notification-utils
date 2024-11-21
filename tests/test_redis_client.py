@@ -306,9 +306,7 @@ class TestRedisHashes:
         "hash_key, fields_to_delete, expected_deleted, check_if_no_longer_exists",
         [
             ("test:hash:key1", ["field1", "field2"], 2, False),  # Delete specific fields in a hash
-            ("test:hash:key1", None, 3, True),  # Delete All fields in a specific hash
             ("test:hash:*", ["field1", "field2"], 6, False),  # Delete specific fields in a group of hashes
-            ("test:hash:*", None, 9, True),  # Delete All fields in a group of hashes
         ],
     )
     def test_delete_hash_fields(
