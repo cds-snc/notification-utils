@@ -10,25 +10,17 @@ from notifications_utils.clients.redis.annual_limit import (
     EMAIL_FAILED,
     NEAR_EMAIL_LIMIT,
     NEAR_SMS_LIMIT,
+    NOTIFICATION_FIELDS,
     OVER_EMAIL_LIMIT,
     OVER_SMS_LIMIT,
     SMS_DELIVERED,
     SMS_FAILED,
+    STATUS_FIELDS,
     RedisAnnualLimit,
     annual_limit_notifications_key,
     annual_limit_status_key,
 )
 from notifications_utils.clients.redis.redis_client import RedisClient
-
-
-@pytest.fixture(scope="function")
-def mock_notification_count_types():
-    return [SMS_DELIVERED, EMAIL_DELIVERED, SMS_FAILED, EMAIL_FAILED]
-
-
-@pytest.fixture(scope="function")
-def mock_annual_limit_statuses():
-    return [NEAR_SMS_LIMIT, NEAR_EMAIL_LIMIT, OVER_SMS_LIMIT, OVER_EMAIL_LIMIT]
 
 
 @pytest.fixture(scope="function")
@@ -114,25 +106,32 @@ def test_get_notification_count(mock_annual_limit_client, mocked_service_id):
 
 
 def test_get_notification_count_returns_none_when_field_does_not_exist(mock_annual_limit_client, mocked_service_id):
-    assert mock_annual_limit_client.get_notification_count(mocked_service_id, SMS_DELIVERED) is None
+    assert mock_annual_limit_client.get_notification_count(mocked_service_id, SMS_DELIVERED) == 0
 
 
-def test_get_all_notification_counts(mock_annual_limit_client, mock_notification_count_types, mocked_service_id):
-    for field in mock_notification_count_types:
+def test_get_all_notification_counts(mock_annual_limit_client, mocked_service_id):
+    for field in NOTIFICATION_FIELDS:
         mock_annual_limit_client.increment_notification_count(mocked_service_id, field)
-    assert len(mock_annual_limit_client.get_all_notification_counts(mocked_service_id)) == 4
+    counts = mock_annual_limit_client.get_all_notification_counts(mocked_service_id)
+    assert len(counts) == 4
+    assert all(isinstance(value, int) for value in counts.values())
 
 
 def test_get_all_notification_counts_returns_none_if_fields_do_not_exist(mock_annual_limit_client, mocked_service_id):
-    assert mock_annual_limit_client.get_all_notification_counts(mocked_service_id) is None
+    notification_counts = mock_annual_limit_client.get_all_notification_counts(mocked_service_id)
+    assert set(notification_counts.keys()) == set(NOTIFICATION_FIELDS)
+    assert all(value == 0 for value in notification_counts.values())
 
 
-def test_clear_notification_counts(mock_annual_limit_client, mock_notification_count_types, mocked_service_id):
-    for field in mock_notification_count_types:
+def test_clear_notification_counts(mock_annual_limit_client, mocked_service_id):
+    for field in NOTIFICATION_FIELDS:
         mock_annual_limit_client.increment_notification_count(mocked_service_id, field)
     assert len(mock_annual_limit_client.get_all_notification_counts(mocked_service_id)) == 4
+
     mock_annual_limit_client.clear_notification_counts(mocked_service_id)
-    assert mock_annual_limit_client.get_all_notification_counts(mocked_service_id) is None
+    counts = mock_annual_limit_client.get_all_notification_counts(mocked_service_id)
+    assert set(counts.keys()) == set(NOTIFICATION_FIELDS)
+    assert all(value == 0 for value in counts.values())
 
 
 @pytest.mark.parametrize(
@@ -146,16 +145,20 @@ def test_clear_notification_counts(mock_annual_limit_client, mock_notification_c
         ]
     ],
 )
-def test_bulk_reset_notification_counts(mock_annual_limit_client, mock_notification_count_types, service_ids):
+def test_bulk_reset_notification_counts(mock_annual_limit_client, service_ids):
     for service_id in service_ids:
-        for field in mock_notification_count_types:
+        for field in NOTIFICATION_FIELDS:
             mock_annual_limit_client.increment_notification_count(service_id, field)
-        assert len(mock_annual_limit_client.get_all_notification_counts(service_id)) == 4
+
+        counts = mock_annual_limit_client.get_all_notification_counts(service_id)
+        assert set(counts.keys()) == set(NOTIFICATION_FIELDS)
+        assert all(value > 0 for value in counts.values())
 
     mock_annual_limit_client.reset_all_notification_counts()
-
     for service_id in service_ids:
-        assert mock_annual_limit_client.get_all_notification_counts(service_id) is None
+        counts = mock_annual_limit_client.get_all_notification_counts(service_id)
+        assert set(counts.keys()) == set(NOTIFICATION_FIELDS)
+        assert all(value == 0 for value in counts.values())
 
 
 def test_set_annual_limit_status(mock_annual_limit_client, mocked_service_id):
@@ -177,23 +180,35 @@ def test_get_annual_limit_status_returns_none_when_fields_do_not_exist(mock_annu
 
 
 @freeze_time("2024-10-25 12:00:00.000000")
-def test_get_all_annual_limit_statuses(mock_annual_limit_client, mock_annual_limit_statuses, mocked_service_id):
-    for status in mock_annual_limit_statuses:
+def test_get_all_annual_limit_statuses(mock_annual_limit_client, mocked_service_id):
+    for status in STATUS_FIELDS:
         mock_annual_limit_client.set_annual_limit_status(mocked_service_id, status, datetime.utcnow())
-    assert len(mock_annual_limit_client.get_all_annual_limit_statuses(mocked_service_id)) == 4
+
+    statuses = mock_annual_limit_client.get_all_annual_limit_statuses(mocked_service_id)
+    assert len(statuses) == 4
+    assert all(value is not None for value in statuses.values())
 
 
 def test_get_all_annual_limit_statuses_returns_none_when_fields_do_not_exist(mock_annual_limit_client, mocked_service_id):
-    assert mock_annual_limit_client.get_all_annual_limit_statuses(mocked_service_id) is None
+    statuses = mock_annual_limit_client.get_all_annual_limit_statuses(mocked_service_id)
+    assert set(statuses.keys()) == set(STATUS_FIELDS)
+    assert all(value is None for value in statuses.values())
 
 
 @freeze_time("2024-10-25 12:00:00.000000")
-def test_clear_annual_limit_statuses(mock_annual_limit_client, mock_annual_limit_statuses, mocked_service_id):
-    for status in mock_annual_limit_statuses:
+def test_clear_annual_limit_statuses(mock_annual_limit_client, mocked_service_id):
+    for status in STATUS_FIELDS:
         mock_annual_limit_client.set_annual_limit_status(mocked_service_id, status, datetime.utcnow())
-    assert len(mock_annual_limit_client.get_all_annual_limit_statuses(mocked_service_id)) == 4
+
+    statuses = mock_annual_limit_client.get_all_annual_limit_statuses(mocked_service_id)
+    assert len(statuses) == 4
+    assert all(value == "2024-10-25" for value in statuses.values())
+
     mock_annual_limit_client.clear_annual_limit_statuses(mocked_service_id)
-    assert mock_annual_limit_client.get_all_annual_limit_statuses(mocked_service_id) is None
+
+    statuses = mock_annual_limit_client.get_all_annual_limit_statuses(mocked_service_id)
+    assert set(statuses.keys()) == set(STATUS_FIELDS)
+    assert all(value is None for value in statuses.values())
 
 
 @freeze_time("2024-10-25 12:00:00.000000")
@@ -251,50 +266,50 @@ def test_set_over_email_limit(mock_annual_limit_client, mocked_service_id):
     assert result == datetime.utcnow().strftime("%Y-%m-%d")
 
 
-def test_increment_sms_delivered(mock_annual_limit_client, mock_notification_count_types, mocked_service_id):
-    for field in mock_notification_count_types:
+def test_increment_sms_delivered(mock_annual_limit_client, mocked_service_id):
+    for field in NOTIFICATION_FIELDS:
         mock_annual_limit_client.increment_notification_count(mocked_service_id, field)
 
     mock_annual_limit_client.increment_sms_delivered(mocked_service_id)
 
     assert mock_annual_limit_client.get_notification_count(mocked_service_id, SMS_DELIVERED) == 2
-    for field in mock_notification_count_types:
+    for field in NOTIFICATION_FIELDS:
         if field != SMS_DELIVERED:
             assert mock_annual_limit_client.get_notification_count(mocked_service_id, field) == 1
 
 
-def test_increment_sms_failed(mock_annual_limit_client, mock_notification_count_types, mocked_service_id):
-    for field in mock_notification_count_types:
+def test_increment_sms_failed(mock_annual_limit_client, mocked_service_id):
+    for field in NOTIFICATION_FIELDS:
         mock_annual_limit_client.increment_notification_count(mocked_service_id, field)
 
     mock_annual_limit_client.increment_sms_failed(mocked_service_id)
 
     assert mock_annual_limit_client.get_notification_count(mocked_service_id, SMS_FAILED) == 2
-    for field in mock_notification_count_types:
+    for field in NOTIFICATION_FIELDS:
         if field != SMS_FAILED:
             assert mock_annual_limit_client.get_notification_count(mocked_service_id, field) == 1
 
 
-def test_increment_email_delivered(mock_annual_limit_client, mock_notification_count_types, mocked_service_id):
-    for field in mock_notification_count_types:
+def test_increment_email_delivered(mock_annual_limit_client, mocked_service_id):
+    for field in NOTIFICATION_FIELDS:
         mock_annual_limit_client.increment_notification_count(mocked_service_id, field)
 
     mock_annual_limit_client.increment_email_delivered(mocked_service_id)
 
     assert mock_annual_limit_client.get_notification_count(mocked_service_id, EMAIL_DELIVERED) == 2
-    for field in mock_notification_count_types:
+    for field in NOTIFICATION_FIELDS:
         if field != EMAIL_DELIVERED:
             assert mock_annual_limit_client.get_notification_count(mocked_service_id, field) == 1
 
 
-def test_increment_email_failed(mock_annual_limit_client, mock_notification_count_types, mocked_service_id):
-    for field in mock_notification_count_types:
+def test_increment_email_failed(mock_annual_limit_client, mocked_service_id):
+    for field in NOTIFICATION_FIELDS:
         mock_annual_limit_client.increment_notification_count(mocked_service_id, field)
 
     mock_annual_limit_client.increment_email_failed(mocked_service_id)
 
     assert mock_annual_limit_client.get_notification_count(mocked_service_id, EMAIL_FAILED) == 2
-    for field in mock_notification_count_types:
+    for field in NOTIFICATION_FIELDS:
         if field != EMAIL_FAILED:
             assert mock_annual_limit_client.get_notification_count(mocked_service_id, field) == 1
 
