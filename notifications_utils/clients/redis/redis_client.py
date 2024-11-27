@@ -106,7 +106,8 @@ class RedisClient:
                     if not fields:
                         fields = self.redis_store.hkeys(key)
                     key = prepare_value(key)
-                    pipe.hdel(key, *fields)
+                    if fields:
+                        pipe.hdel(key, *fields)
                 result = pipe.execute()
                 # TODO: May need to double check that the pipeline result count matches the number of hashes deleted
                 # and retry any failures
