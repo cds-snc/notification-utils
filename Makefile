@@ -21,6 +21,10 @@ build: dependencies ## Build project
 test: ## Run tests
 	poetry run ./scripts/run_tests.sh
 
+.PHONY: freeze-requirements
+freeze-requirements:
+	poetry lock --no-update
+
 .PHONY: prepare-docker-build-image
 prepare-docker-build-image: ## Prepare the Docker builder image
 	make -C docker build
