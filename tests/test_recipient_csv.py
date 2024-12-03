@@ -873,18 +873,18 @@ def test_ignores_leading_whitespace_in_file(character, name):
     assert not recipients.has_errors
 
 
-def test_error_if_too_many_email_recipients():
+def test_error_if_too_many_email_recipients_for_year():
     recipients = RecipientCSV(
         "email address,\ntest@test.com,\ntest@test.com,\ntest@test.com,",
         placeholders=["email_address"],
         template_type="email",
-        remaining_messages=2,
+        remaining_annual_messages=2,
     )
     assert recipients.has_errors
-    assert recipients.more_rows_than_can_send
+    assert recipients.more_rows_than_can_send_this_year
 
 
-def test_error_if_too_many_sms_recipients():
+def test_error_if_too_many_sms_recipients_for_year():
     recipients = RecipientCSV(
         "phone number,\n6502532222,\n6502532222,\n6502532222,",
         placeholders=["phone_number"],
@@ -894,18 +894,53 @@ def test_error_if_too_many_sms_recipients():
             sender=None,
             prefix=None,
         ),
-        remaining_messages=2,
+        remaining_annual_messages=2,
     )
     assert recipients.has_errors
-    assert recipients.more_rows_than_can_send
+    assert recipients.more_rows_than_can_send_this_year
 
 
-def test_dont_error_if_too_many_recipients_not_specified():
+def test_dont_error_if_too_many_recipients_not_specified_for_year():
     recipients = RecipientCSV(
         "phone number,\n6502532222,\n6502532222,\n6502532222,", placeholders=["phone_number"], template_type="sms"
     )
     assert not recipients.has_errors
-    assert not recipients.more_rows_than_can_send
+    assert not recipients.more_rows_than_can_send_this_year
+
+
+def test_error_if_too_many_email_recipients_for_today():
+    recipients = RecipientCSV(
+        "email address,\ntest@test.com,\ntest@test.com,\ntest@test.com,",
+        placeholders=["email_address"],
+        template_type="email",
+        remaining_daily_messages=2,
+    )
+    assert recipients.has_errors
+    assert recipients.more_rows_than_can_send_today
+
+
+def test_error_if_too_many_sms_recipients_for_today():
+    recipients = RecipientCSV(
+        "phone number,\n6502532222,\n6502532222,\n6502532222,",
+        placeholders=["phone_number"],
+        template_type="sms",
+        template=SMSMessageTemplate(
+            {"content": "test message", "template_type": "sms"},
+            sender=None,
+            prefix=None,
+        ),
+        remaining_daily_messages=2,
+    )
+    assert recipients.has_errors
+    assert recipients.more_rows_than_can_send_today
+
+
+def test_dont_error_if_too_many_recipients_not_specified_for_today():
+    recipients = RecipientCSV(
+        "phone number,\n6502532222,\n6502532222,\n6502532222,", placeholders=["phone_number"], template_type="sms"
+    )
+    assert not recipients.has_errors
+    assert not recipients.more_rows_than_can_send_today
 
 
 @pytest.mark.parametrize(
