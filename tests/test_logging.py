@@ -4,8 +4,9 @@ import os
 import uuid
 
 import pytest
-from notifications_utils import logging
 from pythonjsonlogger.jsonlogger import JsonFormatter
+
+from notifications_utils import logging
 
 
 class App:
@@ -119,53 +120,56 @@ def test_should_build_statsd_line_without_service_id_or_time_taken():
     assert logging.build_statsd_line(extra_fields) == "method.endpoint.200"
 
 
-def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app):
+@pytest.mark.parametrize('app_name', ('notification-api', 'celery', None))
+def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app, app_name):
     del app.config['NOTIFY_LOG_PATH']
-
+    app.name = app_name
     app.debug = True
     handler = logging.get_handler(app)
 
-    assert type(handler) == builtin_logging.StreamHandler
-    assert type(handler.formatter) == builtin_logging.Formatter
+    assert type(handler) is builtin_logging.StreamHandler
+    assert type(handler.formatter) is JsonFormatter
     assert not (tmpdir / 'foo').exists()
 
-    application = app.config["NOTIFY_APP_NAME"]
     record = builtin_logging.makeLogRecord({
-        "application": application,
+        "application": app.name,
         "args": ("Cornelius", 42),
         "levelname": "debug",
         "lineno": 1999,
         "msg": "Hello, %s.  Line %d.",
-        "name": "the_name",
         "pathname": "the_path",
         "requestId": "id",
     })
-    message = handler.formatter.format(record)
-    assert message.endswith(f' {application} the_name debug id "Hello, Cornelius.  Line 42." [in the_path:1999]')
+    message = json.loads(handler.formatter.format(record))
+    assert message['application'] == app_name
+    assert message['levelname'] == 'debug'
+    assert message['requestId'] == 'id'
+    assert message['message'] == 'Hello, Cornelius.  Line 42.'
+    assert message['pathname'] == 'the_path'
+    assert message['lineno'] == 1999
 
 
-def test_get_handler_sets_up_logging_appropriately_without_debug(app):
+@pytest.mark.parametrize('app_name', ('notification-api', 'celery', None))
+def test_get_handler_sets_up_logging_appropriately_without_debug(app, app_name):
+    app.name = app_name
     app.debug = False
     handler = logging.get_handler(app)
-    assert type(handler) == builtin_logging.StreamHandler
-    assert type(handler.formatter) == JsonFormatter
+    assert type(handler) is builtin_logging.StreamHandler
+    assert type(handler.formatter) is JsonFormatter
 
-    application = app.config["NOTIFY_APP_NAME"]
     record = builtin_logging.makeLogRecord({
-        "application": application,
+        "application": app.name,
         "args": ("Cornelius", 42),
         "levelname": "debug",
         "lineno": 1999,
         "msg": "Hello, %s.  Line %d.",
-        "name": "the_name",
         "pathname": "the_path",
         "requestId": "id",
     })
     message = handler.formatter.format(record)
     message_dict = json.loads(message)
     assert "asctime" in message_dict
-    assert message_dict["application"] == application
-    assert message_dict["name"] == "the_name"
+    assert message_dict["application"] == app_name or 'test'
     assert message_dict["levelname"] == "debug"
     assert message_dict["requestId"] == "id"
     assert message_dict["message"] == "Hello, Cornelius.  Line 42."

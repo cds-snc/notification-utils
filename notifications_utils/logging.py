@@ -4,6 +4,7 @@ import sys
 from itertools import product
 from pathlib import Path
 from time import monotonic
+from uuid import uuid4
 
 from flask import request, g
 from flask.ctx import has_request_context
@@ -13,9 +14,16 @@ from pythonjsonlogger.jsonlogger import JsonFormatter
 # The "application" and "requestId" fields are non-standard LogRecord attributes added below in the
 # "get_handler" function via filters.  If this causes errors, logging is misconfigured.
 #     https://docs.python.org/3.8/library/logging.html#logrecord-attributes
-LOG_FORMAT = '%(asctime)s %(application)s %(name)s %(levelname)s ' \
-             '%(requestId)s "%(message)s" [in %(pathname)s:%(lineno)d]'
+API_LOG_FORMAT = '%(asctime)s %(application)s %(levelname)s ' \
+                 '%(requestId)s "%(message)s" [in %(pathname)s:%(lineno)d]'
+CELERY_LOG_FORMAT = '%(asctime)s %(application)s %(processName)s %(levelname)s ' \
+                    '%(requestId)s "%(message)s" [in %(pathname)s:%(lineno)d]'
 TIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
+
+_service_map = {
+    'app': 'notification-api',
+    'delivery': 'celery',
+}
 
 logger = logging.getLogger(__name__)
 
@@ -134,31 +142,37 @@ def get_handler(app):
     if app.debug:
         # Human readable stdout logs that omit static route 200 responses
         logging.getLogger('werkzeug').addFilter(is_200_static_log)
-        stream_handler.setFormatter(logging.Formatter(LOG_FORMAT, TIME_FORMAT))
-    else:
-        # Machine readable json to stdout
-        stream_handler.setFormatter(JsonFormatter(LOG_FORMAT, TIME_FORMAT))
+
+    stream_handler.setFormatter(
+        JsonFormatter(
+            CELERY_LOG_FORMAT if _service_map.get(app.name, API_LOG_FORMAT) == 'celery' else API_LOG_FORMAT,
+            TIME_FORMAT,
+        )
+    )
 
     return stream_handler
 
 
 class AppNameFilter(logging.Filter):
     def __init__(self, app_name):
-        self.app_name = app_name
+        self.service = _service_map.get(app_name, 'test')
 
     def filter(self, record):
-        record.application = self.app_name
+        record.application = self.service
         return record
 
 
 class RequestIdFilter(logging.Filter):
-    @property
-    def request_id(self):
-        if has_request_context() and hasattr(request, 'request_id'):
-            return request.request_id
-
-        return 'no-request-id'
-
     def filter(self, record):
-        record.requestId = self.request_id
+        # The else is for celery
+        if not getattr(record, 'requestId', ''):
+            record.requestId = RequestIdFilter._get_api_id() if has_request_context() else 'no-request-id'
         return record
+
+    @staticmethod
+    def _get_api_id() -> str:
+        """Generate a request_id.
+
+        g is a Flask global for this request. It's attached to the Flask instance and is only persisted for that request
+        """
+        return g.request_id if getattr(g, 'request_id', '') else str(uuid4())
