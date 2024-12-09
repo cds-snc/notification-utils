@@ -31,10 +31,14 @@ FR_OPEN = r"\[\[fr\]\]"  # matches [[fr]]
 FR_CLOSE = r"\[\[/fr\]\]"  # matches [[/fr]]
 EN_OPEN = r"\[\[en\]\]"  # matches [[en]]
 EN_CLOSE = r"\[\[/en\]\]"  # matches [[/en]]
+RTL_OPEN = r"\[\[rtl\]\]"  # matches [[rtl]]
+RTL_CLOSE = r"\[\[/rtl\]\]"  # matches [[/rtl]]
 FR_OPEN_LITERAL = "[[fr]]"
 FR_CLOSE_LITERAL = "[[/fr]]"
 EN_OPEN_LITERAL = "[[en]]"
 EN_CLOSE_LITERAL = "[[/en]]"
+RTL_OPEN_LITERAL = "[[rtl]]"
+RTL_CLOSE_LITERAL = "[[/rtl]]"
 BR_TAG = r"<br\s?/>"
 
 
@@ -621,6 +625,20 @@ def escape_lang_tags(_content: str) -> str:
     return _content
 
 
+def escape_rtl_tags(_content: str) -> str:
+    """
+    Escape RTL tags into code tags in the content so mistune doesn't put them inside p tags.  This makes it simple
+    to replace them afterwards, and avoids creating invalid HTML in the process
+    """
+
+    # check to ensure we have the same number of opening and closing tags before escaping tags
+    if _content.count(RTL_OPEN_LITERAL) == _content.count(RTL_CLOSE_LITERAL):
+        _content = _content.replace(RTL_OPEN_LITERAL, f"\n```\n{RTL_OPEN_LITERAL}\n```\n")
+        _content = _content.replace(RTL_CLOSE_LITERAL, f"\n```\n{RTL_CLOSE_LITERAL}\n```\n")
+
+    return _content
+
+
 def add_language_divs(_content: str) -> str:
     """
     Custom parser to add the language divs.
@@ -644,6 +662,27 @@ def remove_language_divs(_content: str) -> str:
     """Remove the tags from content. This fn is for use in the email
     preheader, since this is plain text not html"""
     return remove_tags(_content, FR_OPEN, FR_CLOSE, EN_OPEN, EN_CLOSE)
+
+
+def add_rtl_divs(_content: str) -> str:
+    """
+    Custom parser to add the language divs.
+
+    String replace language tags in-place
+    """
+
+    # check to ensure we have the same number of opening and closing tags before escaping tags
+    if _content.count(RTL_OPEN_LITERAL) == _content.count(RTL_CLOSE_LITERAL):
+        _content = _content.replace(RTL_OPEN_LITERAL, '<div dir="rtl">')
+        _content = _content.replace(RTL_CLOSE_LITERAL, "</div>")
+
+    return _content
+
+
+def remove_rtl_divs(_content: str) -> str:
+    """Remove the tags from content. This fn is for use in the email
+    preheader, since this is plain text not html"""
+    return remove_tags(_content, RTL_OPEN, RTL_CLOSE)
 
 
 def remove_tags(_content: str, *tags) -> str:
