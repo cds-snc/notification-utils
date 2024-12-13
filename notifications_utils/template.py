@@ -13,10 +13,12 @@ from notifications_utils.field import Field
 from notifications_utils.formatters import (
     add_language_divs,
     add_prefix,
+    add_rtl_divs,
     add_trailing_newline,
     autolink_sms,
     escape_html,
     escape_lang_tags,
+    escape_rtl_tags,
     make_quotes_smart,
     nl2br,
     nl2li,
@@ -28,6 +30,7 @@ from notifications_utils.formatters import (
     notify_plain_text_email_markdown,
     remove_empty_lines,
     remove_language_divs,
+    remove_rtl_divs,
     remove_smart_quotes_from_email_addresses,
     remove_whitespace_before_punctuation,
     replace_hyphens_with_en_dashes,
@@ -398,6 +401,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             .then(add_trailing_newline)
             .then(notify_email_preheader_markdown)
             .then(remove_language_divs)
+            .then(remove_rtl_divs)
             .then(do_nice_typography)
             .split()
         )[: self.PREHEADER_LENGTH_IN_CHARACTERS].strip()
@@ -805,8 +809,10 @@ def get_html_email_body(template_content, template_values, redact_missing_person
         .then(strip_unsupported_characters)
         .then(add_trailing_newline)
         .then(escape_lang_tags)
+        .then(escape_rtl_tags)
         .then(notify_email_markdown)
         .then(add_language_divs)
+        .then(add_rtl_divs)
         .then(do_nice_typography)
     )
 
