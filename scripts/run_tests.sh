@@ -28,6 +28,9 @@ display_result $? 1 "Code style check"
 ruff check --select I .
 display_result $? 1 "Import order check"
 
+ruff format --check .
+display_result $? 1 "Code format check"
+
 mypy .
 display_result $? 1 "Static type check"
 
