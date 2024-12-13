@@ -57,9 +57,9 @@ clean-docker-containers: ## Clean up any remaining docker containers
 
 .PHONY: format
 format:
-	ruff check --select I --fix .
-	ruff format .
+	ruff check --fix .
 	ruff check
+	ruff format .
 	poetry run mypy .
 	poetry sort
 
