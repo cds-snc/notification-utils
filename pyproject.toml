@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "notifications-utils"
-version = "52.4.1"
+version = "53.1.0"
 description = "Shared python code for Notification - Provides logging utils etc."
 authors = ["Canadian Digital Service"]
 license = "MIT license"
@@ -12,7 +12,7 @@ requires = ["poetry-core>=1.3.2"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-python = "~3.10.9"
+python = "~3.12.7"
 # required by both api and admin
 awscli = "1.33.35"
 bleach = "6.1.0"
@@ -20,7 +20,7 @@ boto3 = "1.34.153"
 cachetools = "4.2.4"
 
 # Pinned dependencies
-certifi = "^2024.0.0"       # pinned for security reasons: https://github.com/cds-snc/notification-utils/security/dependabot/22
+certifi = "^2024.0.0"        # pinned for security reasons: https://github.com/cds-snc/notification-utils/security/dependabot/22
 cryptography = "^43.0.0"     # https://github.com/cds-snc/notification-utils/security/dependabot/31
 Flask = "2.3.3"
 Flask-Redis = "0.4.0"
@@ -36,7 +36,7 @@ pypdf2 = "1.28.6"
 python-json-logger = "2.0.7"
 pytz = "2021.3"
 PyYAML = "6.0.1"
-requests = "2.31.0"
+requests = "2.32.2"
 smartypants = "2.0.1"
 statsd = "3.3.0"
 werkzeug = "3.0.4"
