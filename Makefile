@@ -21,6 +21,10 @@ build: dependencies ## Build project
 test: ## Run tests
 	poetry run ./scripts/run_tests.sh
 
+.PHONY: freeze-requirements
+freeze-requirements:
+	poetry lock --no-update
+
 .PHONY: prepare-docker-build-image
 prepare-docker-build-image: ## Prepare the Docker builder image
 	make -C docker build
@@ -57,9 +61,9 @@ clean-docker-containers: ## Clean up any remaining docker containers
 
 .PHONY: format
 format:
-	ruff check --select I --fix .
-	ruff format .
+	ruff check --fix .
 	ruff check
+	ruff format .
 	poetry run mypy .
 	poetry sort
 
