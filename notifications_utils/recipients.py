@@ -89,7 +89,9 @@ class RecipientCSV:
         max_initial_rows_shown=10,
         safelist=None,
         template=None,
-        remaining_messages=sys.maxsize,
+        remaining_messages=sys.maxsize,  # TODO FF_ANNUAL_LIMIT removal - remove this param
+        remaining_daily_messages=sys.maxsize,
+        remaining_annual_messages=sys.maxsize,
         international_sms=False,
         max_rows=50000,
         user_language="en",
@@ -104,6 +106,8 @@ class RecipientCSV:
         self.template = template if isinstance(template, Template) else None
         self.international_sms = international_sms
         self.remaining_messages = remaining_messages
+        self.remaining_daily_messages = remaining_daily_messages
+        self.remaining_annual_messages = remaining_annual_messages
         self.rows_as_list = None
         self.max_rows = max_rows
 
@@ -162,7 +166,9 @@ class RecipientCSV:
         return bool(
             self.missing_column_headers
             or self.duplicate_recipient_column_headers
-            or self.more_rows_than_can_send
+            or self.more_rows_than_can_send  # TODO FF_ANNUAL_LIMIT removal - Remove this check
+            or self.more_rows_than_can_send_this_year
+            or self.more_rows_than_can_send_today
             or self.too_many_rows
             or (not self.allowed_to_send_to)
             or any(self.rows_with_errors)
@@ -229,9 +235,18 @@ class RecipientCSV:
             else:
                 yield None
 
+    # TODO FF_ANNUAL_LIMIT removal - remove this property
     @property
     def more_rows_than_can_send(self):
         return len(self) > self.remaining_messages
+
+    @property
+    def more_rows_than_can_send_today(self):
+        return len(self) > self.remaining_daily_messages
+
+    @property
+    def more_rows_than_can_send_this_year(self):
+        return len(self) > self.remaining_annual_messages
 
     @property
     def sms_fragment_count(self):
