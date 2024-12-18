@@ -135,12 +135,12 @@ def test_include_placeholder_in_missing_data_if_placeholder_is_conditional(perso
     ]
 )
 def test_extracting_placeholders(template_content, template_subject, expected):
-    assert WithSubjectTemplate({"content": template_content, 'subject': template_subject}).placeholders == expected
+    assert WithSubjectTemplate({"content": template_content, 'subject': template_subject}).placeholder_names == expected
 
 
 @pytest.mark.parametrize('template_cls', [SMSMessageTemplate, SMSPreviewTemplate])
 @pytest.mark.parametrize(
-    "content,prefix, expected_length, expected_replaced_length",
+    "content, prefix, expected_length, expected_replaced_length",
     [
         ("The quick brown fox jumped over the lazy dog", None, 44, 44),
         # should be replaced with a ?

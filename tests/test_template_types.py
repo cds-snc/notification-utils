@@ -1,24 +1,25 @@
-import datetime
 from time import process_time
-import os
-import pytest
-from functools import partial
 from unittest import mock
-from markupsafe import Markup
-from freezegun import freeze_time
 
-from notifications_utils.formatters import LINK_STYLE, PARAGRAPH_STYLE, unlink_govuk_escaped
+import pytest
+from markupsafe import Markup
+
+from notifications_utils.formatters import (
+    BLOCK_QUOTE_STYLE,
+    LINK_STYLE,
+    LIST_ITEM_STYLE,
+    ORDERED_LIST_STYLE,
+    PARAGRAPH_STYLE,
+    UNORDERED_LIST_STYLE
+)
 from notifications_utils.template import (
     Template,
     HTMLEmailTemplate,
-    LetterPreviewTemplate,
-    LetterImageTemplate,
     PlainTextEmailTemplate,
     SMSMessageTemplate,
     SMSPreviewTemplate,
     WithSubjectTemplate,
     EmailPreviewTemplate,
-    LetterPrintTemplate,
     get_html_email_body,
 )
 
@@ -39,18 +40,18 @@ def test_pass_through_renderer():
             'line one\nline two with ((name))\n\nnew paragraph',
             {'name': 'bob'},
             (
-                f'<p style="{PARAGRAPH_STYLE}">line one<br />line two with bob</p>'
-                f'<p style="{PARAGRAPH_STYLE}">new paragraph</p>'
+                f'<p style="{PARAGRAPH_STYLE}">line one<br />\nline two with bob</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">new paragraph</p>\n'
             ),
         ),
         (
             '>>[action](https://example.com/foo?a=b)',
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="https://example.com/foo?a=b" '
-                'target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>action</b></a></p>'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="https://example.com/foo?a=b">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>action</b></a></p>\n'
             )
         ),
         (
@@ -63,81 +64,90 @@ def test_pass_through_renderer():
             {'color': 'brown'},
             (
                 '<h1 style="Margin: 0 0 20px 0; padding: 0; font-size: 32px; line-height: 35px; font-weight: bold; '
-                'color: #323A45;">foo</h1><h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;'
-                'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">Bar</h2>'
-                f'<p style="{PARAGRAPH_STYLE}">The quick brown fox<br /></p>'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="https://example.com" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>the action_link-of doom</b></a></p>'
+                'color: #323A45;">foo</h1>\n'
+                '<h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45; '
+                'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">Bar</h2>\n'
+                f'<p style="{PARAGRAPH_STYLE}">The quick brown fox</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="https://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>the action_link-of doom</b></a></p>\n'
             ),
         ),
         (
             'text before link\n\n>>[great link](http://example.com)\n\ntext after link',
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}">text before link</p>'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="http://example.com" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>great link</b></a></p>'
-                f'<p style="{PARAGRAPH_STYLE}">text after link</p>'
+                f'<p style="{PARAGRAPH_STYLE}">text before link</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>great link</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">text after link</p>\n'
             )
         ),
         (
             'action link: &gt;&gt;[Example](http://example.com)\nanother link: [test](https://example2.com)',
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}">action link: </p>'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="http://example.com" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>Example</b></a></p>'
-                f'<p style="{PARAGRAPH_STYLE}"><br />'
-                f'another link: <a style="{LINK_STYLE}" href="https://example2.com" target="_blank">test</a></p>'
+                f'<p style="{PARAGRAPH_STYLE}">action link:</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>Example</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">'
+                f'another link: <a style="{LINK_STYLE}" target="_blank" href="https://example2.com">test</a></p>\n'
             )
         ),
         (
             'action link: &gt;&gt;[grin](http://example.com) another action link: >>[test](https://example2.com)',
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}">action link: </p>'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="http://example.com" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>grin</b></a></p>'
-                f'<p style="{PARAGRAPH_STYLE}"> another action link: </p>'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="https://example2.com" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>test</b></a></p>'
+                f'<p style="{PARAGRAPH_STYLE}">action link:</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>grin</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">another action link:</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="https://example2.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>test</b></a></p>\n'
             )
         ),
         (
             'text before && link &gt;&gt;[Example](http://example.com) text after & link',
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}">text before &amp;&amp; link </p>'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="http://example.com" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>Example</b></a></p>'
-                f'<p style="{PARAGRAPH_STYLE}"> text after &amp; link</p>'
+                f'<p style="{PARAGRAPH_STYLE}">text before &amp;&amp; link</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>Example</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">text after &amp; link</p>\n'
             )
         ),
         (
             'text before >> link &gt;&gt;[great action](http://example.com) text after >>link',
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}">text before &gt;&gt; link </p>'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="http://example.com" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>great action</b></a></p>'
-                f'<p style="{PARAGRAPH_STYLE}"> text after &gt;&gt;link</p>'
+                f'<p style="{PARAGRAPH_STYLE}">text before &gt;&gt; link</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>great action</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">text after &gt;&gt;link</p>\n'
             )
         ),
         (
             'text >> then [item] and (things) then >>[action](link)',
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}">text &gt;&gt; then [item] and (things) then </p>'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="link" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>action</b></a></p>'
+                f'<p style="{PARAGRAPH_STYLE}">text &gt;&gt; then [item] and (things) then</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="link">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>action</b></a></p>\n'
             )
         ),
         (
@@ -148,19 +158,22 @@ def test_pass_through_renderer():
             ),
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="#" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>action link</b></a></p>'
-                f'<p style="{PARAGRAPH_STYLE}">testing the new </p>'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="#" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>action link</b></a></p>'
-                f'<p style="{PARAGRAPH_STYLE}"> thingy...</p>'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="#" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>click me</b></a></p>'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>action link</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">testing the new</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>action link</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">thingy...</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>click me</b></a></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">! Text with a '
-                '<a style="word-wrap: break-word; color: #004795;" href="#" target="_blank">regular link</a></p>'
+                '<a style="word-wrap: break-word; color: #004795;" target="_blank" href="#">regular link</a></p>\n'
             )
         )
     ],
@@ -188,50 +201,51 @@ def test_get_html_email_body_with_action_links(content, values, expected):
             'normal placeholder formatting: ((foo))',
             (
                 f'<p style="{PARAGRAPH_STYLE}">normal placeholder formatting: <span class=\'placeholder\'><mark>((foo))'
-                '</mark></span></p>'
+                '</mark></span></p>\n'
             ),
         ),
         (
             'regular markdown link: [link text](#)',
             (
                 f'<p style="{PARAGRAPH_STYLE}">regular markdown link: '
-                f'<a style="{LINK_STYLE}" href="#" target="_blank">link text</a></p>'
+                f'<a style="{LINK_STYLE}" target="_blank" href="#">link text</a></p>\n'
             ),
         ),
         (
             'placeholder in link text, without placeholder in link: [link ((foo))](https://test.com/)',
             (
                 f'<p style="{PARAGRAPH_STYLE}">placeholder in link text, without placeholder in link: '
-                f'<a style="{LINK_STYLE}" href="https://test.com/" target="_blank">link '
-                '<span class=\'placeholder\'><mark>((foo))</mark></span></a></p>'
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/">link '
+                '<span class=\'placeholder\'><mark>((foo))</mark></span></a></p>\n'
             ),
         ),
         (
             'no format within link, placeholder at end: [link text](https://test.com/((foo)))',
             (
                 f'<p style="{PARAGRAPH_STYLE}">no format within link, placeholder at end: '
-                f'<a style="{LINK_STYLE}" href="https://test.com/((foo))" target="_blank">link text</a></p>'
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((foo))">link text</a></p>\n'
             )
         ),
         (
             'no format within link, placeholder in middle: [link text](https://test.com/((foo))?xyz=123)',
             (
                 f'<p style="{PARAGRAPH_STYLE}">no format within link, placeholder in middle: '
-                f'<a style="{LINK_STYLE}" href="https://test.com/((foo))?xyz=123" target="_blank">link text</a></p>'
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((foo))?xyz=123">link text</a></p>\n'
             )
         ),
         (
             'no format in link, with only placeholder: [link text](((foo)))',
             (
                 f'<p style="{PARAGRAPH_STYLE}">no format in link, with only placeholder: '
-                f'<a style="{LINK_STYLE}" href="((foo))" target="_blank">link text</a></p>'
+                f'<a style="{LINK_STYLE}" target="_blank" href="((foo))">link text</a></p>\n'
             )
         ),
         (
             'no format within link, multiple placeholders: [link text](https://test.com/((foo))?xyz=((bar)))',
             (
                 f'<p style="{PARAGRAPH_STYLE}">no format within link, multiple placeholders: '
-                f'<a style="{LINK_STYLE}" href="https://test.com/((foo))?xyz=((bar))" target="_blank">link text</a></p>'
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((foo))?xyz=((bar))">'
+                'link text</a></p>\n'
             )
         ),
     ],
@@ -250,9 +264,8 @@ def test_get_html_email_body_preview_with_placeholder_in_markdown_link(content, 
 
 
 def test_html_email_inserts_body():
-    assert 'the &lt;em&gt;quick&lt;/em&gt; brown fox' in str(HTMLEmailTemplate(
-        {'content': 'the <em>quick</em> brown fox', 'subject': ''}
-    ))
+    content = 'the <em>quick</em> brown fox'
+    assert content in str(HTMLEmailTemplate({'content': content, 'subject': ''}))
 
 
 @pytest.mark.parametrize(
@@ -454,133 +467,108 @@ def test_preheader_is_at_start_of_html_emails():
         'font-size: 16px;Margin: 0;color:#323A45;">\n'
         '\n'
         '<span style="display: none;font-size: 1px;color: #fff; max-height: 0;">content…</span>'
-    ) in str(
-        HTMLEmailTemplate({'content': 'content', 'subject': 'subject'})
-    )
+    ) in str(HTMLEmailTemplate({'content': 'content', 'subject': 'subject'}))
 
 
-@pytest.mark.parametrize('content, values, expected_preheader', [
-    (
+@pytest.mark.parametrize(
+    'content, values, expected_preheader',
+    [
         (
-            'Hello (( name ))\n'
-            '\n'
-            '# This - is a "heading"\n'
-            '\n'
-            'My favourite websites\' URLs are:\n'
-            '- GOV.UK\n'
-            '- https://www.example.com\n'
+            (
+                'Hello (( name ))\n'
+                '\n'
+                '# This - is a "heading"\n'
+                '\n'
+                'My favourite websites\' URLs are:\n'
+                '- va.gov\n'
+                '- https://www.example.com\n'
+            ),
+            {'name': 'Jo'},
+            'Hello Jo This – is a “heading” My favourite websites’ URLs are: • va.gov • https://www.example.com',
         ),
-        {'name': 'Jo'},
-        'Hello Jo This – is a “heading” My favourite websites’ URLs are: • GOV.​UK • https://www.example.com',
-    ),
-    (
         (
-            '[Markdown link](https://www.example.com)\n'
+            (
+                '[Markdown link](https://www.example.com)\n'
+            ),
+            {},
+            'Markdown link',
         ),
-        {},
-        'Markdown link',
-    ),
-    (
-        """
-            Lorem Ipsum is simply dummy text of the printing and
-            typesetting industry.
-
-            Lorem Ipsum has been the industry’s standard dummy text
-            ever since the 1500s, when an unknown printer took a galley
-            of type and scrambled it to make a type specimen book.
-
-            Lorem Ipsum is simply dummy text of the printing and
-            typesetting industry.
-
-            Lorem Ipsum has been the industry’s standard dummy text
-            ever since the 1500s, when an unknown printer took a galley
-            of type and scrambled it to make a type specimen book.
-        """,
-        {},
         (
-            'Lorem Ipsum is simply dummy text of the printing and '
-            'typesetting industry. Lorem Ipsum has been the industry’s '
-            'standard dummy text ever since the 1500s, when an unknown '
-            'printer took a galley of type and scrambled it to make a '
-            'type specimen book. Lorem Ipsu'
+            (
+                '>>[action link](https://www.example.com)\n'
+            ),
+            {},
+            'action link',
         ),
-    ),
-    (
-        'short email',
-        {},
-        'short email',
-    ),
-])
-@mock.patch(
-    'notifications_utils.template.HTMLEmailTemplate.jinja_template.render',
-    return_value='mocked'
+        (
+            """
+                Lorem Ipsum is simply dummy text of the printing and
+                typesetting industry.
+
+                Lorem Ipsum has been the industry’s standard dummy text
+                ever since the 1500s, when an unknown printer took a galley
+                of type and scrambled it to make a type specimen book.
+
+                Lorem Ipsum is simply dummy text of the printing and
+                typesetting industry.
+
+                Lorem Ipsum has been the industry’s standard dummy text
+                ever since the 1500s, when an unknown printer took a galley
+                of type and scrambled it to make a type specimen book.
+            """,
+            {},
+            (
+                'Lorem Ipsum is simply dummy text of the printing and '
+                'typesetting industry. Lorem Ipsum has been the industry’s '
+                'standard dummy text ever since the 1500s, when an unknown '
+                'printer took a galley of type and scrambled it to make a '
+                'type specimen book. Lorem Ipsu'
+            ),
+        ),
+        (
+            'short email',
+            {},
+            'short email',
+        ),
+    ],
+    ids=['1', '2', '3', '4', '5']
 )
 def test_content_of_preheader_in_html_emails(
-    mock_jinja_template,
     content,
     values,
     expected_preheader,
 ):
-    assert str(HTMLEmailTemplate(
+    assert HTMLEmailTemplate(
         {'content': content, 'subject': 'subject'},
         values
-    )) == 'mocked'
-    assert mock_jinja_template.call_args[0][0]['preheader'] == expected_preheader
+    ).preheader == expected_preheader
 
 
-@pytest.mark.parametrize('template_class, extra_args, result, markdown_renderer', [
-    [
-        HTMLEmailTemplate,
-        {},
-        (
-            'the quick brown fox\n'
-            '\n'
-            'jumped over the lazy dog\n'
-        ),
-        'notifications_utils.template.notify_email_markdown',
-    ],
-    [
-        LetterPreviewTemplate,
-        {},
-        (
-            'the quick brown fox\n'
-            '\n'
-            'jumped over the lazy dog\n'
-        ),
-        'notifications_utils.template.notify_letter_preview_markdown'
-    ],
-])
-def test_markdown_in_templates(
-    template_class,
-    extra_args,
-    result,
-    markdown_renderer,
-):
-    with mock.patch(markdown_renderer, return_value='') as mock_markdown_renderer:
-        str(template_class(
-            {
-                "content": (
-                    'the quick ((colour)) ((animal))\n'
-                    '\n'
-                    'jumped over the lazy dog'
-                ),
-                'subject': 'animal story'
-            },
-            {'animal': 'fox', 'colour': 'brown'},
-            **extra_args
-        ))
-    mock_markdown_renderer.assert_called_once_with(result)
+def test_markdown_in_templates():
+    str(HTMLEmailTemplate(
+        {
+            "content": (
+                'the quick ((colour)) ((animal))\n'
+                '\n'
+                'jumped over the lazy dog'
+            ),
+            'subject': 'animal story'
+        },
+        {'animal': 'fox', 'colour': 'brown'},
+    )) == 'the quick brown fox\n\njumped over the lazy dog\n'
 
 
 @pytest.mark.parametrize(
-    'template_class', [
+    'template_class',
+    [
         HTMLEmailTemplate,
         EmailPreviewTemplate,
         SMSPreviewTemplate,
     ]
 )
 @pytest.mark.parametrize(
-    "url, url_with_entities_replaced", [
+    "url, url_with_entities_replaced",
+    [
         ("http://example.com", "http://example.com"),
         ("http://www.gov.uk/", "http://www.gov.uk/"),
         ("https://www.gov.uk/", "https://www.gov.uk/"),
@@ -589,70 +577,47 @@ def test_markdown_in_templates(
             "http://service.gov.uk/blah.ext?q=a%20b%20c&order=desc#fragment",
             "http://service.gov.uk/blah.ext?q=a%20b%20c&amp;order=desc#fragment",
         ),
-        pytest.param("example.com", "example.com", marks=pytest.mark.xfail),
-        pytest.param("www.example.com", "www.example.com", marks=pytest.mark.xfail),
-        pytest.param(
-            "http://service.gov.uk/blah.ext?q=one two three",
-            "http://service.gov.uk/blah.ext?q=one two three",
-            marks=pytest.mark.xfail,
-        ),
-        pytest.param("ftp://example.com", "ftp://example.com", marks=pytest.mark.xfail),
-        pytest.param("mailto:test@example.com", "mailto:test@example.com", marks=pytest.mark.xfail),
     ]
 )
 def test_makes_links_out_of_URLs(template_class, url, url_with_entities_replaced):
-    assert '<a style="word-wrap: break-word; color: #004795;" href="{}">{}</a>'.format(
-        url_with_entities_replaced, url_with_entities_replaced
+    assert '<a style="{}" target="_blank" href="{}">{}</a>'.format(
+        LINK_STYLE, url_with_entities_replaced, url_with_entities_replaced
     ) in str(template_class({'content': url, 'subject': ''}))
 
 
-@pytest.mark.parametrize('content, html_snippet', (
+@pytest.mark.parametrize(
+    'content, html_snippet',
     (
         (
-            'You’ve been invited to a service. Click this link:\n'
-            'https://service.example.com/accept_invite/a1b2c3d4\n'
-            '\n'
-            'Thanks\n'
+            (
+                'You’ve been invited to a service. Click this link:\n'
+                'https://service.example.com/accept_invite/a1b2c3d4\n'
+                '\n'
+                'Thanks\n'
+            ),
+            (
+                '<a style="word-wrap: break-word; color: #004795;" target="_blank"'
+                ' href="https://service.example.com/accept_invite/a1b2c3d4">'
+                'https://service.example.com/accept_invite/a1b2c3d4'
+                '</a>'
+            ),
         ),
         (
-            '<a style="word-wrap: break-word; color: #004795;"'
-            ' href="https://service.example.com/accept_invite/a1b2c3d4">'
-            'https://service.example.com/accept_invite/a1b2c3d4'
-            '</a>'
+            (
+                'https://service.example.com/accept_invite/?a=b&c=d&'
+            ),
+            (
+                '<a style="word-wrap: break-word; color: #004795;" target="_blank"'
+                ' href="https://service.example.com/accept_invite/?a=b&amp;c=d&amp;">'
+                'https://service.example.com/accept_invite/?a=b&amp;c=d&amp;'
+                '</a>'
+            ),
         ),
     ),
-    (
-        (
-            'https://service.example.com/accept_invite/?a=b&c=d&'
-        ),
-        (
-            '<a style="word-wrap: break-word; color: #004795;"'
-            ' href="https://service.example.com/accept_invite/?a=b&amp;c=d&amp;">'
-            'https://service.example.com/accept_invite/?a=b&amp;c=d&amp;'
-            '</a>'
-        ),
-    ),
-))
+    ids=['no_url_params', 'with_url_params']
+)
 def test_HTML_template_has_URLs_replaced_with_links(content, html_snippet):
     assert html_snippet in str(HTMLEmailTemplate({'content': content, 'subject': ''}))
-
-
-@pytest.mark.parametrize(
-    "template_content,expected", [
-        ("gov.uk", u"gov.\u200Buk"),
-        ("GOV.UK", u"GOV.\u200BUK"),
-        ("Gov.uk", u"Gov.\u200Buk"),
-        ("https://gov.uk", "https://gov.uk"),
-        ("https://www.gov.uk", "https://www.gov.uk"),
-        ("www.gov.uk", "www.gov.uk"),
-        ("gov.uk/register-to-vote", "gov.uk/register-to-vote"),
-        ("gov.uk?q=", "gov.uk?q=")
-    ]
-)
-def test_escaping_govuk_in_email_templates(template_content, expected):
-    assert unlink_govuk_escaped(template_content) == expected
-    assert expected in str(PlainTextEmailTemplate({'content': template_content, 'subject': ''}))
-    assert expected in str(HTMLEmailTemplate({'content': template_content, 'subject': ''}))
 
 
 def test_stripping_of_unsupported_characters_in_email_templates():
@@ -662,44 +627,48 @@ def test_stripping_of_unsupported_characters_in_email_templates():
     assert expected in str(HTMLEmailTemplate({'content': template_content, 'subject': ''}))
 
 
-@mock.patch('notifications_utils.template.add_prefix', return_value='')
 @pytest.mark.parametrize(
-    "template_class, prefix, body, expected_call", [
-        (SMSMessageTemplate, "a", "b", (Markup("b"), "a")),
-        (SMSPreviewTemplate, "a", "b", (Markup("b"), "a")),
-        (SMSMessageTemplate, None, "b", (Markup("b"), None)),
-        (SMSPreviewTemplate, None, "b", (Markup("b"), None)),
-        (SMSMessageTemplate, '<em>ht&ml</em>', "b", (Markup("b"), '<em>ht&ml</em>')),
-        (SMSPreviewTemplate, '<em>ht&ml</em>', "b", (Markup("b"), '&lt;em&gt;ht&amp;ml&lt;/em&gt;')),
-    ]
+    "template_class, prefix, body, expected",
+    [
+        (SMSMessageTemplate, 'a', 'b', 'a: b'),
+        (SMSMessageTemplate, None, 'b', 'b'),
+        (SMSMessageTemplate, '<em>ht&ml</em>', 'b', '<em>ht&ml</em>: b'),
+        (SMSPreviewTemplate, 'a', 'b', '\n\n<div class="sms-message-wrapper">\n  a: b\n</div>'),
+        (SMSPreviewTemplate, None, 'b', '\n\n<div class="sms-message-wrapper">\n  b\n</div>'),
+        (
+            SMSPreviewTemplate,
+            '<em>ht&ml</em>',
+            'b',
+            '\n\n<div class="sms-message-wrapper">\n  &lt;em&gt;ht&amp;ml&lt;/em&gt;: b\n</div>',
+        ),
+    ],
+    ids=['message_a', 'message_none', 'message_html', 'preview_a', 'preview_none', 'preview_html']
 )
-def test_sms_message_adds_prefix(add_prefix, template_class, prefix, body, expected_call):
+def test_sms_templates_add_prefix(template_class, prefix, body, expected):
     template = template_class({'content': body})
     template.prefix = prefix
     template.sender = None
-    str(template)
-    add_prefix.assert_called_once_with(*expected_call)
+    assert str(template) == expected
 
 
-@mock.patch('notifications_utils.template.add_prefix', return_value='')
 @pytest.mark.parametrize(
-    'template_class', [SMSMessageTemplate, SMSPreviewTemplate]
-)
-@pytest.mark.parametrize(
-    "show_prefix, prefix, body, sender, expected_call", [
-        (False, "a", "b", "c", (Markup("b"), None)),
-        (True, "a", "b", None, (Markup("b"), "a")),
-        (True, "a", "b", False, (Markup("b"), "a")),
+    "template_class, show_prefix, prefix, body, sender, expected",
+    [
+        (SMSMessageTemplate, False, "a", "b", "c", 'b'),
+        (SMSMessageTemplate, True, "a", "b", None, 'a: b'),
+        (SMSMessageTemplate, True, "a", "b", False, 'a: b'),
+        (SMSPreviewTemplate, False, "a", "b", "c", '\n\n<div class="sms-message-wrapper">\n  b\n</div>'),
+        (SMSPreviewTemplate, True, "a", "b", None, '\n\n<div class="sms-message-wrapper">\n  a: b\n</div>'),
+        (SMSPreviewTemplate, True, "a", "b", False, '\n\n<div class="sms-message-wrapper">\n  a: b\n</div>'),
     ]
 )
 def test_sms_message_adds_prefix_only_if_asked_to(
-    add_prefix,
+    template_class,
     show_prefix,
     prefix,
     body,
     sender,
-    expected_call,
-    template_class,
+    expected,
 ):
     template = template_class(
         {'content': body},
@@ -707,8 +676,7 @@ def test_sms_message_adds_prefix_only_if_asked_to(
         show_prefix=show_prefix,
         sender=sender,
     )
-    str(template)
-    add_prefix.assert_called_once_with(*expected_call)
+    assert str(template) == expected
 
 
 @pytest.mark.parametrize('content_to_look_for', [
@@ -754,7 +722,7 @@ def test_sms_messages_dont_downgrade_non_sms_if_setting_is_false(mock_sms_encode
     assert mock_sms_encode.called is False
 
 
-@mock.patch('notifications_utils.template.nl2br')
+@mock.patch('notifications_utils.template.nl2br', return_value='')
 def test_sms_preview_adds_newlines(nl2br):
     content = "the\nquick\n\nbrown fox"
     str(SMSPreviewTemplate({'content': content}))
@@ -796,267 +764,6 @@ def test_sms_message_normalises_newlines(content):
     )
 
 
-@pytest.mark.skip(reason="not in use")
-@freeze_time("2012-12-12 12:12:12")
-@mock.patch('notifications_utils.template.LetterPreviewTemplate.jinja_template.render')
-@mock.patch('notifications_utils.template.remove_empty_lines', return_value='123 Street')
-@mock.patch('notifications_utils.template.unlink_govuk_escaped')
-@mock.patch('notifications_utils.template.notify_letter_preview_markdown', return_value='Bar')
-@mock.patch('notifications_utils.template.strip_pipes', side_effect=lambda x: x)
-@pytest.mark.parametrize('values, expected_address', [
-    ({}, Markup(
-        "<span class='placeholder-no-brackets'>address line 1</span>\n"
-        "<span class='placeholder-no-brackets'>address line 2</span>\n"
-        "<span class='placeholder-no-brackets'>address line 3</span>\n"
-        "<span class='placeholder-no-brackets'>address line 4</span>\n"
-        "<span class='placeholder-no-brackets'>address line 5</span>\n"
-        "<span class='placeholder-no-brackets'>address line 6</span>\n"
-        "<span class='placeholder-no-brackets'>postcode</span>"
-    )),
-    ({
-        'address line 1': '123 Fake Street',
-        'address line 6': 'United Kingdom',
-    }, Markup(
-        "123 Fake Street\n"
-        "<span class='placeholder-no-brackets'>address line 2</span>\n"
-        "<span class='placeholder-no-brackets'>address line 3</span>\n"
-        "<span class='placeholder-no-brackets'>address line 4</span>\n"
-        "<span class='placeholder-no-brackets'>address line 5</span>\n"
-        "United Kingdom\n"
-        "<span class='placeholder-no-brackets'>postcode</span>"
-    )),
-    ({
-        'address line 1': '123 Fake Street',
-        'address line 2': 'City of Town',
-        'postcode': 'SW1A 1AA',
-    }, Markup(
-        "123 Fake Street\n"
-        "City of Town\n"
-        "\n"
-        "\n"
-        "\n"
-        "\n"
-        "SW1A 1AA"
-    ))
-])
-@pytest.mark.parametrize('contact_block, expected_rendered_contact_block', [
-    (
-        None,
-        ''
-    ),
-    (
-        '',
-        ''
-    ),
-    (
-        """
-            The Pension Service
-            Mail Handling Site A
-            Wolverhampton  WV9 1LU
-
-            Telephone: 0845 300 0168
-            Email: fpc.customercare@dwp.gsi.gov.uk
-            Monday - Friday  8am - 6pm
-            www.gov.uk
-        """,
-        (
-            'The Pension Service<br>'
-            'Mail Handling Site A<br>'
-            'Wolverhampton  WV9 1LU<br>'
-            '<br>'
-            'Telephone: 0845 300 0168<br>'
-            'Email: fpc.customercare@dwp.gsi.gov.uk<br>'
-            'Monday - Friday  8am - 6pm<br>'
-            'www.gov.uk'
-        )
-    )
-])
-@pytest.mark.parametrize('extra_args, expected_logo_file_name, expected_logo_class', [
-    ({}, None, None),
-    ({'logo_file_name': 'example.foo'}, 'example.foo', 'foo'),
-])
-@pytest.mark.parametrize('additional_extra_args, expected_date', [
-    ({}, '12 December 2012'),
-    ({'date': None}, '12 December 2012'),
-    ({'date': datetime.date.fromtimestamp(0)}, '1 January 1970'),
-])
-def test_letter_preview_renderer(
-    strip_pipes,
-    letter_markdown,
-    unlink_govuk,
-    remove_empty_lines,
-    jinja_template,
-    values,
-    expected_address,
-    contact_block,
-    expected_rendered_contact_block,
-    extra_args,
-    expected_logo_file_name,
-    expected_logo_class,
-    additional_extra_args,
-    expected_date,
-):
-    extra_args.update(additional_extra_args)
-    str(LetterPreviewTemplate(
-        {'content': 'Foo', 'subject': 'Subject'},
-        values,
-        contact_block=contact_block,
-        **extra_args
-    ))
-    remove_empty_lines.assert_called_once_with(expected_address)
-    jinja_template.assert_called_once_with({
-        'address': '<ul><li>123 Street</li></ul>',
-        'subject': 'Subject',
-        'message': 'Bar',
-        'date': expected_date,
-        'contact_block': expected_rendered_contact_block,
-        'admin_base_url': 'http://localhost:6012',
-        'logo_file_name': expected_logo_file_name,
-        'logo_class': expected_logo_class,
-    })
-    letter_markdown.assert_called_once_with(Markup('Foo\n'))
-    unlink_govuk.assert_not_called()
-    assert strip_pipes.call_args_list == [
-        mock.call('Subject'),
-        mock.call('Foo'),
-        mock.call(expected_address),
-        mock.call(expected_rendered_contact_block),
-    ]
-
-
-@freeze_time("2001-01-01 12:00:00.000000")
-@mock.patch('notifications_utils.template.LetterPreviewTemplate.jinja_template.render')
-def test_letter_preview_renderer_without_mocks(jinja_template):
-
-    str(LetterPreviewTemplate(
-        {'content': 'Foo', 'subject': 'Subject'},
-        {'addressline1': 'name', 'addressline2': 'street', 'postcode': 'SW1 1AA'},
-        contact_block='',
-    ))
-
-    jinja_template_locals = jinja_template.call_args_list[0][0][0]
-
-    assert jinja_template_locals['address'] == (
-        '<ul>'
-        '<li>name</li>'
-        '<li>street</li>'
-        '<li>SW1 1AA</li>'
-        '</ul>'
-    )
-    assert jinja_template_locals['subject'] == 'Subject'
-    assert jinja_template_locals['message'] == "<p>Foo</p>"
-    assert jinja_template_locals['date'] == '1 January 2001'
-    assert jinja_template_locals['contact_block'] == ''
-    assert jinja_template_locals['admin_base_url'] == 'http://localhost:6012'
-    assert jinja_template_locals['logo_file_name'] is None
-
-
-@freeze_time("2012-12-12 12:12:12")
-@mock.patch('notifications_utils.template.LetterImageTemplate.jinja_template.render')
-@pytest.mark.parametrize('page_count, expected_oversized, expected_page_numbers', [
-    (
-        1, False,
-        [1],
-    ),
-    (
-        5, False,
-        [1, 2, 3, 4, 5],
-    ),
-    (
-        10, False,
-        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    ),
-    (
-        11, True,
-        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    ),
-    (
-        99, True,
-        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    ),
-])
-@pytest.mark.parametrize('postage_args, expected_postage', (
-    pytest.param({}, 'second'),
-    pytest.param({'postage': 'first'}, 'first'),
-    pytest.param({'postage': 'second'}, 'second'),
-    pytest.param({'postage': 'third'}, 'third', marks=pytest.mark.xfail(raises=TypeError)),
-))
-def test_letter_image_renderer(
-    jinja_template,
-    page_count,
-    expected_page_numbers,
-    expected_oversized,
-    postage_args,
-    expected_postage,
-):
-    str(LetterImageTemplate(
-        {'content': 'Content', 'subject': 'Subject'},
-        image_url='http://example.com/endpoint.png',
-        page_count=page_count,
-        contact_block='10 Downing Street',
-        **postage_args
-    ))
-    jinja_template.assert_called_once_with({
-        'image_url': 'http://example.com/endpoint.png',
-        'page_numbers': expected_page_numbers,
-        'too_many_pages': expected_oversized,
-        'address': (
-            "<ul>"
-            "<li><span class='placeholder-no-brackets'>address line 1</span></li>"
-            "<li><span class='placeholder-no-brackets'>address line 2</span></li>"
-            "<li><span class='placeholder-no-brackets'>address line 3</span></li>"
-            "<li><span class='placeholder-no-brackets'>address line 4</span></li>"
-            "<li><span class='placeholder-no-brackets'>address line 5</span></li>"
-            "<li><span class='placeholder-no-brackets'>address line 6</span></li>"
-            "<li><span class='placeholder-no-brackets'>postcode</span></li>"
-            "</ul>"
-        ),
-        'contact_block': '10 Downing Street',
-        'date': '12 December 2012',
-        'subject': 'Subject',
-        'message': '<p>Content</p>',
-        'postage': expected_postage,
-    })
-
-
-@pytest.mark.parametrize('page_image_url', [
-    pytest.param('http://example.com/endpoint.png?page=0', marks=pytest.mark.xfail),
-    'http://example.com/endpoint.png?page=1',
-    'http://example.com/endpoint.png?page=2',
-    'http://example.com/endpoint.png?page=3',
-    pytest.param('http://example.com/endpoint.png?page=4', marks=pytest.mark.xfail),
-])
-def test_letter_image_renderer_pagination(page_image_url):
-    assert page_image_url in str(LetterImageTemplate(
-        {'content': '', 'subject': ''},
-        image_url='http://example.com/endpoint.png',
-        page_count=3,
-    ))
-
-
-@pytest.mark.parametrize('partial_call, expected_exception', [
-    (
-        partial(LetterImageTemplate),
-        TypeError
-    ),
-    (
-        partial(LetterImageTemplate, page_count=1),
-        TypeError
-    ),
-    (
-        partial(LetterImageTemplate, image_url='foo'),
-        TypeError
-    ),
-    (
-        partial(LetterImageTemplate, image_url='foo', page_count='foo'),
-        ValueError
-    ),
-])
-def test_letter_image_renderer_requires_arguments(partial_call, expected_exception):
-    with pytest.raises(expected_exception):
-        partial_call({'content': '', 'subject': ''})
-
-
 def test_sets_subject():
     assert WithSubjectTemplate({"content": '', 'subject': 'Your tax is due'}).subject == 'Your tax is due'
 
@@ -1066,8 +773,6 @@ def test_subject_line_gets_applied_to_correct_template_types():
         EmailPreviewTemplate,
         HTMLEmailTemplate,
         PlainTextEmailTemplate,
-        LetterPreviewTemplate,
-        LetterImageTemplate,
     ]:
         assert issubclass(cls, WithSubjectTemplate)
     for cls in [
@@ -1095,12 +800,12 @@ def test_subject_line_gets_replaced():
         mock.call('content', {}, html='passthrough', markdown_lists=True)
     ]),
     (HTMLEmailTemplate, {}, [
-        mock.call('content', {}, preview_mode=False, html='escape', markdown_lists=True,
-                  redact_missing_personalisation=False),
+        mock.call('content', {}, html='passthrough', markdown_lists=True,
+                  redact_missing_personalisation=False, preview_mode=False),
         mock.call('content', {}, html='escape', markdown_lists=True),
     ]),
     (EmailPreviewTemplate, {}, [
-        mock.call('content', {}, preview_mode=False, html='escape', markdown_lists=True,
+        mock.call('content', {}, preview_mode=False, html='passthrough', markdown_lists=True,
                   redact_missing_personalisation=False),
         mock.call('subject', {}, html='escape', redact_missing_personalisation=False),
         mock.call('((email address))', {}, with_brackets=False),
@@ -1109,38 +814,8 @@ def test_subject_line_gets_replaced():
         mock.call('content', {}, html='passthrough'),
     ]),
     (SMSPreviewTemplate, {}, [
-        mock.call('((phone number))', {}, with_brackets=False, html='escape'),
         mock.call('content', {}, html='escape', redact_missing_personalisation=False),
-    ]),
-    (LetterPreviewTemplate, {'contact_block': 'www.gov.uk'}, [
-        mock.call('subject', {}, html='escape', is_letter_template=True, redact_missing_personalisation=False),
-        mock.call('content', {}, html='escape', markdown_lists=True, redact_missing_personalisation=False),
-        mock.call((
-            '((address line 1))\n'
-            '((address line 2))\n'
-            '((address line 3))\n'
-            '((address line 4))\n'
-            '((address line 5))\n'
-            '((address line 6))\n'
-            '((postcode))'
-        ), {}, with_brackets=False, html='escape', is_letter_template=True),
-        mock.call('www.gov.uk', {}, html='escape', redact_missing_personalisation=False),
-    ]),
-    (LetterImageTemplate, {
-        'image_url': 'http://example.com', 'page_count': 1, 'contact_block': 'www.gov.uk'
-    }, [
-        mock.call((
-            '((address line 1))\n'
-            '((address line 2))\n'
-            '((address line 3))\n'
-            '((address line 4))\n'
-            '((address line 5))\n'
-            '((address line 6))\n'
-            '((postcode))'
-        ), {}, with_brackets=False, html='escape', is_letter_template=True),
-        mock.call('www.gov.uk', {}, html='escape', redact_missing_personalisation=False),
-        mock.call('subject', {}, html='escape', redact_missing_personalisation=False, is_letter_template=True),
-        mock.call('content', {}, html='escape', markdown_lists=True, redact_missing_personalisation=False),
+        mock.call('((phone number))', {}, with_brackets=False, html='escape'),
     ]),
     (Template, {'redact_missing_personalisation': True}, [
         mock.call('content', {}, html='escape', redact_missing_personalisation=True),
@@ -1149,28 +824,14 @@ def test_subject_line_gets_replaced():
         mock.call('content', {}, html='passthrough', redact_missing_personalisation=True, markdown_lists=True),
     ]),
     (EmailPreviewTemplate, {'redact_missing_personalisation': True}, [
-        mock.call('content', {}, preview_mode=False, html='escape', markdown_lists=True,
+        mock.call('content', {}, preview_mode=False, html='passthrough', markdown_lists=True,
                   redact_missing_personalisation=True),
         mock.call('subject', {}, html='escape', redact_missing_personalisation=True),
         mock.call('((email address))', {}, with_brackets=False),
     ]),
     (SMSPreviewTemplate, {'redact_missing_personalisation': True}, [
-        mock.call('((phone number))', {}, with_brackets=False, html='escape'),
         mock.call('content', {}, html='escape', redact_missing_personalisation=True),
-    ]),
-    (LetterPreviewTemplate, {'contact_block': 'www.gov.uk', 'redact_missing_personalisation': True}, [
-        mock.call('subject', {}, html='escape', redact_missing_personalisation=True, is_letter_template=True),
-        mock.call('content', {}, html='escape', markdown_lists=True, redact_missing_personalisation=True),
-        mock.call((
-            '((address line 1))\n'
-            '((address line 2))\n'
-            '((address line 3))\n'
-            '((address line 4))\n'
-            '((address line 5))\n'
-            '((address line 6))\n'
-            '((postcode))'
-        ), {}, with_brackets=False, html='escape', is_letter_template=True),
-        mock.call('www.gov.uk', {}, html='escape', redact_missing_personalisation=True),
+        mock.call('((phone number))', {}, with_brackets=False, html='escape'),
     ]),
 ])
 @mock.patch('notifications_utils.template.Field.__init__', return_value=None)
@@ -1184,123 +845,26 @@ def test_templates_handle_html_and_redacting(
 ):
     assert str(template_class({'content': 'content', 'subject': 'subject'}, **extra_args))
     assert mock_field_init.call_args_list == expected_field_calls
+    mock_field_str.assert_called()
 
 
-@pytest.mark.parametrize('template_class, extra_args, expected_remove_whitespace_calls', [
-    (PlainTextEmailTemplate, {}, [
-        mock.call('\n\ncontent'),
-        mock.call(Markup('subject')),
-        mock.call(Markup('subject')),
-    ]),
-    (HTMLEmailTemplate, {}, [
-        mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'content'
-            '</p>'
-        ),
-        mock.call('\n\ncontent'),
-        mock.call(Markup('subject')),
-        mock.call(Markup('subject')),
-    ]),
-    (EmailPreviewTemplate, {}, [
-        mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'content'
-            '</p>'
-        ),
-        mock.call(Markup('subject')),
-        mock.call(Markup('subject')),
-        mock.call(Markup('subject')),
-    ]),
-    (SMSMessageTemplate, {}, [
-        mock.call('content'),
-    ]),
-    (SMSPreviewTemplate, {}, [
-        mock.call('content'),
-    ]),
-    (LetterPreviewTemplate, {'contact_block': 'www.gov.uk'}, [
-        mock.call(Markup('subject')),
-        mock.call(Markup('<p>content</p>')),
-        mock.call((
-            "<span class='placeholder-no-brackets'>address line 1</span>\n"
-            "<span class='placeholder-no-brackets'>address line 2</span>\n"
-            "<span class='placeholder-no-brackets'>address line 3</span>\n"
-            "<span class='placeholder-no-brackets'>address line 4</span>\n"
-            "<span class='placeholder-no-brackets'>address line 5</span>\n"
-            "<span class='placeholder-no-brackets'>address line 6</span>\n"
-            "<span class='placeholder-no-brackets'>postcode</span>"
-        )),
-        mock.call(Markup('www.gov.uk')),
-        mock.call(Markup('subject')),
-        mock.call(Markup('subject')),
-    ]),
-])
-@mock.patch('notifications_utils.template.remove_whitespace_before_punctuation', side_effect=lambda x: x)
-def test_templates_remove_whitespace_before_punctuation(
-    mock_remove_whitespace,
-    template_class,
-    extra_args,
-    expected_remove_whitespace_calls,
-):
-    template = template_class({'content': 'content', 'subject': 'subject'}, **extra_args)
+@pytest.mark.parametrize(
+    'template_class',
+    [
+        PlainTextEmailTemplate,
+        HTMLEmailTemplate,
+        EmailPreviewTemplate,
+        SMSMessageTemplate,
+        SMSPreviewTemplate,
+    ],
+)
+def test_templates_remove_whitespace_before_punctuation(template_class):
+    template = template_class({'content': 'content  \t\t .', 'subject': 'subject\t \t,'})
 
-    assert str(template)
+    assert 'content.' in str(template)
 
     if hasattr(template, 'subject'):
-        assert template.subject
-
-    assert mock_remove_whitespace.call_args_list == expected_remove_whitespace_calls
-
-
-@pytest.mark.parametrize('template_class, extra_args, expected_calls', [
-    (PlainTextEmailTemplate, {}, [
-        mock.call('\n\ncontent'),
-        mock.call(Markup('subject')),
-    ]),
-    (HTMLEmailTemplate, {}, [
-        mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'content'
-            '</p>'
-        ),
-        mock.call('\n\ncontent'),
-        mock.call(Markup('subject')),
-    ]),
-    (EmailPreviewTemplate, {}, [
-        mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'content'
-            '</p>'
-        ),
-        mock.call(Markup('subject')),
-    ]),
-    (SMSMessageTemplate, {}, [
-    ]),
-    (SMSPreviewTemplate, {}, [
-    ]),
-    (LetterPreviewTemplate, {'contact_block': 'www.gov.uk'}, [
-        mock.call(Markup('subject')),
-        mock.call(Markup('<p>content</p>')),
-    ]),
-])
-@mock.patch('notifications_utils.template.make_quotes_smart', side_effect=lambda x: x)
-@mock.patch('notifications_utils.template.replace_hyphens_with_en_dashes', side_effect=lambda x: x)
-def test_templates_make_quotes_smart_and_dashes_en(
-    mock_en_dash_replacement,
-    mock_smart_quotes,
-    template_class,
-    extra_args,
-    expected_calls,
-):
-    template = template_class({'content': 'content', 'subject': 'subject'}, **extra_args)
-
-    assert str(template)
-
-    if hasattr(template, 'subject'):
-        assert template.subject
-
-    mock_smart_quotes.assert_has_calls(expected_calls)
-    mock_en_dash_replacement.assert_has_calls(expected_calls)
+        assert template.subject == 'subject,'
 
 
 @pytest.mark.parametrize('content', (
@@ -1330,18 +894,6 @@ def test_smart_quotes_removed_from_long_template_in_under_a_second():
     str(template)
 
     assert process_time() - start_time < 1
-
-
-def test_basic_templates_return_markup():
-
-    template_dict = {'content': 'content', 'subject': 'subject'}
-
-    for output in [
-        str(Template(template_dict)),
-        str(WithSubjectTemplate(template_dict)),
-        WithSubjectTemplate(template_dict).subject,
-    ]:
-        assert isinstance(output, Markup)
 
 
 @pytest.mark.parametrize('template_instance, expected_placeholders', [
@@ -1375,28 +927,12 @@ def test_basic_templates_return_markup():
         ),
         ['content', 'subject'],
     ),
-    (
-        LetterPreviewTemplate(
-            {"content": "((content))", "subject": "((subject))"},
-            contact_block='((contact_block))',
-        ),
-        ['content', 'subject', 'contact_block'],
-    ),
-    (
-        LetterImageTemplate(
-            {"content": "((content))", "subject": "((subject))"},
-            contact_block='((contact_block))',
-            image_url='http://example.com',
-            page_count=99,
-        ),
-        ['content', 'subject', 'contact_block'],
-    ),
 ])
 def test_templates_extract_placeholders(
     template_instance,
     expected_placeholders,
 ):
-    assert template_instance.placeholders == set(expected_placeholders)
+    assert template_instance.placeholder_names == set(expected_placeholders)
 
 
 @pytest.mark.parametrize('extra_args', [
@@ -1463,20 +999,6 @@ def test_email_preview_shows_recipient_address(
         template_values,
     )
     assert expected_content in str(template)
-
-
-@mock.patch('notifications_utils.template.strip_dvla_markup', return_value='FOOBARBAZ')
-def test_letter_preview_strips_dvla_markup(mock_strip_dvla_markup):
-    assert 'FOOBARBAZ' in str(LetterPreviewTemplate(
-        {
-            "content": 'content',
-            'subject': 'subject',
-        },
-    ))
-    assert mock_strip_dvla_markup.call_args_list == [
-        mock.call(Markup('subject')),
-        mock.call('content'),
-    ]
 
 
 dvla_file_spec = [
@@ -1856,171 +1378,6 @@ dvla_file_spec = [
 ]
 
 
-@pytest.mark.parametrize("address, expected", [
-    (
-        {
-            "address line 1": "line 1",
-            "address line 2": "line 2",
-            "address line 3": "line 3",
-            "address line 4": "line 4",
-            "address line 5": "line 5",
-            "address line 6": "line 6",
-            "postcode": "N1 4W2",
-        },
-        {
-            "addressline1": "line 1",
-            "addressline2": "line 2",
-            "addressline3": "line 3",
-            "addressline4": "line 4",
-            "addressline5": "line 5",
-            "addressline6": "line 6",
-            "postcode": "N1 4W2",
-        },
-    ), (
-        {
-            "addressline1": "line 1",
-            "addressline2": "line 2",
-            "addressline3": "line 3",
-            "addressline4": "line 4",
-            "addressline5": "line 5",
-            "addressLine6": "line 6",
-            "postcode": "N1 4W2",
-        },
-        {
-            "addressline1": "line 1",
-            "addressline2": "line 2",
-            "addressline3": "line 3",
-            "addressline4": "line 4",
-            "addressline5": "line 5",
-            "addressline6": "line 6",
-            "postcode": "N1 4W2",
-        },
-    ),
-    (
-        {
-            "addressline1": "line 1",
-            "addressline3": "line 3",
-            "addressline5": "line 5",
-            "addressline6": "line 6",
-            "postcode": "N1 4W2",
-        },
-        {
-            "addressline1": "line 1",
-            # addressline2 is required, but not given
-            "addressline3": "line 3",
-            "addressline4": "",
-            "addressline5": "line 5",
-            "addressline6": "line 6",
-            "postcode": "N1 4W2",
-        },
-    ),
-    (
-        {
-            "addressline1": "line 1",
-            "addressline2": "line 2",
-            "addressline3": None,
-            "addressline6": None,
-            "postcode": "N1 4W2",
-        },
-        {
-            "addressline1": "line 1",
-            "addressline2": "line 2",
-            "addressline3": "",
-            "addressline4": "",
-            "addressline5": "",
-            "addressline6": "",
-            "postcode": "N1 4W2",
-        },
-    ),
-    (
-        {
-            "addressline1": "line 1",
-            "addressline2": "\t     ,",
-            "postcode": "N1 4W2",
-        },
-        {
-            "addressline1": "line 1",
-            "addressline2": "\t     ,",
-            "addressline3": "",
-            "addressline4": "",
-            "addressline5": "",
-            "addressline6": "",
-            "postcode": "N1 4W2",
-        },
-    ),
-])
-def test_letter_address_format(address, expected):
-    template = LetterPreviewTemplate(
-        {'content': '', 'subject': ''},
-        address,
-    )
-    assert template.values_with_default_optional_address_lines == expected
-    # check that we can actually build a valid letter from this data
-    assert str(template)
-
-
-@freeze_time("2001-01-01 12:00:00.000000")
-@pytest.mark.parametrize('markdown, expected', [
-    (
-        (
-            'Here is a list of bullets:\n'
-            '\n'
-            '* one\n'
-            '* two\n'
-            '* three\n'
-            '\n'
-            'New paragraph'
-        ),
-        (
-            '<ul>\n'
-            '<li>one</li>\n'
-            '<li>two</li>\n'
-            '<li>three</li>\n'
-            '</ul>\n'
-            '<p>New paragraph</p>\n'
-        )
-    ),
-    (
-        (
-            '# List title:\n'
-            '\n'
-            '* one\n'
-            '* two\n'
-            '* three\n'
-        ),
-        (
-            '<h2>List title:</h2>\n'
-            '<ul>\n'
-            '<li>one</li>\n'
-            '<li>two</li>\n'
-            '<li>three</li>\n'
-            '</ul>\n'
-        )
-    ),
-    (
-        (
-            'Here’s an ordered list:\n'
-            '\n'
-            '1. one\n'
-            '2. two\n'
-            '3. three\n'
-        ),
-        (
-            '<p>Here’s an ordered list:</p><ol>\n'
-            '<li>one</li>\n'
-            '<li>two</li>\n'
-            '<li>three</li>\n'
-            '</ol>'
-        )
-    ),
-])
-def test_lists_in_combination_with_other_elements_in_letters(markdown, expected):
-    assert expected in str(LetterPreviewTemplate(
-        {'content': markdown, 'subject': 'Hello'},
-        {},
-    ))
-
-
 @pytest.mark.parametrize('template_class', [
     SMSMessageTemplate,
     SMSPreviewTemplate,
@@ -2035,59 +1392,11 @@ def test_message_too_long(template_class):
     (EmailPreviewTemplate, {}),
     (HTMLEmailTemplate, {}),
     (PlainTextEmailTemplate, {}),
-    (LetterPreviewTemplate, {}),
-    (LetterImageTemplate, {'image_url': 'foo', 'page_count': 1}),
 ])
 def test_non_sms_ignores_message_too_long(template_class, kwargs):
     body = 'a' * 1000
     template = template_class({'content': body, 'subject': 'foo'}, **kwargs)
     assert template.is_message_too_long() is False
-
-
-@pytest.mark.parametrize(
-    (
-        'content,'
-        'expected_preview_markup,'
-    ), [
-        (
-            'a\n\n\nb',
-            (
-                '<p>a</p>'
-                '<p>b</p>'
-            ),
-        ),
-        (
-            (
-                'a\n'
-                '\n'
-                '* one\n'
-                '* two\n'
-                '* three\n'
-                'and a half\n'
-                '\n'
-                '\n'
-                '\n'
-                '\n'
-                'foo'
-            ),
-            (
-                '<p>a</p><ul>\n'
-                '<li>one</li>\n'
-                '<li>two</li>\n'
-                '<li>three<br>and a half</li>\n'
-                '</ul>\n'
-                '<p>foo</p>'
-            ),
-        ),
-    ]
-)
-def test_multiple_newlines_in_letters(
-    content,
-    expected_preview_markup,
-):
-    assert expected_preview_markup in str(LetterPreviewTemplate(
-        {'content': content, 'subject': 'foo'}
-    ))
 
 
 @pytest.mark.parametrize('subject', [
@@ -2103,7 +1412,6 @@ def test_multiple_newlines_in_letters(
     (PlainTextEmailTemplate, {}),
     (HTMLEmailTemplate, {}),
     (EmailPreviewTemplate, {}),
-    (LetterPreviewTemplate, {}),
 ])
 def test_whitespace_in_subjects(template_class, subject, extra_args):
 
@@ -2127,20 +1435,24 @@ def test_whitespace_in_subject_placeholders(template_class):
     ).subject == 'Your tax is due'
 
 
-@pytest.mark.parametrize('template_class, expected_output', [
-    (
-        PlainTextEmailTemplate,
-        'paragraph one\n\n\xa0\n\nparagraph two',
-    ),
-    (
-        HTMLEmailTemplate,
+@pytest.mark.parametrize(
+    'template_class, expected_output',
+    [
         (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">paragraph one</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">&nbsp;</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">paragraph two</p>'
+            PlainTextEmailTemplate,
+            'paragraph one\n\n\xa0\n\nparagraph two',
         ),
-    ),
-])
+        (
+            HTMLEmailTemplate,
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">paragraph one</p>\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">\xa0</p>\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">paragraph two</p>\n'
+            ),
+        ),
+    ],
+    ids=['plain', 'html']
+)
 def test_govuk_email_whitespace_hack(template_class, expected_output):
 
     template_instance = template_class({
@@ -2148,61 +1460,6 @@ def test_govuk_email_whitespace_hack(template_class, expected_output):
         'subject': 'foo'
     })
     assert expected_output in str(template_instance)
-
-
-def test_letter_preview_uses_non_breaking_hyphens():
-    assert 'non\u2011breaking' in str(LetterPreviewTemplate(
-        {'content': 'non-breaking', 'subject': 'foo'}
-    ))
-    assert '–' in str(LetterPreviewTemplate(
-        {'content': 'en dash - not hyphen - when set with spaces', 'subject': 'foo'}
-    ))
-
-
-@freeze_time("2001-01-01 12:00:00.000000")
-def test_nested_lists_in_lettr_markup():
-
-    template_content = str(LetterPreviewTemplate({
-        'content': (
-            'nested list:\n'
-            '\n'
-            '1. one\n'
-            '2. two\n'
-            '3. three\n'
-            '  - three one\n'
-            '  - three two\n'
-            '  - three three\n'
-        ),
-        'subject': 'foo',
-    }))
-
-    assert (
-        '      <p>\n'
-        '        1 January 2001\n'
-        '      </p>\n'
-        '      <h1>\n'
-        '        foo\n'
-        '      </h1>\n'
-        '      <p>nested list:</p><ol>\n'
-        '<li>one</li>\n'
-        '<li>two</li>\n'
-        '<li>three<ul>\n'
-        '<li>three one</li>\n'
-        '<li>three two</li>\n'
-        '<li>three three</li>\n'
-        '</ul></li>\n'
-        '</ol>\n'
-        '\n'
-        '    </div>\n'
-        '  </body>\n'
-        '</html>'
-    ) in template_content
-
-
-def test_that_print_template_is_the_same_as_preview():
-    assert dir(LetterPreviewTemplate) == dir(LetterPrintTemplate)
-    assert os.path.basename(LetterPreviewTemplate.jinja_template.filename) == 'preview.jinja2'
-    assert os.path.basename(LetterPrintTemplate.jinja_template.filename) == 'print.jinja2'
 
 
 def test_plain_text_email_whitespace():
@@ -2229,71 +1486,129 @@ def test_plain_text_email_whitespace():
     assert str(email) == (
         'Heading\n'
         '-----------------------------------------------------------------\n'
-        '\n'
         '1. one\n'
         '2. two\n'
         '3. three\n'
         '\n'
         '=================================================================\n'
         '\n'
-        '\n'
-        'Heading\n'
+        '\n\nHeading\n'
         '-----------------------------------------------------------------\n'
-        '\n'
         'Paragraph\n'
         '\n'
         'Paragraph\n'
         '\n'
-        'callout\n'
-        '\n'
+        '\n\ncallout\n\n\n\n'
         '1. one not four\n'
         '2. two not five\n'
+        '\n'
     )
 
 
-@pytest.mark.parametrize('renderer, expected_content', (
-    (PlainTextEmailTemplate, (
-        'Heading link: https://example.com\n'
-        '-----------------------------------------------------------------\n'
-    )),
-    (HTMLEmailTemplate, (
-        '<h1 style="Margin: 0 0 20px 0; padding: 0; font-size: 32px; '
-        'line-height: 35px; font-weight: bold; color: #323A45;">'
-        'Heading <a style="word-wrap: break-word; color: #004795;" href="https://example.com" target="_blank">link</a>'
-        '</h1>'
-    )),
-    (LetterPreviewTemplate, (
-        '<h2>Heading link: <strong>example.com</strong></h2>'
-    )),
-    (LetterPrintTemplate, (
-        '<h2>Heading link: <strong>example.com</strong></h2>'
-    )),
-))
+@pytest.mark.parametrize(
+    'renderer, expected_content',
+    (
+        (PlainTextEmailTemplate, (
+            'Heading link: https://example.com\n'
+            '-----------------------------------------------------------------\n'
+        )),
+        (HTMLEmailTemplate, (
+            '<h1 style="Margin: 0 0 20px 0; padding: 0; font-size: 32px; '
+            'line-height: 35px; font-weight: bold; color: #323A45;">'
+            'Heading <a style="word-wrap: break-word; color: #004795;" '
+            'target="_blank" href="https://example.com">link</a>'
+            '</h1>\n'
+        )),
+    ),
+    ids=['PlainTextEmailTemplate', 'HTMLEmailTemplate']
+)
 def test_heading_only_template_renders(renderer, expected_content):
-    assert expected_content in str(renderer({'subject': 'foo', 'content': (
-        '# Heading [link](https://example.com)'
-    )}))
-
-
-@pytest.mark.parametrize("template_class", [
-    LetterPreviewTemplate,
-    LetterPrintTemplate,
-])
-@pytest.mark.parametrize("filename, expected_html_class", [
-    ('example.png', 'class="png"'),
-    ('example.svg', 'class="svg"'),
-])
-def test_image_class_applied_to_logo(template_class, filename, expected_html_class):
-    assert expected_html_class in str(template_class(
-        {'content': 'Foo', 'subject': 'Subject'},
-        logo_file_name=filename,
+    assert expected_content in str(renderer(
+        {
+            'subject': 'foo',
+            'content': '# Heading [link](https://example.com)',
+        }
     ))
 
 
-@pytest.mark.parametrize("template_class", [
-    LetterPreviewTemplate,
-    LetterPrintTemplate,
-])
-def test_image_not_present_if_no_logo(template_class):
-    # can't test that the html doesn't move in utils - tested in template preview instead
-    assert '<img' not in str(template_class({'content': 'Foo', 'subject': 'Subject'}, logo_file_name=None))
+@pytest.mark.parametrize(
+    'template_type, expected_content',
+    (
+        (PlainTextEmailTemplate, 'Hi\n\n\n\nThis is a block quote.\n\n\n\nhello\n\n'),
+        (HTMLEmailTemplate, (
+            f'<p style="{PARAGRAPH_STYLE}">Hi</p>\n'
+            f'<blockquote style="{BLOCK_QUOTE_STYLE}">\n'
+            f'<p style="{PARAGRAPH_STYLE}">This is a block quote.</p>\n'
+            '</blockquote>\n'
+            f'<p style="{PARAGRAPH_STYLE}">hello</p>\n'
+        )),
+    ),
+    ids=['plain', 'html']
+)
+def test_block_quotes(template_type, expected_content):
+    """
+    Template markup uses ^ to denote a block quote, but Github markdown, which Mistune reflects, specifies a block
+    quote with the > character.  Rather than write a custom parser, templates should preprocess their text to replace
+    the former with the latter.
+    """
+
+    assert expected_content in str(
+        template_type({'content': '\nHi\n\n^ This is a block quote.\n\nhello', 'subject': ''})
+    )
+
+
+@pytest.mark.parametrize(
+    'template_type, expected',
+    [
+        (PlainTextEmailTemplate, '1. one\n2. two\n3. three\n'),
+        (
+            HTMLEmailTemplate,
+            f'<ol role="presentation" style="{ORDERED_LIST_STYLE}">\n'
+            f'<li style="{LIST_ITEM_STYLE}">one</li>\n'
+            f'<li style="{LIST_ITEM_STYLE}">two</li>\n'
+            f'<li style="{LIST_ITEM_STYLE}">three</li>\n'
+            '</ol>\n'
+        ),
+    ]
+)
+def test_ordered_list_without_spaces(template_type, expected):
+    """
+    Proper markdown for ordered lists has a space after the number and period.
+    """
+
+    content = '1.one\n2.two\n3.three\n'
+
+    if isinstance(template_type, PlainTextEmailTemplate):
+        assert str(template_type({'content': content, 'subject': ''})) == expected
+    else:
+        assert expected in str(template_type({'content': content, 'subject': ''}))
+
+
+@pytest.mark.parametrize('with_spaces', [True, False])
+@pytest.mark.parametrize(
+    'template_type, expected',
+    [
+        (PlainTextEmailTemplate, '• one\n• two\n• three\n\n'),
+        (
+            HTMLEmailTemplate,
+            f'<ul role="presentation" style="{UNORDERED_LIST_STYLE}">\n'
+            f'<li style="{LIST_ITEM_STYLE}">one</li>\n'
+            f'<li style="{LIST_ITEM_STYLE}">two</li>\n'
+            f'<li style="{LIST_ITEM_STYLE}">three</li>\n'
+            '</ul>\n'
+        ),
+    ]
+)
+@pytest.mark.parametrize('bullet', ['*', '-', '+', '•'])
+def test_unordered_list(bullet, template_type, expected, with_spaces):
+    """
+    Proper markdown for unordered lists has a space after the bullet.
+    """
+
+    space = ' ' if with_spaces else ''
+    content = f'{bullet}{space}one\n{bullet}{space}two\n{bullet}{space}three\n'
+
+    if isinstance(template_type, PlainTextEmailTemplate):
+        assert str(template_type({'content': content, 'subject': ''})) == expected
+    else:
+        assert expected in str(template_type({'content': content, 'subject': ''}))

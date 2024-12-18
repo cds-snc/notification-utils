@@ -1,18 +1,30 @@
 import os
-import string
 import re
-import urllib
+import string
 
-import mistune
 import bleach
-from itertools import count
+import mistune
+import smartypants
 from markupsafe import Markup
+from mistune.renderers.html import HTMLRenderer
+from mistune.renderers.markdown import MarkdownRenderer
 from . import email_with_smart_quotes_regex
 from notifications_utils.sanitise_text import SanitiseSMS
-import smartypants
 
-PARAGRAPH_STYLE = 'Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;'
+ACTION_LINK_IMAGE_STYLE = 'vertical-align: middle;'
+BLOCK_QUOTE_STYLE = 'background: #F1F1F1; ' \
+                    'padding: 24px 24px 0.1px 24px; ' \
+                    'font-family: Helvetica, Arial, sans-serif; ' \
+                    'font-size: 16px; line-height: 25px;'
+COLUMN_WIDTH = 65
 LINK_STYLE = 'word-wrap: break-word; color: #004795;'
+ORDERED_LIST_STYLE = 'Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; ' \
+                     'font-family: Helvetica, Arial, sans-serif;'
+LIST_ITEM_STYLE = 'Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;'
+PARAGRAPH_STYLE = 'Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;'
+THEMATIC_BREAK_STYLE = 'border: 0; height: 1px; background: #BFC1C3; Margin: 30px 0 30px 0;'
+UNORDERED_LIST_STYLE = 'Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: disc; ' \
+                       'font-family: Helvetica, Arial, sans-serif;'
 
 OBSCURE_WHITESPACE = (
     '\u180E'  # Mongolian vowel separator
@@ -23,36 +35,6 @@ OBSCURE_WHITESPACE = (
     '\uFEFF'  # zero width non-breaking space
 )
 
-
-mistune._block_quote_leading_pattern = re.compile(r'^ *\^ ?', flags=re.M)
-mistune.BlockGrammar.block_quote = re.compile(r'^( *\^[^\n]+(\n[^\n]+)*\n*)+')
-mistune.BlockGrammar.list_block = re.compile(
-    r'^( *)([•*-]|\d+\.)[\s\S]+?'
-    r'(?:'
-    r'\n+(?=\1?(?:[-*_] *){3,}(?:\n+|$))'  # hrule
-    r'|\n+(?=%s)'  # def links
-    r'|\n+(?=%s)'  # def footnotes
-    r'|\n{2,}'
-    r'(?! )'
-    r'(?!\1(?:[•*-]|\d+\.) )\n*'
-    r'|'
-    r'\s*$)' % (
-        mistune._pure_pattern(mistune.BlockGrammar.def_links),
-        mistune._pure_pattern(mistune.BlockGrammar.def_footnotes),
-    )
-)
-mistune.BlockGrammar.list_item = re.compile(
-    r'^(( *)(?:[•*-]|\d+\.)[^\n]*'
-    r'(?:\n(?!\2(?:[•*-]|\d+\.))[^\n]*)*)',
-    flags=re.M
-)
-mistune.BlockGrammar.list_bullet = re.compile(r'^ *(?:[•*-]|\d+\.)')
-mistune.InlineGrammar.url = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
-
-govuk_not_a_link = re.compile(
-    r'(?<!\.|\/)(GOV)\.(UK)(?!\/|\?)',
-    re.IGNORECASE
-)
 
 dvla_markup_tags = re.compile(
     str('|'.join('<{}>'.format(tag) for tag in {
@@ -69,22 +51,6 @@ hyphens_surrounded_by_spaces = re.compile(r'\s+[-|–|—]{1,3}\s+')
 
 multiple_newlines = re.compile(r'((\n)\2{2,})')
 
-MAGIC_SEQUENCE = "🇬🇧🐦✉️"
-
-magic_sequence_regex = re.compile(MAGIC_SEQUENCE)
-
-# The Mistune URL regex only matches URLs at the start of a string,
-# using `^`, so we slice that off and recompile
-url = re.compile(mistune.InlineGrammar.url.pattern[1:])
-
-
-def unlink_govuk_escaped(message):
-    return re.sub(
-        govuk_not_a_link,
-        r'\1' + '.\u200B' + r'\2',  # Unicode zero-width space
-        message
-    )
-
 
 def nl2br(value):
     return re.sub(r'\n|\r', '<br>', value.strip())
@@ -96,15 +62,21 @@ def nl2li(value):
     ))
 
 
-def add_prefix(body, prefix=None):
+def add_prefix(body, prefix=None) -> str:
     if prefix:
-        return "{}: {}".format(prefix.strip(), body)
+        return f'{prefix.strip()}: {body}'
     return body
+
+
+# The Mistune URL regex only matches URLs at the start of a string,
+# using `^`, so we slice that off and recompile
+# 17 DEC 2024: The above comment might be stale.
+url = re.compile(r'''(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
 
 
 def autolink_sms(body):
     return url.sub(
-        lambda match: '<a style="{}" href="{}">{}</a>'.format(
+        lambda match: '<a style="{}" target="_blank" href="{}">{}</a>'.format(
             LINK_STYLE,
             match.group(1), match.group(1),
         ),
@@ -121,14 +93,22 @@ def remove_empty_lines(lines):
 
 
 def sms_encode(content):
-    return SanitiseSMS.encode(content)
+    return SanitiseSMS.encode(str(content))
 
 
 def strip_html(value):
+    """
+    Calls to bleach.clean escapes HTML.  This function strips and escapes the input.
+    """
+
     return bleach.clean(value, tags=[], strip=True)
 
 
 def escape_html(value):
+    """
+    Calls to bleach.clean escapes HTML.  This function escapes, but does not strip, the input.
+    """
+
     if not value:
         return value
     value = str(value).replace('<', '&lt;')
@@ -203,16 +183,20 @@ def strip_pipes(value):
 
 
 def remove_whitespace_before_punctuation(value):
+    """
+    Remove spaces and tabs before various punctuation marks.
+    """
+
     return re.sub(
         whitespace_before_punctuation,
         lambda match: match.group(1),
-        value
+        str(value)
     )
 
 
 def make_quotes_smart(value):
     return smartypants.smartypants(
-        value,
+        str(value),
         smartypants.Attr.q | smartypants.Attr.u
     )
 
@@ -245,7 +229,7 @@ def strip_leading_whitespace(value):
 
 
 def add_trailing_newline(value):
-    return '{}\n'.format(value)
+    return f'{value}\n'
 
 
 def tweak_dvla_list_markup(value):
@@ -283,86 +267,96 @@ def strip_unsupported_characters(value):
     return value.replace('\u2028', '')
 
 
+def strip_unsupported_characters_in_preheader(value):
+    """
+    Preheaders should not contain headers or links, and unordered lists should use the literal bullet.
+    """
+
+    # No headers
+    value = re.sub(r'''^(\s+)#''', '', value, flags=re.M)
+
+    # No links (regular or action)
+    value = re.sub(r'''((>|&gt;){2})?\[([\w -]+)\]\(\S+\)''', r'\3', value)
+
+    # Bullets for unordered lists
+    value = re.sub(r'''^(\s*)[-+*]''', r'\1•', value, flags=re.M)
+
+    return value
+
+
 def normalise_whitespace(value):
-    # leading and trailing whitespace removed, all inner whitespace becomes a single space
+    """
+    Remove leading and trailing whitespace.  All inner whitespace becomes a single space.
+    """
+
     return ' '.join(strip_and_remove_obscure_whitespace(value).split())
 
 
-def get_action_links(html: str) -> list[str]:
-    """Get the action links from the html email body and return them as a list. (insert_action_link helper)"""
-    # set regex to find action link in html, should look like this:
-    # &gt;&gt;<a ...>link_text</a>
-    action_link_regex = re.compile(
-        r'(>|(&gt;)){2}(<a style=".+?" href=".+?"( title=".+?")? target="_blank">)(.*?</a>)'
-    )
-
-    return re.findall(action_link_regex, html)
-
-
 def get_action_link_image_url() -> str:
-    """Get action link image url for the current environment. (insert_action_link helper)"""
+    """Get the action link image url for the current environment."""
+
     env_map = {
         'production': 'prod',
         'staging': 'staging',
         'performance': 'staging',
     }
-    # default to dev if NOTIFY_ENVIRONMENT isn't provided
+
     img_env = env_map.get(os.environ.get('NOTIFY_ENVIRONMENT'), 'dev')
     return f'https://{img_env}-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
 
 
 def insert_action_link(html: str) -> str:
     """
-    Finds an action link and replaces it with the desired format. The action link is placed on it's own line, the link
-    image is inserted into the link, and the styling is updated appropriately.
+    Finds an "action link," and replaces it with the desired format. This preprocessing should take place before
+    any manipulation by Mistune.
+
+    Given:
+        >>[text](url)
+
+    Output:
+        \n\n<a href="url"><img alt="call to action img" src="..." style="..."> <b>text</b></a>\n\n
     """
-    # common html used
-    p_start = f'<p style="{PARAGRAPH_STYLE}">'
-    p_end = '</p>'
 
-    action_link_list = get_action_links(html)
+    img_src = get_action_link_image_url()
+    substitution = r'\n\n<a href="\3">' \
+                   fr'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> ' \
+                   r'<b>\2</b></a>\n\n'
 
-    img_link = get_action_link_image_url()
+    #                               text        url
+    return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)''', substitution, html)
 
-    for item in action_link_list:
-        # Puts the action link in a new <p> tag with appropriate styling.
-        # item[0] and item[1] values will be '&gt;' symbols
-        # item[2] is the html link <a ...> tag info
-        # item[-1] is the link text and end of the link tag </a>
-        action_link = (
-            f'{item[2]}<img src="{img_link}" alt="call to action img" '
-            f'style="vertical-align: middle;"> <b>{item[-1][:-4]}</b></a>'
-        )
 
-        action_link_p_tags = f'{p_start}{action_link}{p_end}'
+def insert_block_quotes(md: str) -> str:
+    """
+    Template markup uses ^ to denote a block quote, but Github markdown, which Mistune reflects, specifies a block
+    quote with the > character.  Rather than write a custom parser, templates should preprocess their text to replace
+    the former with the latter.  This preprocessing should take place before any manipulation by Mistune.
 
-        # get the text around the action link if there is any
-        # ensure there are only two items in list with maxsplit
-        before_link, after_link = html.split("".join(item), maxsplit=1)
+    Given:
+        ^ This is a block quote.
 
-        # value is the converted action link if there's nothing around it, otherwise <p> tags will need to be
-        # closed / open around the action link
-        if before_link == p_start and after_link == p_end:
-            # action link exists on its own, unlikely to happen
-            html = action_link_p_tags
-        elif before_link.endswith(p_start) and after_link.startswith(p_end):
-            # an action link on it's own line, as it should be
-            html = f'{before_link}{action_link}{after_link}'
-        elif before_link.endswith(p_start):
-            # action link is on a newline, but has something after it on that line
-            html = f'{before_link}{action_link}{p_end}{p_start}{after_link}'
-        elif after_link == p_end:
-            # paragraph ends with action link
-            html = f'{before_link}{"</p>" if "<p" in before_link else ""}{action_link_p_tags}'
-        else:
-            # there's text before and after the action link within the paragraph
-            html = (
-                f'{before_link}{"</p>" if "<p" in before_link else ""}'
-                f'{action_link_p_tags}'
-                f'{p_start}{after_link}'
-            )
+    Output:
+        > This is a block quote.
+    """
 
-    return html
+    return re.sub(r'''^(\s*)\^(\s*)''', r'''\1>\2''', md, flags=re.M)
+
+
+def insert_list_spaces(md: str) -> str:
+    """
+    Proper markdown for lists has a space after the number or bullet.  This is a preprocessing step to insert
+    any missing spaces in lists.  This preprocessing should take place before any manipulation by Mistune.
+
+    The regular expression for unordered lists replaces the bullet with the minus, which Mistune handles.
+    This is necessary because Utils allows the non-standard literal • in markdown to denote an unordered list.
+    Performing this substitution avoids having to write custom parsing logic for Mistune.
+    """
+
+    # Ordered lists
+    md = re.sub(r'''^(\s*)(\d+\.)(?=\S)''', r'''\1\2 ''', md, flags=re.M)
+
+    # Unordered lists
+    return re.sub(r'''^(\s*)(\*|-|\+|•)(?!\2)(\s*)''', r'''\1- ''', md, flags=re.M)
 
 
 def strip_parentheses_in_link_placeholders(value: str) -> str:
@@ -420,348 +414,157 @@ def replace_symbols_with_placeholder_parens(value: str) -> str:
     return value
 
 
-class NotifyLetterMarkdownPreviewRenderer(mistune.Renderer):
-
-    def block_code(self, code, language=None):
-        return code
+class NotifyHTMLRenderer(HTMLRenderer):
+    def action_link(self, text, url):
+        raise NotImplementedError('MADE IT HERE')
 
     def block_quote(self, text):
-        return text
+        value = super().block_quote(text)
+        return value[:11] + f' style="{BLOCK_QUOTE_STYLE}"' + value[11:]
 
-    def header(self, text, level, raw=None):
+    def heading(self, text, level, **attrs):
         if level == 1:
-            return super().header(text, 2)
-        return self.paragraph(text)
+            style = 'Margin: 0 0 20px 0; padding: 0; font-size: 32px; ' \
+                    'line-height: 35px; font-weight: bold; color: #323A45;'
+        elif level == 2:
+            style = 'Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45; ' \
+                    'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;'
+        elif level == 3:
+            style = 'Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45; ' \
+                    'font-size: 20.8px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;'
+        else:
+            return self.paragraph(text)
 
-    def hrule(self):
-        return '<div class="page-break">&nbsp;</div>'
+        value = super().heading(text, level, **attrs)
+        return value[:3] + f' style="{style}"' + value[3:]
+
+    def image(self, alt, url, title=None):
+        """
+        VA e-mail messages generally contain only 1 header image that is not managed by clients.
+        There is also an image associated with "action links", but action links are handled
+        in preprocessing.  (See insert_action_link above.)
+        """
+
+        return ''
+
+    def link(self, text, url, title=None):
+        """
+        Add CSS to links.
+        """
+
+        value = super().link(text, url, title)
+        return value[:2] + f' style="{LINK_STYLE}" target="_blank"' + value[2:]
+
+    def list(self, text, ordered, **attrs):
+        value = super().list(text, ordered, **attrs)
+        style = ORDERED_LIST_STYLE if ordered else UNORDERED_LIST_STYLE
+        return value[:3] + f' role="presentation" style="{style}"' + value[3:]
+
+    def list_item(self, text, **attrs):
+        value = super().list_item(text, **attrs)
+        return value[:3] + f' style="{LIST_ITEM_STYLE}"' + value[3:]
 
     def paragraph(self, text):
-        if text.strip():
-            return '<p>{}</p>'.format(text)
+        """
+        Add CSS to paragraphs.
+        """
+
+        value = super().paragraph(text)
+
+        if value == '<p></p>\n':
+            # This is the case when all child elements, such as tables and images, are deleted.
+            return ''
+
+        return value[:2] + f' style="{PARAGRAPH_STYLE}"' + value[2:]
+
+    def table(self, text):
+        """
+        Delete tables.
+        """
+
         return ''
 
-    def table(self, header, body):
-        return ""
+    def thematic_break(self):
+        """
+        Thematic breaks were known as horizontal rules (hrule) in earlier versions of Mistune.
+        """
 
-    def autolink(self, link, is_email=False):
-        return '<strong>{}</strong>'.format(
-            link.replace('http://', '').replace('https://', '')
-        )
-
-    def codespan(self, text):
-        return text
-
-    def double_emphasis(self, text):
-        return text
-
-    def emphasis(self, text):
-        return text
-
-    def image(self, src, title, alt_text):
-        return ""
-
-    def linebreak(self):
-        return "<br>"
-
-    def newline(self):
-        return self.linebreak()
-
-    def list_item(self, text):
-        return '<li>{}</li>\n'.format(text.strip())
-
-    def link(self, link, title, content):
-        return '{}: {}'.format(content, self.autolink(link))
-
-    def strikethrough(self, text):
-        return text
-
-    def footnote_ref(self, key, index):
-        return ""
-
-    def footnote_item(self, key, text):
-        return text
-
-    def footnotes(self, text):
-        return text
+        value = super().thematic_break()
+        return value[:3] + f' style="{THEMATIC_BREAK_STYLE}"' + value[3:]
 
 
-class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
+class NotifyMarkdownRenderer(MarkdownRenderer):
+    def block_quote(self, token, state):
+        return '\n\n' + super().block_quote(token, state)[2:]
 
-    def header(self, text, level, raw=None):
-        if level == 1:
-            return (
-                '<h1 style="Margin: 0 0 20px 0; padding: 0; '
-                'font-size: 32px; line-height: 35px; font-weight: bold; color: #323A45;">'
-                '{}'
-                '</h1>'
-            ).format(
-                text
-            )
-        elif level == 2:
-            return (
-                '<h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;'
-                'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">'
-                '{}'
-                '</h2>'
-            ).format(
-                text
-            )
-        elif level == 3:
-            return (
-                '<h3 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;'
-                'font-size: 20.8px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">'
-                '{}'
-                '</h3>'
-            ).format(
-                text
-            )
-        return self.paragraph(text)
+    def heading(self, token, state):
+        level = token['attrs']['level']
 
-    def hrule(self):
-        return (
-            '<hr style="border: 0; height: 1px; background: #BFC1C3; Margin: 30px 0 30px 0;">'
-        )
+        if level > 3:
+            token['type'] = 'paragraph'
+            return self.paragraph(token, state)
 
-    def linebreak(self):
-        return "<br />"
+        value = super().heading(token, state)
+        indentation = 3 if level == 1 else 2
+        return ('\n' * indentation) + value.strip('#\n ') + '\n' + ('-' * COLUMN_WIDTH) + '\n'
 
-    def list(self, body, ordered=True):
-        return (
-            '<table role="presentation" style="padding: 0 0 20px 0;">'
-            '<tr>'
-            '<td style="font-family: Helvetica, Arial, sans-serif;">'
-            '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
-            '{}'
-            '</ol>'
-            '</td>'
-            '</tr>'
-            '</table>'
-        ).format(
-            body
-        ) if ordered else (
-            '<table role="presentation" style="padding: 0 0 20px 0;">'
-            '<tr>'
-            '<td style="font-family: Helvetica, Arial, sans-serif;">'
-            '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
-            '{}'
-            '</ul>'
-            '</td>'
-            '</tr>'
-            '</table>'
-        ).format(
-            body
-        )
+    def image(self, token, state):
+        """
+        Delete images.  VA e-mail messages contain only 1 image that is not managed by clients.
+        """
 
-    def list_item(self, text):
-        return (
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">'
-            '{}'
-            '</li>'
-        ).format(
-            text.strip()
-        )
-
-    def paragraph(self, text, is_inside_list=False):
-        margin = 'Margin: 5px 0 5px 0' if is_inside_list else 'Margin: 0 0 20px 0'
-        if text.strip():
-            return f'<p style="{margin}; font-size: 16px; line-height: 25px; color: #323A45;">{text}</p>'
-        return ""
-
-    def block_quote(self, text):
-        return (
-            '<table '
-            'width="100%" '
-            'style="Margin: 0 0 20px 0; background: #F1F1F1;"'
-            '>'
-            '<td '
-            'style="Padding: 24px 24px 0.1px 24px; font-family: Helvetica, Arial, sans-serif; '
-            'font-size: 16px; line-height: 25px;"'
-            '>'
-            '{}'
-            '</td>'
-            '</table>'
-        ).format(
-            text
-        )
-
-    def link(self, link, title, content):
-        return (
-            '<a style="{}"{}{} target="_blank">{}</a>'
-        ).format(
-            LINK_STYLE,
-            ' href="{}"'.format(link),
-            ' title="{}"'.format(title) if title else "",
-            content,
-        )
-
-    def autolink(self, link, is_email=False):
-        if is_email:
-            return link
-        return '<a style="{}" href="{}">{}</a>'.format(
-            LINK_STYLE,
-            urllib.parse.quote(
-                urllib.parse.unquote(link),
-                safe=':/?#=&;'
-            ),
-            link
-        )
-
-    def double_emphasis(self, text):
-        return '<strong>{}</strong>'.format(text)
-
-    def emphasis(self, text):
-        return '<em>{}</em>'.format(text)
-
-
-class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
-
-    COLUMN_WIDTH = 65
-
-    def header(self, text, level, raw=None):
-        if level == 1:
-            return ''.join((
-                self.linebreak() * 3,
-                text,
-                self.linebreak(),
-                '-' * self.COLUMN_WIDTH,
-            ))
-        elif level in (2, 3):
-            return ''.join((
-                self.linebreak() * 2,
-                text,
-                self.linebreak(),
-                '-' * self.COLUMN_WIDTH
-            ))
-        return self.paragraph(text)
-
-    def hrule(self):
-        return self.paragraph(
-            '=' * self.COLUMN_WIDTH
-        )
-
-    def linebreak(self):
-        return '\n'
-
-    def list(self, body, ordered=True):
-
-        def _get_list_marker():
-            decimal = count(1)
-            return lambda _: '{}.'.format(next(decimal)) if ordered else '•'
-
-        return ''.join((
-            self.linebreak(),
-            re.sub(
-                magic_sequence_regex,
-                _get_list_marker(),
-                body,
-            ),
-        ))
-
-    def list_item(self, text):
-        return ''.join((
-            self.linebreak(),
-            MAGIC_SEQUENCE,
-            ' ',
-            text.strip(),
-        ))
-
-    def paragraph(self, text, is_inside_list=False):
-        if text.strip():
-            return ''.join((
-                self.linebreak() * 2,
-                text,
-            ))
-        return ""
-
-    def block_quote(self, text):
-        return text
-
-    def link(self, link, title, content):
-        return ''.join((
-            content,
-            ' ({})'.format(title) if title else '',
-            ': ',
-            link,
-        ))
-
-    def autolink(self, link, is_email=False):
-        return link
-
-    def double_emphasis(self, text):
-        return text
-
-    def emphasis(self, text):
-        return text
-
-
-class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer):
-
-    def header(self, text, level, raw=None):
-        return self.paragraph(text)
-
-    def hrule(self):
         return ''
 
-    def link(self, link, title, content):
-        return ''.join((
-            content,
-            ' ({})'.format(title) if title else '',
-        ))
+    def link(self, token, state):
+        """
+        Input:
+            [text](url)
+        Output:
+            text: url
+        """
+
+        return self.render_children(token, state) + ': ' + token['attrs']['url']
+
+    def list(self, token, state):
+        """
+        Use the bullet character as the actual bullet output for all input (asterisks, pluses, and minues)
+        when the list is unordered.
+        """
+
+        if not token['attrs']['ordered']:
+            token['bullet'] = '•'
+
+        return super().list(token, state)
+
+    def strikethrough(self, token, state):
+        """
+        https://mistune.lepture.com/en/latest/renderers.html#with-plugins
+        """
+
+        return '\n\n' + self.render_children(token, state)
+
+    def table(self, token, state):
+        """
+        Delete tables.
+        """
+
+        return ''
+
+    def thematic_break(self, token, state):
+        """
+        Thematic breaks were known as horizontal rules (hrule) in earlier versions of Mistune.
+        """
+
+        return '=' * COLUMN_WIDTH + '\n'
 
 
-class NotifyEmailBlockLexer(mistune.BlockLexer):
-
-    def __init__(self, rules=None, **kwargs):
-        super().__init__(rules, **kwargs)
-
-    def parse_newline(self, m):
-        if self._list_depth == 0:
-            super().parse_newline(m)
-
-
-class NotifyEmailMarkdown(mistune.Markdown):
-
-    def __init__(self, renderer=None, inline=None, block=None, **kwargs):
-        super().__init__(renderer, inline, block, **kwargs)
-        self._is_inside_list = False
-
-    def output_loose_item(self):
-        body = self.renderer.placeholder()
-        self._is_inside_list = True
-        while self.pop()['type'] != 'list_item_end':
-            body += self.tok()
-
-        self._is_inside_list = False
-        return self.renderer.list_item(body)
-
-    def tok_text(self):
-        if self._is_inside_list:
-            return self.inline(self.token['text'])
-        else:
-            return super().tok_text()
-
-    def output_text(self):
-        return self.renderer.paragraph(self.tok_text(), self._is_inside_list)
-
-
-notify_email_markdown = NotifyEmailMarkdown(
-    renderer=NotifyEmailMarkdownRenderer(),
-    block=NotifyEmailBlockLexer,
+notify_html_markdown = mistune.create_markdown(
     hard_wrap=True,
-    use_xhtml=False,
+    renderer=NotifyHTMLRenderer(escape=False),
+    plugins=['strikethrough', 'table', 'url'],
 )
-notify_plain_text_email_markdown = mistune.Markdown(
-    renderer=NotifyPlainTextEmailMarkdownRenderer(),
-    hard_wrap=True,
-)
-notify_email_preheader_markdown = mistune.Markdown(
-    renderer=NotifyEmailPreheaderMarkdownRenderer(),
-    hard_wrap=True,
-)
-notify_letter_preview_markdown = mistune.Markdown(
-    renderer=NotifyLetterMarkdownPreviewRenderer(),
-    hard_wrap=True,
-    use_xhtml=False,
+
+notify_markdown = mistune.create_markdown(
+    renderer=NotifyMarkdownRenderer(),
+    plugins=['strikethrough', 'table'],
 )
