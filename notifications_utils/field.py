@@ -25,6 +25,10 @@ class Placeholder:
     def is_conditional(self):
         return "??" in self.body
 
+    def is_in_link_href(self):
+        # this function is just a placeholder - obviously I can't rely on the variable being named "url_var"
+        return "url_var" in self.body
+
     @property
     def name(self):
         # for non conditionals, name equals body
@@ -38,12 +42,21 @@ class Placeholder:
         else:
             raise ValueError("{} not conditional".format(self))
 
+    @property
+    def href_text(self):
+        if self.is_in_link_href():
+            return self.body.replace("((", "").replace("))", "")
+
     def get_conditional_body(self, show_conditional):
         # note: unsanitised/converted
         if self.is_conditional():
             return self.conditional_text if str2bool(show_conditional) else ""
         else:
             raise ValueError("{} not conditional".format(self))
+
+    def get_href_body(self):
+        if self.is_in_link_href():
+            return self.href_text
 
     def __repr__(self):
         return "Placeholder({})".format(self.body)
@@ -119,6 +132,9 @@ class Field:
             return self.conditional_placeholder_tag.format(
                 self.sanitizer(placeholder.name), self.sanitizer(placeholder.conditional_text)
             )
+
+        if placeholder.is_in_link_href():
+            return placeholder.get_href_body()
 
         return self.placeholder_tag.format(self.sanitizer(placeholder.name))
 
