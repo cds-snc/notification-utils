@@ -1,4 +1,5 @@
 import pytest
+from bs4 import BeautifulSoup
 from notifications_utils.template import get_html_email_body
 
 
@@ -38,6 +39,61 @@ def test_lang_tags_in_templates_bad_content(bad_content: str):
 def test_lang_tags_in_templates_good_content(good_content: str):
     html = get_html_email_body(good_content, {})
     assert '<div lang="fr-ca">' in html
+
+
+class TestVariablesInLinks:
+    def test_simple(self):
+        template_content = "((variable))"
+        expected_rendered_markdown = "((variable))"
+        html = BeautifulSoup(str(get_html_email_body(template_content, {})), "html.parser")
+        rendered_markdown = html.get_text()
+        assert rendered_markdown == expected_rendered_markdown
+
+    def test_less_simple(self):
+        template_content = "[link text with ((variable))](https://developer.mozilla.org/en-US/)"
+        html = BeautifulSoup(str(get_html_email_body(template_content, {})), "html.parser")
+        href = html.select("a")[0].get_attribute_list("href")[0]
+        link_text = html.select("a")[0].get_text()
+        assert href == "https://developer.mozilla.org/en-US/"
+        assert link_text == "link text with ((variable))"
+
+    def test_less_simple_2(self):
+        template_content = "[link with query param](https://developer.mozilla.org/en-US/search?q=asdf)"
+        html = BeautifulSoup(str(get_html_email_body(template_content, {})), "html.parser")
+        href = html.select("a")[0].get_attribute_list("href")[0]
+        link_text = html.select("a")[0].get_text()
+        assert href == "https://developer.mozilla.org/en-US/search?q=asdf"
+        assert link_text == "link with query param"
+
+    def test_less_simple_3(self):
+        # failing
+        template_content = "[link with variable as url](((url_var)))"
+        html = BeautifulSoup(str(get_html_email_body(template_content, {})), "html.parser")
+        href = html.select("a")[0].get_attribute_list("href")[0]
+        link_text = html.select("a")[0].get_text()
+        print(html)
+        assert link_text == "link with variable as url"
+        assert href == "url_var"
+
+    def test_less_simple_4(self):
+        # failing
+        template_content = "[link with variable in url](((url_var))/en-US/)"
+        html = BeautifulSoup(str(get_html_email_body(template_content, {})), "html.parser")
+        href = html.select("a")[0].get_attribute_list("href")[0]
+        link_text = html.select("a")[0].get_text()
+        print(html)
+        assert link_text == "link with variable in url"
+        assert href == "url_var/en-US/"
+
+    def test_less_simple_5(self):
+        # failing
+        template_content = "[link with variable and query param](((url_var))/en-US/search?q=asdf)"
+        html = BeautifulSoup(str(get_html_email_body(template_content, {})), "html.parser")
+        href = html.select("a")[0].get_attribute_list("href")[0]
+        link_text = html.select("a")[0].get_text()
+        print(html)
+        assert link_text == "link with variable and query param"
+        assert href == "url_var/en-US/search?q=asdf"
 
 
 class TestRTLTags:
