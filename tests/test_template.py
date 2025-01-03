@@ -54,11 +54,6 @@ class TestVariablesInLinks:
         rendered_markdown = html.get_text()
         assert rendered_markdown == expected_html
 
-    (
-        "[link text with ((variable))](https://developer.mozilla.org/en-US/)",
-        {},
-    )
-
     @pytest.mark.parametrize(
         "template_content,variable,expected_link_text,expected_href",
         [
