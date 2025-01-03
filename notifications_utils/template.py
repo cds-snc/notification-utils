@@ -241,7 +241,7 @@ class SMSPreviewTemplate(SMSMessageTemplate):
                 {
                     "sender": self.sender,
                     "show_sender": self.show_sender,
-                    "recipient": Field("((phone number))", self.values, html="escape", translated=True),
+                    "recipient": Field("((phone number))", self.values, html="escape", translated=False),
                     "show_recipient": self.show_recipient,
                     "body": Take(
                         Field(
@@ -491,7 +491,7 @@ class EmailPreviewTemplate(WithSubjectTemplate):
                     "from_name": escape_html(self.from_name),
                     "from_address": self.from_address,
                     "reply_to": self.reply_to,
-                    "recipient": Field("((email address))", self.values, translated=True),
+                    "recipient": Field("((email address))", self.values, translated=False),
                     "show_recipient": self.show_recipient,
                     "fip_banner_english": self.fip_banner_english,
                     "fip_banner_french": self.fip_banner_french,
