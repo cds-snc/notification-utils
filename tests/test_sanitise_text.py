@@ -1,6 +1,5 @@
 import pytest
-
-from notifications_utils.sanitise_text import SanitiseText, SanitiseSMS, SanitiseASCII
+from notifications_utils.sanitise_text import SanitiseASCII, SanitiseSMS, SanitiseText
 
 
 @pytest.mark.parametrize("chars, cls", [("ÀÂËÎÏÔŒÙÛâçêëîïôœû", SanitiseSMS)])
@@ -17,7 +16,7 @@ params, ids = zip(
     (("–", "-"), "compatibility transform unicode char (EN DASH (U+2013)"),
     (("—", "-"), "compatibility transform unicode char (EM DASH (U+2014)"),
     (("…", "..."), "compatibility transform unicode char (HORIZONTAL ELLIPSIS (U+2026)"),
-    (("\u200B", ""), "compatibility transform unicode char (ZERO WIDTH SPACE (U+200B)"),
+    (("\u200b", ""), "compatibility transform unicode char (ZERO WIDTH SPACE (U+200B)"),
     (("‘", "'"), "compatibility transform unicode char (LEFT SINGLE QUOTATION MARK (U+2018)"),
     (("’", "'"), "compatibility transform unicode char (RIGHT SINGLE QUOTATION MARK (U+2019)"),
     (("“", '"'), "compatibility transform unicode char (LEFT DOUBLE QUOTATION MARK (U+201C)	"),

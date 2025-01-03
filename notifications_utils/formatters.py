@@ -1,26 +1,27 @@
-import string
 import re
-from typing import List
+import string
 import urllib
-
-import mistune
-import bleach
 from itertools import count
-from flask import Markup
-from . import email_with_smart_quotes_regex
-from notifications_utils.sanitise_text import SanitiseSMS
-import smartypants
+from typing import List
 
+import bleach
+import mistune
+import smartypants
+from flask import Markup
+
+from notifications_utils.sanitise_text import SanitiseSMS
+
+from . import email_with_smart_quotes_regex
 
 LINK_STYLE = "word-wrap: break-word;"
 
 OBSCURE_WHITESPACE = (
-    "\u180E"  # Mongolian vowel separator
-    "\u200B"  # zero width space
-    "\u200C"  # zero width non-joiner
-    "\u200D"  # zero width joiner
+    "\u180e"  # Mongolian vowel separator
+    "\u200b"  # zero width space
+    "\u200c"  # zero width non-joiner
+    "\u200d"  # zero width joiner
     "\u2060"  # word joiner
-    "\uFEFF"  # zero width non-breaking space
+    "\ufeff"  # zero width non-breaking space
 )
 
 EMAIL_P_OPEN_TAG = '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
@@ -30,10 +31,14 @@ FR_OPEN = r"\[\[fr\]\]"  # matches [[fr]]
 FR_CLOSE = r"\[\[/fr\]\]"  # matches [[/fr]]
 EN_OPEN = r"\[\[en\]\]"  # matches [[en]]
 EN_CLOSE = r"\[\[/en\]\]"  # matches [[/en]]
+RTL_OPEN = r"\[\[rtl\]\]"  # matches [[rtl]]
+RTL_CLOSE = r"\[\[/rtl\]\]"  # matches [[/rtl]]
 FR_OPEN_LITERAL = "[[fr]]"
 FR_CLOSE_LITERAL = "[[/fr]]"
 EN_OPEN_LITERAL = "[[en]]"
 EN_CLOSE_LITERAL = "[[/en]]"
+RTL_OPEN_LITERAL = "[[rtl]]"
+RTL_CLOSE_LITERAL = "[[/rtl]]"
 BR_TAG = r"<br\s?/>"
 
 
@@ -84,7 +89,7 @@ url = re.compile(mistune.InlineGrammar.url.pattern[1:])
 
 
 def unlink_govuk_escaped(message):
-    return re.sub(govuk_not_a_link, r"\1" + ".\u200B" + r"\2", message)  # Unicode zero-width space
+    return re.sub(govuk_not_a_link, r"\1" + ".\u200b" + r"\2", message)  # Unicode zero-width space
 
 
 def nl2br(value):
@@ -416,7 +421,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
                 '<table role="presentation" style="padding: 0 0 20px 0;">'
                 "<tr>"
                 '<td style="font-family: Helvetica, Arial, sans-serif;">'
-                '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
+                '<ol style="margin: 0; padding: 0; list-style-type: decimal; margin-inline-start: 20px;">'
                 "{}"
                 "</ol>"
                 "</td>"
@@ -428,7 +433,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
                 '<table role="presentation" style="padding: 0 0 20px 0;">'
                 "<tr>"
                 '<td style="font-family: Helvetica, Arial, sans-serif;">'
-                '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
+                '<ul style="margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;">'
                 "{}"
                 "</ul>"
                 "</td>"
@@ -439,8 +444,8 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
 
     def list_item(self, text):
         return (
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-            'line-height: 25px; color: #0B0C0C;">'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; '
+            'line-height: 25px; color: #0B0C0C; text-align:start;">'
             "{}"
             "</li>"
         ).format(text.strip())
@@ -620,6 +625,20 @@ def escape_lang_tags(_content: str) -> str:
     return _content
 
 
+def escape_rtl_tags(_content: str) -> str:
+    """
+    Escape RTL tags into code tags in the content so mistune doesn't put them inside p tags.  This makes it simple
+    to replace them afterwards, and avoids creating invalid HTML in the process
+    """
+
+    # check to ensure we have the same number of opening and closing tags before escaping tags
+    if _content.count(RTL_OPEN_LITERAL) == _content.count(RTL_CLOSE_LITERAL):
+        _content = _content.replace(RTL_OPEN_LITERAL, f"\n```\n{RTL_OPEN_LITERAL}\n```\n")
+        _content = _content.replace(RTL_CLOSE_LITERAL, f"\n```\n{RTL_CLOSE_LITERAL}\n```\n")
+
+    return _content
+
+
 def add_language_divs(_content: str) -> str:
     """
     Custom parser to add the language divs.
@@ -643,6 +662,27 @@ def remove_language_divs(_content: str) -> str:
     """Remove the tags from content. This fn is for use in the email
     preheader, since this is plain text not html"""
     return remove_tags(_content, FR_OPEN, FR_CLOSE, EN_OPEN, EN_CLOSE)
+
+
+def add_rtl_divs(_content: str) -> str:
+    """
+    Custom parser to add the language divs.
+
+    String replace language tags in-place
+    """
+
+    # check to ensure we have the same number of opening and closing tags before escaping tags
+    if _content.count(RTL_OPEN_LITERAL) == _content.count(RTL_CLOSE_LITERAL):
+        _content = _content.replace(RTL_OPEN_LITERAL, '<div dir="rtl">')
+        _content = _content.replace(RTL_CLOSE_LITERAL, "</div>")
+
+    return _content
+
+
+def remove_rtl_divs(_content: str) -> str:
+    """Remove the tags from content. This fn is for use in the email
+    preheader, since this is plain text not html"""
+    return remove_tags(_content, RTL_OPEN, RTL_CLOSE)
 
 
 def remove_tags(_content: str, *tags) -> str:

@@ -19,27 +19,28 @@ Usage:
     --base-url=<url>:           Base URL used to hit the application with discovered Flask endpoints.
 
 Example:
-        waffles.py list --app-loc /Projects/cds/notification-document-download-api --app-lib doc-api-env/Lib/site-packages --flask-mod application --flask-prop application
-        waffles.py iron --base-url=https://api.document.notification.canada.ca --app-loc /Projects/cds/notification-document-download-api --app-lib doc-api-env/Lib/site-packages --flask-mod application --flask-prop application
+        waffles.py list --app-loc /Projects/cds/notification-document-download-api \
+            --app-lib doc-api-env/Lib/site-packages --flask-mod application --flask-prop application
+        waffles.py iron --base-url=https://api.document.notification.canada.ca --app-loc /Projects/cds/notification-document-download-api \
+            --app-lib doc-api-env/Lib/site-packages --flask-mod application --flask-prop application
 """
 
 import importlib
 import importlib.util
+import re
 import sys
 import urllib.parse
 import uuid
-
 from dataclasses import dataclass
-from docopt import docopt
-from flask import Flask
 from os.path import join
 from pathlib import Path
-import re
 from types import ModuleType
 from typing import Any, List, NewType
 from urllib import request
 from urllib.error import URLError
 
+from docopt import docopt
+from flask import Flask
 from notifications_utils.base64_uuid import uuid_to_base64
 
 ModuleName = NewType("ModuleName", str)

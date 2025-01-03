@@ -1,51 +1,53 @@
 import math
 import sys
-from os import path
 from datetime import datetime
-
-from jinja2 import Environment, FileSystemLoader
-from flask import Markup
 from html import unescape
+from os import path
+
+from flask import Markup
+from jinja2 import Environment, FileSystemLoader
 
 from notifications_utils import EMAIL_CHAR_COUNT_LIMIT, SMS_CHAR_COUNT_LIMIT, TEMPLATE_NAME_CHAR_COUNT_LIMIT
 from notifications_utils.columns import Columns
 from notifications_utils.field import Field
 from notifications_utils.formatters import (
-    unlink_govuk_escaped,
-    nl2br,
-    nl2li,
     add_language_divs,
     add_prefix,
+    add_rtl_divs,
+    add_trailing_newline,
     autolink_sms,
-    notify_email_markdown,
-    notify_email_preheader_markdown,
-    notify_plain_text_email_markdown,
-    notify_letter_preview_markdown,
-    remove_empty_lines,
-    sms_encode,
     escape_html,
     escape_lang_tags,
-    strip_dvla_markup,
-    strip_pipes,
-    remove_whitespace_before_punctuation,
-    remove_language_divs,
+    escape_rtl_tags,
     make_quotes_smart,
-    replace_hyphens_with_en_dashes,
-    replace_hyphens_with_non_breaking_hyphens,
-    tweak_dvla_list_markup,
-    strip_leading_whitespace,
-    add_trailing_newline,
+    nl2br,
+    nl2li,
     normalise_newlines,
     normalise_whitespace,
+    notify_email_markdown,
+    notify_email_preheader_markdown,
+    notify_letter_preview_markdown,
+    notify_plain_text_email_markdown,
+    remove_empty_lines,
+    remove_language_divs,
+    remove_rtl_divs,
     remove_smart_quotes_from_email_addresses,
+    remove_whitespace_before_punctuation,
+    replace_hyphens_with_en_dashes,
+    replace_hyphens_with_non_breaking_hyphens,
+    sms_encode,
+    strip_dvla_markup,
+    strip_leading_whitespace,
+    strip_pipes,
     strip_unsupported_characters,
+    tweak_dvla_list_markup,
+    unlink_govuk_escaped,
 )
+from notifications_utils.sanitise_text import SanitiseSMS
 from notifications_utils.strftime_codes import no_pad_day
 from notifications_utils.take import Take
 from notifications_utils.template_change import TemplateChange
-from notifications_utils.sanitise_text import SanitiseSMS
 from notifications_utils.validate_html import check_if_string_contains_valid_html
-
 
 template_env = Environment(
     loader=FileSystemLoader(
@@ -196,9 +198,7 @@ class SMSMessageTemplate(Template):
         return len(
             (
                 # we always want to call SMSMessageTemplate.__str__ regardless of subclass, to avoid any html formatting
-                SMSMessageTemplate.__str__(self)
-                if self._values
-                else sms_encode(add_prefix(self.content.strip(), self.prefix))
+                SMSMessageTemplate.__str__(self) if self._values else sms_encode(add_prefix(self.content.strip(), self.prefix))
             ).encode(self.encoding)
         )
 
@@ -363,6 +363,8 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         brand_name=None,
         jinja_path=None,
         allow_html=False,
+        alt_text_en=None,
+        alt_text_fr=None,
     ):
         super().__init__(template, values, jinja_path=jinja_path)
         self.fip_banner_english = fip_banner_english
@@ -374,6 +376,10 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.logo_with_background_colour = logo_with_background_colour
         self.brand_name = brand_name
         self.allow_html = allow_html
+        self.alt_text_en = alt_text_en
+        self.alt_text_fr = alt_text_fr
+        self.text_direction_rtl = template.get("text_direction_rtl", False)
+
         # set this again to make sure the correct either utils / downstream local jinja is used
         # however, don't set if we are in a test environment (to preserve the above mock)
         if "pytest" not in sys.modules:
@@ -395,6 +401,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             .then(add_trailing_newline)
             .then(notify_email_preheader_markdown)
             .then(remove_language_divs)
+            .then(remove_rtl_divs)
             .then(do_nice_typography)
             .split()
         )[: self.PREHEADER_LENGTH_IN_CHARACTERS].strip()
@@ -413,6 +420,9 @@ class HTMLEmailTemplate(WithSubjectTemplate):
                 "brand_colour": self.brand_colour,
                 "logo_with_background_colour": self.logo_with_background_colour,
                 "brand_name": self.brand_name,
+                "alt_text_en": self.alt_text_en,
+                "alt_text_fr": self.alt_text_fr,
+                "text_direction_rtl": self.text_direction_rtl,
             }
         )
 
@@ -456,6 +466,8 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         logo_with_background_colour=None,
         asset_domain=None,
         allow_html=False,
+        alt_text_en=None,
+        alt_text_fr=None,
     ):
         super().__init__(
             template,
@@ -476,6 +488,9 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         self.brand_name = brand_name
         self.asset_domain = asset_domain or "assets.notification.canada.ca"
         self.allow_html = allow_html
+        self.alt_text_en = alt_text_en
+        self.alt_text_fr = alt_text_fr
+        self.text_direction_rtl = template.get("text_direction_rtl", False)
 
     def __str__(self):
         return Markup(
@@ -500,6 +515,9 @@ class EmailPreviewTemplate(WithSubjectTemplate):
                     "brand_text": self.brand_text,
                     "brand_name": self.brand_name,
                     "asset_domain": self.asset_domain,
+                    "alt_text_en": self.alt_text_en,
+                    "alt_text_fr": self.alt_text_fr,
+                    "text_direction_rtl": self.text_direction_rtl,
                 }
             )
         )
@@ -791,8 +809,10 @@ def get_html_email_body(template_content, template_values, redact_missing_person
         .then(strip_unsupported_characters)
         .then(add_trailing_newline)
         .then(escape_lang_tags)
+        .then(escape_rtl_tags)
         .then(notify_email_markdown)
         .then(add_language_divs)
+        .then(add_rtl_divs)
         .then(do_nice_typography)
     )
 

@@ -17,7 +17,7 @@
                 border="0"
                 style="display: block; border: 0;"
                 height="{% if brand_text -%} 27 {%- else -%} 54 {%- endif %}"
-                alt="{% if brand_text %} {% else -%}{{ brand_name }}{%- endif %}"
+                alt="{% if alt_text_en %}{{ alt_text_en }} / {{ alt_text_fr }}{% else -%}{{ brand_name}}{%- endif %}"
               />
             </td>
           {% endif %}

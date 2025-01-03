@@ -4,30 +4,33 @@
 		"dockerfile": "Dockerfile",
 		"context": ".."
 	},
-
 	"remoteEnv": {
 		"PATH": "/home/vscode/.local/bin:${containerEnv:PATH}" // give our installed Python modules precedence
 	},
-
 	"containerEnv": {
 		"SHELL": "/bin/zsh"
 	},
-
-	"settings": {
-		"python.linting.enabled": true,
-		"python.linting.pylintEnabled": true,
-		"python.linting.pylintPath": "/usr/local/bin/pylint",
-		"python.pythonPath": "/usr/local/bin/python",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"donjayamanne.python-extension-pack",
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"eamodio.gitlens",
+				"GitHub.copilot",
+				"tamasfe.even-better-toml",
+				"charliermarsh.ruff",
+			],
+			"settings": {
+				"python.pythonPath": "/usr/local/bin/python",
+				"ruff.lint.ignore": ["F401"],
+				"ruff.lint.run": "onSave",
+				"ruff.organizeImports": false,
+				"[python]": {
+					"editor.defaultFormatter": "charliermarsh.ruff"
+				}
+			}
+		}
 	},
-
-	"extensions": [
-		"donjayamanne.python-extension-pack",
-		"ms-python.python",
-		"ms-python.vscode-pylance",
-		"eamodio.gitlens",
-		"GitHub.copilot",
-		"bungcip.better-toml",
-	],
-
 	"postCreateCommand": "notify-dev-entrypoint.sh",
 }

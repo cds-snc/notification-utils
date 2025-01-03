@@ -1,25 +1,23 @@
-import pytest
-
 from functools import partial
 
+import pytest
 from notifications_utils.recipients import (
-    validate_phone_number,
-    validate_and_format_phone_number,
-    InvalidPhoneError,
-    validate_email_address,
-    InvalidEmailError,
-    allowed_to_send_to,
     InvalidAddressError,
-    validate_recipient,
-    is_local_phone_number,
-    normalise_phone_number,
-    international_phone_info,
-    get_international_phone_info,
+    InvalidEmailError,
+    InvalidPhoneError,
+    allowed_to_send_to,
     format_phone_number_human_readable,
     format_recipient,
+    get_international_phone_info,
+    international_phone_info,
+    is_local_phone_number,
+    normalise_phone_number,
     try_validate_and_format_phone_number,
+    validate_and_format_phone_number,
+    validate_email_address,
+    validate_phone_number,
+    validate_recipient,
 )
-
 
 valid_local_phone_numbers = [
     "6502532222",
@@ -334,7 +332,7 @@ def test_validate_email_address_accepts_valid(email_address):
         " email@domain.com ",
         "\temail@domain.com",
         "\temail@domain.com\n",
-        "\u200Bemail@domain.com\u200B",
+        "\u200bemail@domain.com\u200b",
     ],
 )
 def test_validate_email_address_strips_whitespace(email):
@@ -402,7 +400,7 @@ def test_validate_address_allows_any_non_empty_value(column):
     ],
 )
 def test_non_ascii_address_line_is_fine(column):
-    valid_address = "\u041F\u0435\u0442\u044F"
+    valid_address = "\u041f\u0435\u0442\u044f"
     assert validate_recipient(valid_address, "letter", column=column) == valid_address
 
 

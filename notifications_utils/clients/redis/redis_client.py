@@ -3,8 +3,8 @@ import uuid
 from time import time
 from typing import Any, Dict
 
-from flask_redis import FlaskRedis
 from flask import current_app
+from flask_redis import FlaskRedis
 
 # expose redis exceptions so that they can be caught
 from redis.exceptions import RedisError  # noqa
@@ -80,6 +80,58 @@ class RedisClient:
         if self.active:
             return self.scripts["delete-keys-by-pattern"](args=[pattern])
         return 0
+
+    # TODO: Refactor and simplify this to use HEXPIRE when we upgrade Redis to 7.4.0
+    def delete_hash_fields(self, hashes: (str | list), fields: list, raise_exception=False):
+        """Deletes fields from the specified hashes. if fields is `None`, then all fields from the hashes are deleted, deleting the hash entirely.
+
+        Args:
+            hashes (str|list): The hash pattern or list of hash keys to delete fields from.
+            fields (list): A list of fields to delete from the hashes. If `None`, then all fields are deleted.
+
+        Returns:
+            _type_: _description_
+        """
+        if self.active:
+            try:
+                hashes = [prepare_value(h) for h in hashes] if isinstance(hashes, list) else prepare_value(hashes)
+                # When fields are passed in, use the list as is
+                # When hashes is a list, and no fields are passed in, fetch the fields from the first hash in the list
+                # otherwise we know we're going scan iterate over a pattern so we'll fetch the fields on the first pass in the loop below
+                fields = [prepare_value(f) for f in fields]
+                # Use a pipeline to atomically delete fields from each hash.
+                pipe = self.redis_store.pipeline()
+                # if hashes is not a list, we're scan iterating over keys matching a pattern
+                for key in hashes if isinstance(hashes, list) else self.redis_store.scan_iter(hashes):
+                    if not fields:
+                        fields = self.redis_store.hkeys(key)
+                    key = prepare_value(key)
+                    pipe.hdel(key, *fields)
+                result = pipe.execute()
+                # TODO: May need to double check that the pipeline result count matches the number of hashes deleted
+                # and retry any failures
+                return result
+            except Exception as e:
+                self.__handle_exception(e, raise_exception, "expire_hash_fields", hashes)
+        return False
+
+    def bulk_set_hash_fields(self, mapping, pattern=None, key=None, raise_exception=False):
+        """
+        Bulk set hash fields.
+        :param pattern: the pattern to match keys
+        :param mapping: the mapping of fields to set
+        :param raise_exception: True if we should allow the exception to bubble up
+        """
+        if self.active:
+            try:
+                if pattern:
+                    for key in self.redis_store.scan_iter(pattern):
+                        self.redis_store.hmset(key, mapping)
+                if key:
+                    return self.redis_store.hmset(key, mapping)
+            except Exception as e:
+                self.__handle_exception(e, raise_exception, "bulk_set_hash_fields", pattern)
+        return False
 
     def exceeded_rate_limit(self, cache_key, limit, interval, raise_exception=False):
         """
@@ -228,17 +280,44 @@ class RedisClient:
 
         return None
 
+    def set_hash_value(self, key, field, value, raise_exception=False):
+        key = prepare_value(key)
+        field = prepare_value(field)
+        value = prepare_value(value)
+
+        if self.active:
+            try:
+                return self.redis_store.hset(key, field, value)
+            except Exception as e:
+                self.__handle_exception(e, raise_exception, "set_hash_value", key)
+
+        return None
+
     def decrement_hash_value(self, key, value, raise_exception=False):
         return self.increment_hash_value(key, value, raise_exception, incr_by=-1)
 
     def increment_hash_value(self, key, value, raise_exception=False, incr_by=1):
         key = prepare_value(key)
         value = prepare_value(value)
+
         if self.active:
             try:
                 return self.redis_store.hincrby(key, value, incr_by)
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "increment_hash_value", key)
+        return None
+
+    def get_hash_field(self, key, field, raise_exception=False):
+        key = prepare_value(key)
+        field = prepare_value(field)
+
+        if self.active:
+            try:
+                return self.redis_store.hget(key, field)
+            except Exception as e:
+                self.__handle_exception(e, raise_exception, "get_hash_field", key)
+
+        return None
 
     def get_all_from_hash(self, key, raise_exception=False):
         key = prepare_value(key)
@@ -247,6 +326,8 @@ class RedisClient:
                 return self.redis_store.hgetall(key)
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "get_all_from_hash", key)
+
+        return None
 
     def set_hash_and_expire(self, key, values, expire_in_seconds, raise_exception=False):
         key = prepare_value(key)
@@ -257,6 +338,8 @@ class RedisClient:
                 return self.redis_store.expire(key, expire_in_seconds)
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "set_hash_and_expire", key)
+
+        return None
 
     def expire(self, key, expire_in_seconds, raise_exception=False):
         key = prepare_value(key)

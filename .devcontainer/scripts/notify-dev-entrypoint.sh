@@ -11,7 +11,7 @@ set -ex
 echo -e "fpath+=/.zfunc" >> ~/.zshrc
 echo -e "autoload -Uz compinit && compinit"
 
-pip install poetry==${POETRY_VERSION} \
+pip install poetry==${POETRY_VERSION} poetry-plugin-sort \
   && poetry --version
 
 # Initialize poetry autocompletions
@@ -21,3 +21,7 @@ poetry completions zsh > ~/.zfunc/_poetry
 
 # Install dependencies
 poetry install
+
+# Install pre-commit hooks
+git config --global --add safe.directory /workspaces/notification-utils
+poetry run pre-commit install

@@ -1,4 +1,5 @@
-"""This module is used to calculate the bounce rate for a service. It uses Redis to store the total number of hard bounces """
+"""This module is used to calculate the bounce rate for a service. It uses Redis to store the total number of hard bounces"""
+
 from datetime import datetime
 
 from notifications_utils.clients.redis.redis_client import RedisClient

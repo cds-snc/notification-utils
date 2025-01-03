@@ -1,6 +1,6 @@
 import pytest
 import requests
-from notifications_utils.system_status import determine_site_status, determine_notification_status, THRESHOLDS
+from notifications_utils.system_status import THRESHOLDS, determine_notification_status, determine_site_status
 
 
 @pytest.mark.parametrize("site, threshold", [("http://site-1.example.com", 400)])

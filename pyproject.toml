@@ -1,11 +1,6 @@
-[tool.black]
-line-length = 130
-target-version = ['py37', 'py38', 'py39', 'py310']
-include = '(notifications_utils|tests)/.*\.pyi?$'
-
 [tool.poetry]
 name = "notifications-utils"
-version = "52.1.8"
+version = "53.0.2"
 description = "Shared python code for Notification - Provides logging utils etc."
 authors = ["Canadian Digital Service"]
 license = "MIT license"
@@ -13,57 +8,102 @@ readme = "README.md"
 packages = []
 
 [build-system]
-requires = ["poetry>=1.3.2"]
+requires = ["poetry-core>=1.3.2"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-python = "~3.10.9"
-bleach = "6.1.0"
-cachetools = "4.2.4"
-mistune = "0.8.4"
-requests = "2.31.0"
-python-json-logger = "2.0.7"
-Flask = "2.3.3"
-ordered-set = "4.1.0"
-markupsafe = "2.1.4"
-Jinja2 = "^3.0.0"
-statsd = "3.3.0"
-Flask-Redis = "0.4.0"
-PyYAML = "6.0.1"
-phonenumbers = "8.13.28"
-pytz = "2021.3"
-smartypants = "2.0.1"
-pypdf2 = "1.28.6"
-py_w3c = "0.3.1"
+python = "~3.12.7"
 # required by both api and admin
-awscli = "1.32.25"
-boto3 = "1.34.25"
-werkzeug = "2.3.7"
-itsdangerous = "2.1.2"
+awscli = "1.33.35"
+bleach = "6.1.0"
+boto3 = "1.34.153"
+cachetools = "4.2.4"
 
 # Pinned dependencies
-certifi = "^2023.7.22" # pinned for security reasons: https://github.com/cds-snc/notification-utils/security/dependabot/22
-cryptography = "^42.0.3" # https://github.com/cds-snc/notification-utils/security/dependabot/31
+certifi = "^2024.0.0"        # pinned for security reasons: https://github.com/cds-snc/notification-utils/security/dependabot/22
+cryptography = "^43.0.0"     # https://github.com/cds-snc/notification-utils/security/dependabot/31
+Flask = "2.3.3"
+Flask-Redis = "0.4.0"
+itsdangerous = "2.2.0"
+Jinja2 = "^3.0.0"
+markupsafe = "2.1.5"
+mistune = "0.8.4"
+ordered-set = "4.1.0"
+phonenumbers = "8.13.44"
+pre-commit = "^3.8.0"
+py_w3c = "0.3.1"
+pypdf2 = "1.28.6"
+python-json-logger = "2.0.7"
+pytz = "2021.3"
+PyYAML = "6.0.1"
+requests = "2.32.2"
+smartypants = "2.0.1"
+statsd = "3.3.0"
+werkzeug = "3.0.4"
 
 [tool.poetry.group.test.dependencies]
-pytest = "7.4.4"
-pytest-mock = "3.12.0"
-pytest-cov = "2.12.1"
-pytest-xdist = "2.5.0"
-freezegun = "1.4.0"
-requests-mock = "1.11.0"
-fakeredis = "^2.10.3"
-flake8 = "3.9.2"
-flake8-print = "4.0.1"
-mypy = "1.8.0"
-black = "23.12.1"
-click = "8.1.7"
-types-python-dateutil = "2.8.19.20240106"
-types-PyYAML = "6.0.12.12"
-types-pytz = "2022.7.1.2"
-types-bleach = "5.0.3.1"
-types-cachetools = "5.3.0.7"
-types-redis = "4.6.0.20240106"
-types-requests = "2.31.0.20240106"
 beautifulsoup4 = "^4.12.3"
+click = "8.1.7"
+fakeredis = "^2.24.1"
+freezegun = "1.5.1"
+mypy = "1.10.0"
+pytest = "7.4.4"
+pytest-cov = "2.12.1"
+pytest-mock = "3.14.0"
+pytest-xdist = "2.5.0"
+requests-mock = "1.12.1"
+ruff = "^0.8.2"
 types-beautifulsoup4 = "^4.12.0.20240229"
+types-bleach = "5.0.3.1"
+types-cachetools = "5.5.0.20240820"
+types-python-dateutil = "2.9.0.20240821"
+types-pytz = "2022.7.1.2"
+types-PyYAML = "6.0.12.20240724"
+types-redis = "4.6.0.20240726"
+types-requests = "2.32.0.20240712"
+
+[tool.ruff]
+target-version = "py310"
+exclude = [
+    "venv*",
+    "__pycache__",
+    "node_modules",
+    "cache",
+    "migrations",
+    "build",
+]
+extend-include = ['(app|migrations|tests)/.*\.pyi?$']
+src = ["app", "migrations", "tests"]
+# Ruff formatter will wrap lines at a length of 130 characters.
+line-length = 130
+indent-width = 4
+
+[tool.ruff.lint]
+select = [
+    # PyFlakes
+    "F",
+    # Pycodestyle
+    "E",
+    "W",
+    # isort
+    "I001",
+    "I002",
+]
+ignore = ["E203", "E501", "E402"]
+
+# Provide line length leeway for docstrings
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 170
+# Enforce doc string format? (google, numpy or pep257)
+# convention = "google"
+
+[tool.ruff.format]
+# Match black formatting
+# Double quotes for strings.
+quote-style = "double"
+# Indent with spaces, rather than tabs.
+indent-style = "space"
+# Respect magic trailing commas.
+skip-magic-trailing-comma = false
+# Automatically detect the appropriate line ending.
+line-ending = "auto"

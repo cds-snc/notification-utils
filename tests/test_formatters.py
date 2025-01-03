@@ -1,32 +1,31 @@
 import pytest
 from flask import Markup
-
 from notifications_utils.formatters import (
     EMAIL_P_CLOSE_TAG,
     EMAIL_P_OPEN_TAG,
     add_language_divs,
     add_trailing_newline,
-    remove_language_divs,
-    unlink_govuk_escaped,
+    escape_html,
+    escape_lang_tags,
+    formatted_list,
+    make_quotes_smart,
+    nl2li,
+    normalise_whitespace,
     notify_email_markdown,
     notify_letter_preview_markdown,
     notify_plain_text_email_markdown,
+    remove_language_divs,
+    remove_smart_quotes_from_email_addresses,
+    remove_whitespace_before_punctuation,
+    replace_hyphens_with_en_dashes,
     sms_encode,
-    formatted_list,
+    strip_and_remove_obscure_whitespace,
     strip_dvla_markup,
     strip_pipes,
-    escape_html,
-    escape_lang_tags,
-    remove_whitespace_before_punctuation,
-    make_quotes_smart,
-    replace_hyphens_with_en_dashes,
-    tweak_dvla_list_markup,
-    nl2li,
-    strip_whitespace,
-    strip_and_remove_obscure_whitespace,
-    remove_smart_quotes_from_email_addresses,
     strip_unsupported_characters,
-    normalise_whitespace,
+    strip_whitespace,
+    tweak_dvla_list_markup,
+    unlink_govuk_escaped,
 )
 from notifications_utils.take import Take
 from notifications_utils.template import HTMLEmailTemplate, PlainTextEmailTemplate, SMSMessageTemplate, SMSPreviewTemplate
@@ -169,9 +168,9 @@ def test_preserves_whitespace_when_making_links(markdown_function, expected_outp
 @pytest.mark.parametrize(
     "template_content,expected",
     [
-        ("gov.uk", "gov.\u200Buk"),
-        ("GOV.UK", "GOV.\u200BUK"),
-        ("Gov.uk", "Gov.\u200Buk"),
+        ("gov.uk", "gov.\u200buk"),
+        ("GOV.UK", "GOV.\u200bUK"),
+        ("Gov.uk", "Gov.\u200buk"),
         ("https://gov.uk", "https://gov.uk"),
         ("https://www.gov.uk", "https://www.gov.uk"),
         ("www.gov.uk", "www.gov.uk"),
@@ -352,13 +351,10 @@ def test_hrule(markdown_function, expected):
                 '<table role="presentation" style="padding: 0 0 20px 0;">'
                 "<tr>"
                 '<td style="font-family: Helvetica, Arial, sans-serif;">'
-                '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
-                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-                'line-height: 25px; color: #0B0C0C;">one</li>'
-                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-                'line-height: 25px; color: #0B0C0C;">two</li>'
-                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-                'line-height: 25px; color: #0B0C0C;">three</li>'
+                '<ol style="margin: 0; padding: 0; list-style-type: decimal; margin-inline-start: 20px;">'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">one</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">two</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">three</li>'
                 "</ol>"
                 "</td>"
                 "</tr>"
@@ -415,13 +411,10 @@ def test_ordered_list(markdown_function, markdown_input, expected):
                 '<table role="presentation" style="padding: 0 0 20px 0;">'
                 "<tr>"
                 '<td style="font-family: Helvetica, Arial, sans-serif;">'
-                '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
-                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-                'line-height: 25px; color: #0B0C0C;">one</li>'
-                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-                'line-height: 25px; color: #0B0C0C;">two</li>'
-                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;'
-                'line-height: 25px; color: #0B0C0C;">three</li>'
+                '<ul style="margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;">'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">one</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">two</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">three</li>'
                 "</ul>"
                 "</td>"
                 "</tr>"
@@ -507,8 +500,8 @@ def test_pluses_dont_render_as_lists(markdown_function, expected):
             "* **title**: description",
             '<table role="presentation" style="padding: 0 0 20px 0;">'
             '<tr><td style="font-family: Helvetica, Arial, sans-serif;">'
-            '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">'
+            '<ul style="margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;">'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">'
             "<strong>title</strong>: description</li></ul></td></tr></table>",
         ],
     ),
@@ -952,7 +945,7 @@ def test_make_list_from_linebreaks():
         """
         \t    bar
     """,
-        " \u180E\u200B \u200C bar \u200D \u2060\uFEFF ",
+        " \u180e\u200b \u200c bar \u200d \u2060\ufeff ",
     ],
 )
 def test_strip_whitespace(value):
@@ -964,7 +957,7 @@ def test_strip_whitespace(value):
     [
         "notifications-email",
         "  \tnotifications-email \x0c ",
-        "\rn\u200Coti\u200Dfi\u200Bcati\u2060ons-\u180Eemai\uFEFFl\uFEFF",
+        "\rn\u200coti\u200dfi\u200bcati\u2060ons-\u180eemai\ufeffl\ufeff",
     ],
 )
 def test_strip_and_remove_obscure_whitespace(value):
@@ -977,21 +970,18 @@ def test_strip_and_remove_obscure_whitespace_only_removes_normal_whitespace_from
 
 
 def test_remove_smart_quotes_from_email_addresses():
-    assert (
-        remove_smart_quotes_from_email_addresses(
-            """
+    assert remove_smart_quotes_from_email_addresses(
+        """
         line one’s quote
         first.o’last@example.com is someone’s email address
         line ‘three’
     """
-        )
-        == (
-            """
+    ) == (
+        """
         line one’s quote
         first.o'last@example.com is someone’s email address
         line ‘three’
     """
-        )
     )
 
 
@@ -1000,7 +990,7 @@ def test_strip_unsupported_characters():
 
 
 def test_normalise_whitespace():
-    assert normalise_whitespace("\u200C Your tax   is\ndue\n\n") == "Your tax is due"
+    assert normalise_whitespace("\u200c Your tax   is\ndue\n\n") == "Your tax is due"
 
 
 class TestAddLanguageDivs:
@@ -1069,7 +1059,7 @@ bonjour
 1. item 2
 1. item 3
 [[/fr]]""",
-            f'<div lang="fr-ca">{EMAIL_P_OPEN_TAG}Le français suis l\'anglais{EMAIL_P_CLOSE_TAG}</div><div lang="en-ca"><table role="presentation" style="padding: 0 0 20px 0;"><tr><td style="font-family: Helvetica, Arial, sans-serif;"><ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;"><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 1</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 2</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 3</li></ul></td></tr></table></div><div lang="fr-ca">{EMAIL_P_OPEN_TAG}bonjour{EMAIL_P_CLOSE_TAG}<table role="presentation" style="padding: 0 0 20px 0;"><tr><td style="font-family: Helvetica, Arial, sans-serif;"><ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;"><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 1</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 2</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;line-height: 25px; color: #0B0C0C;">item 3</li></ol></td></tr></table></div>',  # noqa
+            f'<div lang="fr-ca">{EMAIL_P_OPEN_TAG}Le français suis l\'anglais{EMAIL_P_CLOSE_TAG}</div><div lang="en-ca"><table role="presentation" style="padding: 0 0 20px 0;"><tr><td style="font-family: Helvetica, Arial, sans-serif;"><ul style="margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;"><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">item 1</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">item 2</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">item 3</li></ul></td></tr></table></div><div lang="fr-ca">{EMAIL_P_OPEN_TAG}bonjour{EMAIL_P_CLOSE_TAG}<table role="presentation" style="padding: 0 0 20px 0;"><tr><td style="font-family: Helvetica, Arial, sans-serif;"><ol style="margin: 0; padding: 0; list-style-type: decimal; margin-inline-start: 20px;"><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">item 1</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">item 2</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">item 3</li></ol></td></tr></table></div>',  # noqa
         ),
         ("[[en]]No closing tag", f"{EMAIL_P_OPEN_TAG}[[en]]No closing tag{EMAIL_P_CLOSE_TAG}"),
         ("No opening tag[[/en]]", f"{EMAIL_P_OPEN_TAG}No opening tag[[/en]]{EMAIL_P_CLOSE_TAG}"),

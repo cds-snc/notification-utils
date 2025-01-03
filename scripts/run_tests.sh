@@ -22,11 +22,14 @@ function display_result {
   fi
 }
 
-black --check --config pyproject.toml .
-display_result $? 1 "Code style check (Black)"
-
-flake8 .
+ruff check .
 display_result $? 1 "Code style check"
+
+ruff check --select I .
+display_result $? 1 "Import order check"
+
+ruff format --check .
+display_result $? 1 "Code format check"
 
 mypy .
 display_result $? 1 "Static type check"

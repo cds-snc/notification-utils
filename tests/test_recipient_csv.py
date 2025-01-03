@@ -1,13 +1,13 @@
-from math import floor
-import pytest
 import itertools
 import unicodedata
 from functools import partial
-from ordered_set import OrderedSet
+from math import floor
 
+import pytest
 from notifications_utils import SMS_CHAR_COUNT_LIMIT
 from notifications_utils.recipients import Cell, RecipientCSV, Row
 from notifications_utils.template import SMSMessageTemplate
+from ordered_set import OrderedSet
 
 
 def _index_rows(rows):
@@ -844,14 +844,14 @@ def test_ignores_spaces_and_case_in_placeholders(key, expected):
         ("\n", None),  # newline
         ("\r", None),  # carriage return
         ("\t", None),  # tab
-        ("\u180E", "MONGOLIAN VOWEL SEPARATOR"),
-        ("\u200B", "ZERO WIDTH SPACE"),
-        ("\u200C", "ZERO WIDTH NON-JOINER"),
-        ("\u200D", "ZERO WIDTH JOINER"),
+        ("\u180e", "MONGOLIAN VOWEL SEPARATOR"),
+        ("\u200b", "ZERO WIDTH SPACE"),
+        ("\u200c", "ZERO WIDTH NON-JOINER"),
+        ("\u200d", "ZERO WIDTH JOINER"),
         ("\u2060", "WORD JOINER"),
-        ("\uFEFF", "ZERO WIDTH NO-BREAK SPACE"),
+        ("\ufeff", "ZERO WIDTH NO-BREAK SPACE"),
         # all the things
-        (" \n\r\t\u000A\u000D\u180E\u200B\u200C\u200D\u2060\uFEFF", None),
+        (" \n\r\t\u000a\u000d\u180e\u200b\u200c\u200d\u2060\ufeff", None),
     ),
 )
 def test_ignores_leading_whitespace_in_file(character, name):
@@ -979,9 +979,7 @@ def test_multiple_sms_recipient_columns_with_missing_data(column_name):
         """
             names, phone number, {}
             "Joanna and Steve", 07900 900111
-        """.format(
-            column_name
-        ),
+        """.format(column_name),
         template_type="sms",
         international_sms=True,
     )

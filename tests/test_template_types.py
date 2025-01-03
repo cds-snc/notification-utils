@@ -1,26 +1,25 @@
 import datetime
-from time import process_time
 import os
-from bs4 import BeautifulSoup
-import pytest
-
 from functools import partial
+from time import process_time
 from unittest import mock
+
+import pytest
+from bs4 import BeautifulSoup
 from flask import Markup
 from freezegun import freeze_time
-
 from notifications_utils.formatters import unlink_govuk_escaped
 from notifications_utils.template import (
-    Template,
+    EmailPreviewTemplate,
     HTMLEmailTemplate,
-    LetterPreviewTemplate,
     LetterImageTemplate,
+    LetterPreviewTemplate,
+    LetterPrintTemplate,
     PlainTextEmailTemplate,
     SMSMessageTemplate,
     SMSPreviewTemplate,
+    Template,
     WithSubjectTemplate,
-    EmailPreviewTemplate,
-    LetterPrintTemplate,
 )
 
 
@@ -143,9 +142,11 @@ def test_alt_text_with_brand_text_and_fip_banner_english_shown(renderer):
             brand_text="Example",
             logo_with_background_colour=True,
             brand_name="Notify Logo",
+            alt_text_en="alt_text_en",
+            alt_text_fr="alt_text_fr",
         )
     )
-    assert 'alt=" "' in email
+    assert 'alt="alt_text_en / alt_text_fr"' in email
     assert 'alt="Notify Logo"' not in email
 
 
@@ -159,10 +160,12 @@ def test_alt_text_with_no_brand_text_and_fip_banner_english_shown(renderer):
             brand_text=None,
             logo_with_background_colour=True,
             brand_name="Notify Logo",
+            alt_text_en="alt_text_en",
+            alt_text_fr="alt_text_fr",
         )
     )
     assert 'alt="Symbol of the Government of Canada / Symbole du gouvernement du Canada"' in email
-    assert 'alt="Notify Logo"' in email
+    assert 'alt="alt_text_en / alt_text_fr"' in email
 
 
 @pytest.mark.parametrize("renderer", [HTMLEmailTemplate, EmailPreviewTemplate])
@@ -184,15 +187,17 @@ def test_alt_text_with_no_brand_text_and_fip_banner_french_shown(renderer):
 
 @pytest.mark.parametrize("renderer", [HTMLEmailTemplate, EmailPreviewTemplate])
 @pytest.mark.parametrize(
-    "logo_with_background_colour, brand_text, expected_alt_text",
+    "logo_with_background_colour, brand_text, alt_text_en, alt_text_fr, expected_alt_text",
     [
-        (True, None, 'alt="Notify Logo"'),
-        (True, "Example", 'alt=" "'),
-        (False, "Example", 'alt=" "'),
-        (False, None, 'alt="Notify Logo"'),
+        (True, None, None, None, 'alt="Notify Logo"'),
+        (True, "Example", "alt_text_en", "alt_text_fr", 'alt="alt_text_en / alt_text_fr"'),
+        (False, "Example", None, None, 'alt="Notify Logo"'),
+        (False, None, "alt_text_en", "alt_text_fr", 'alt="alt_text_en / alt_text_fr"'),
     ],
 )
-def test_alt_text_with_no_fip_banner(logo_with_background_colour, brand_text, expected_alt_text, renderer):
+def test_alt_text_with_no_fip_banner(
+    logo_with_background_colour, brand_text, alt_text_en, alt_text_fr, expected_alt_text, renderer
+):
     email = str(
         renderer(
             {"content": "hello world", "subject": ""},
@@ -201,6 +206,8 @@ def test_alt_text_with_no_fip_banner(logo_with_background_colour, brand_text, ex
             brand_text=brand_text,
             logo_with_background_colour=logo_with_background_colour,
             brand_name="Notify Logo",
+            alt_text_en=alt_text_en,
+            alt_text_fr=alt_text_fr,
         )
     )
 
@@ -477,9 +484,9 @@ def test_HTML_template_has_URLs_replaced_with_links(content, html_snippet):
 @pytest.mark.parametrize(
     "template_content,expected",
     [
-        ("gov.uk", "gov.\u200Buk"),
-        ("GOV.UK", "GOV.\u200BUK"),
-        ("Gov.uk", "Gov.\u200Buk"),
+        ("gov.uk", "gov.\u200buk"),
+        ("GOV.UK", "GOV.\u200bUK"),
+        ("Gov.uk", "Gov.\u200buk"),
         ("https://gov.uk", "https://gov.uk"),
         ("https://www.gov.uk", "https://www.gov.uk"),
         ("www.gov.uk", "www.gov.uk"),
@@ -2057,7 +2064,7 @@ def test_whitespace_in_subjects(template_class, subject, extra_args):
 )
 def test_whitespace_in_subject_placeholders(template_class):
     assert (
-        template_class({"content": "", "subject": "\u200C Your tax   ((status))"}, values={"status": " is\ndue "}).subject
+        template_class({"content": "", "subject": "\u200c Your tax   ((status))"}, values={"status": " is\ndue "}).subject
         == "Your tax is due"
     )
 
@@ -2248,3 +2255,34 @@ def test_image_class_applied_to_logo(template_class, filename, expected_html_cla
 def test_image_not_present_if_no_logo(template_class):
     # can't test that the html doesn't move in utils - tested in template preview instead
     assert "<img" not in str(template_class({"content": "Foo", "subject": "Subject"}, logo_file_name=None))
+
+
+@pytest.mark.parametrize(
+    "template, expected_direction",
+    [
+        (
+            {
+                "content": "hello world",
+                "subject": "",
+                "text_direction_rtl": True,
+            },
+            "rtl",
+        ),
+        (
+            {
+                "content": "hello world",
+                "subject": "",
+                "text_direction_rtl": False,
+            },
+            "ltr",
+        ),
+    ],
+)
+def test_template_shown_in_correct_direction(template, expected_direction):
+    html_template = HTMLEmailTemplate(template)
+    preview_template = EmailPreviewTemplate(template)
+
+    assert html_template.text_direction_rtl == (expected_direction == "rtl")
+    assert preview_template.text_direction_rtl == (expected_direction == "rtl")
+    assert f'dir="{expected_direction}"' in str(html_template)
+    assert f'dir="{expected_direction}"' in str(preview_template)
