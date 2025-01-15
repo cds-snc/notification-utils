@@ -211,6 +211,26 @@ def test_clear_annual_limit_statuses(mock_annual_limit_client, mocked_service_id
     assert all(value is None for value in statuses.values())
 
 
+@pytest.mark.parametrize(
+    "mapping",
+    [
+        {},
+        None,
+        {
+            "key": 0,
+            "key2": 0,
+            "key3": 0,
+        },
+    ],
+)
+def test_seed_annual_limit_notifications_skips_seeding_if_no_notifications_to_seed(
+    app, mock_annual_limit_client, mocked_service_id, mapping, mocker
+):
+    mock_annual_limit_client.seed_annual_limit_notifications(mocked_service_id, mapping)
+    mocked_set_hash_fields = mocker.patch.object(mock_annual_limit_client._redis_client, "bulk_set_hash_fields")
+    mocked_set_hash_fields.assert_not_called()
+
+
 @freeze_time("2024-10-25 12:00:00.000000")
 @pytest.mark.parametrize("seeded_at_value, expected_value", [(b"2024-10-25", True), (None, False)])
 def test_was_seeded_today(mock_annual_limit_client, seeded_at_value, expected_value, mocked_service_id, mocker):
