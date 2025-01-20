@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from unittest.mock import Mock
 
 import pytest
@@ -7,6 +8,16 @@ from flask import Flask
 
 class FakeService:
     id = "1234"
+
+
+@contextmanager
+def set_config(app, name, value):
+    old_val = app.config.get(name)
+    app.config[name] = value
+    try:
+        yield
+    finally:
+        app.config[name] = old_val
 
 
 @pytest.fixture

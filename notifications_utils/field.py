@@ -60,6 +60,14 @@ class Field:
     # * body of placeholder - potentially standard or conditional,
     # * closing ))
     placeholder_pattern = re.compile(r"\({2}" r"(?!\()" r"([\s\S]+?)" r"\){2}")
+    placeholder_pattern_for_link_url = re.compile(
+        r"(?<=\]\()"  # Lookbehind for markdown link URL pattern
+        r"\({2}"  # Match opening double parentheses
+        r"(?!\()"  # Negative lookahead to enforce consumption of late parenthesis and not early ones
+        r"([\s\S]+?)"  # Body of placeholder - potentially standard or conditional
+        r"\){2}"  # Match closing double parentheses
+    )
+
     placeholder_tag = "<mark class='placeholder'>(({}))</mark>"
     conditional_placeholder_tag = "<mark class='placeholder-conditional'><span class='condition'>(({}??</span>{}))</mark>"
     placeholder_tag_translated = "<span class='placeholder-no-brackets'>[{}]</span>"
@@ -109,6 +117,10 @@ class Field:
     def values(self, value):
         self._values = Columns(value) if value else {}
 
+    def format_match_in_link_url(self, match):
+        placeholder = Placeholder.from_match(match)
+        return placeholder.name
+
     def format_match(self, match):
         placeholder = Placeholder.from_match(match)
 
@@ -155,7 +167,9 @@ class Field:
 
     @property
     def _raw_formatted(self):
-        return re.sub(self.placeholder_pattern, self.format_match, self.sanitizer(self.content))
+        _sanitized_content = self.sanitizer(self.content)
+        sanitized_content = re.sub(self.placeholder_pattern_for_link_url, self.format_match_in_link_url, _sanitized_content)
+        return re.sub(self.placeholder_pattern, self.format_match, sanitized_content)
 
     @property
     def formatted(self):

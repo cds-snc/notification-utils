@@ -25,6 +25,8 @@ annual-limit: {
 
 from datetime import datetime
 
+from flask import current_app
+
 from notifications_utils.clients.redis.redis_client import RedisClient
 
 SMS_DELIVERED = "sms_delivered"
@@ -159,6 +161,12 @@ class RedisAnnualLimit:
                     "email_failed": int
                 }
         """
+        if not mapping or all(notification_count == 0 for notification_count in mapping.values()):
+            current_app.logger.info(
+                f"Skipping seeding of annual limit notifications for service {service_id}. No mapping provided, or mapping is empty indicating no notification to seed."
+            )
+            return
+
         self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_key(service_id), mapping=mapping)
 
     def was_seeded_today(self, service_id):
