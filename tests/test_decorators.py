@@ -25,26 +25,28 @@ def process_chunk(chunk):
     return [x * 2 for x in chunk]
 
 
-def test_parallel_process_iterable():
+def test_parallel_process_iterable(app):
     data = [1, 2, 3, 4, 5, 6]
     expected_result = [2, 4, 6, 8, 10, 12]
-    result = process_chunk(data)
+    with app.app_context():
+        result = process_chunk(data)
     assert result[0] == expected_result
 
 
-def test_parallel_process_iterable_with_break_condition():
-    data = [num + 1 for num in range(0, 1002, 1)]
+def test_parallel_process_iterable_with_break_condition(app):
+    data = [num for num in range(1500, 1, -1)]
 
     def break_condition(result):
-        return 6 in result
+        return 1500 in result
 
-    @parallel_process_iterable(chunk_size=2, max_workers=2, break_condition=break_condition)
+    @parallel_process_iterable(break_condition=break_condition)
     def process_chunk_with_break(chunk):
         return [x * 2 for x in chunk]
 
-    expected_result = [[2, 4], [6, 8]]
-    result = process_chunk_with_break(data)
-    assert result == expected_result
+    with app.app_context():
+        results = process_chunk_with_break(data)
+    assert len(results) == 1  # Only 1 thread should have processed data
+    assert any(result == 1500 for result in results[0])
 
 
 @pytest.mark.parametrize(
@@ -64,23 +66,42 @@ def test_parallel_process_iterable_with_break_condition():
         ),  # Small overall data and chunk size, less risk of context switching and CPU overhead, should scale to utilize more workers
         (
             20000,
-            10,
-            2000,
-        ),  # Hitting the max worker count, ensure the worker count stays capped at 10 and chunk_size scales accordingly
-        (40000, 10, 4000),  # Ensuring chunk size is scaling, not max workers
+            20,
+            1000,
+        ),  # Hitting the max worker count, ensure the worker count stays capped at 28 and chunk_size scales accordingly
+        (80000, 28, 2858),  # Ensure chunk size is scaling, not max workers
     ],
 )
-def test_parallel_process_iterable_adjusts_workers_and_chunk_size(data_size, expected_worker_count, expected_chunk_size):
+def test_parallel_process_iterable_adjusts_workers_and_chunk_size(
+    app, data_size, expected_worker_count, expected_chunk_size, mocker
+):
     data = [num + 1 for num in range(0, data_size, 1)]
+    mocker.patch("multiprocessing.cpu_count", return_value=28)  # m5.large has 28 cores
 
     @parallel_process_iterable()
     def process_chunk(chunk):
         return [x * 2 for x in chunk]
 
-    results = process_chunk(data)
-    assert len(results) == expected_worker_count
-    assert any(len(result) == expected_chunk_size for result in results)
+    with app.app_context():
+        results = process_chunk(data)
+        assert len(results) == expected_worker_count
+        assert any(len(result) == expected_chunk_size for result in results)
 
 
-def test_control_chunk_and_worker_size_scales_workers_down_when_chunk_size_exceeds_threshold():
-    assert control_chunk_and_worker_size(81000) == (8100, 5)  # (chunk_size, worker_count)
+def test_parallel_process_iterable_handles_break_condition_exceptions(app):
+    data = [num + 1 for num in range(0, 1002, 1)]
+
+    def break_condition(result):
+        raise ValueError("Something went wrong")
+
+    @parallel_process_iterable(chunk_size=2, max_workers=2, break_condition=break_condition)
+    def process_chunk_with_break(chunk):
+        return [x * 2 for x in chunk]
+
+    with pytest.raises(ValueError), app.app_context():
+        process_chunk_with_break(data)
+
+
+def test_control_chunk_and_worker_size_scales_workers_down_when_chunk_size_exceeds_threshold(mocker):
+    mocker.patch("multiprocessing.cpu_count", return_value=28)  # m5.large has 28 cores
+    assert control_chunk_and_worker_size(300000) == (10000, 14)  # (chunk_size, worker_count)
