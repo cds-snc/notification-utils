@@ -88,18 +88,32 @@ def test_parallel_process_iterable_adjusts_workers_and_chunk_size(
         assert any(len(result) == expected_chunk_size for result in results)
 
 
-def test_parallel_process_iterable_handles_break_condition_exceptions(app):
-    data = [num + 1 for num in range(0, 1002, 1)]
+def test_parallel_process_iterable_raises_break_condition_exceptions_if_atomic(app):
+    data = [num + 1 for num in range(0, 2000, 1)]
 
     def break_condition(result):
         raise ValueError("Something went wrong")
 
-    @parallel_process_iterable(chunk_size=2, max_workers=2, break_condition=break_condition)
+    @parallel_process_iterable(chunk_size=2, max_workers=2, break_condition=break_condition, is_atomic=True)
     def process_chunk_with_break(chunk):
         return [x * 2 for x in chunk]
 
     with pytest.raises(ValueError), app.app_context():
         process_chunk_with_break(data)
+
+
+def test_parallel_process_iterable_continues_on_break_condition_exceptions_if_not_atomic(app):
+    data = [num + 1 for num in range(0, 2000, 1)]
+
+    def break_condition(result):
+        raise ValueError("Something went wrong")
+
+    @parallel_process_iterable(chunk_size=2, max_workers=2, break_condition=break_condition, is_atomic=False)
+    def process_chunk_with_break(chunk):
+        return [x * 2 for x in chunk]
+
+    results = process_chunk_with_break(data)
+    assert len(results) == 2
 
 
 def test_control_chunk_and_worker_size_scales_workers_down_when_chunk_size_exceeds_threshold(mocker):
