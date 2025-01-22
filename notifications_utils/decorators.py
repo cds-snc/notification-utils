@@ -86,7 +86,7 @@ def control_chunk_and_worker_size(data_size=None, chunk_size=None, max_workers=N
 
 
 # Parallel processing decorator
-def parallel_process_iterable(chunk_size=10000, max_workers=None, break_condition: Optional[Callable] = None):
+def parallel_process_iterable(chunk_size=10000, max_workers=None, break_condition: Optional[Callable[..., bool]] = None):
     """Decorator to split processing an iterable into chunks and execute in parallel. This should decorate the function responsible for processing each chunk.
     If processing can be stopped early, this condition should be defined in the processing function, and the `break_condition` parameter should be provided.
 
