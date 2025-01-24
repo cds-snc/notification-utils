@@ -26,22 +26,22 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'bleach>=4.1.0',
-        'boto3>=1.24.61',
-        'botocore>=1.27.61',
-        'Flask>=1.1.1',
+        'bleach>=6.2.0',
+        'boto3>=1.36.5',
+        'botocore>=1.36.5',
+        'Flask>=3.1.0',
         'Flask-Redis>=0.4.0',
-        'Jinja2>=2.11.3',
-        'MarkupSafe>=2.1.3',
-        'mistune==3.0.2',
+        'Jinja2>=3.1.5',
+        'MarkupSafe>=3.0.2',
+        'mistune==3.0.2',  # Pinned: Will be addressed in #192
         'monotonic>=1.6',
-        'phonenumbers~=8.12.12',
-        'pypdf >= 3.15.0',
-        'python-json-logger~=2.0.7',
-        'pytz>=2021.3',
+        'phonenumbers~=8.12.12',  # Pinned: Will be updated in #143
+        'pypdf>= 5.1.0',
+        'python-json-logger>=3.2.1',
+        'pytz>=2024.2',
         'pyyaml==6.0.2',
-        'requests>=2.26.0',
+        'requests>=2.32.3',
         'smartypants>=2.0.1',
-        'statsd>=3.3.0'
+        'statsd>=4.0.1'
     ]
 )
