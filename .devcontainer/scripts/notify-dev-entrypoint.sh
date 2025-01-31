@@ -22,6 +22,9 @@ poetry completions zsh > ~/.zfunc/_poetry
 # Install dependencies
 poetry install
 
+# Set up git blame to ignore certain revisions e.g. sweeping code formatting changes.
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+
 # Install pre-commit hooks
 git config --global --add safe.directory /workspaces/notification-utils
 poetry run pre-commit install
