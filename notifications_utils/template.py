@@ -104,9 +104,7 @@ class Template():
 
     @property
     def values(self):
-        if hasattr(self, '_values'):
-            return self._values
-        return {}
+        return getattr(self, '_values', {})
 
     @values.setter
     def values(self, value):
@@ -126,11 +124,8 @@ class Template():
         return Field(self.content).placeholder_names
 
     @property
-    def missing_data(self):
-        return list(
-            placeholder_name for placeholder_name in Field(self.content).placeholder_names
-            if self.values.get(placeholder_name) is None
-        )
+    def missing_data(self) -> set:
+        return set(name for name in Field(self.content).placeholder_names if self.values.get(name) is None)
 
     @property
     def additional_data(self):
@@ -282,6 +277,18 @@ class WithSubjectTemplate(Template):
     @property
     def placeholder_names(self):
         return Field(self._subject).placeholder_names | Field(self.content).placeholder_names
+
+    @property
+    def missing_data(self) -> set:
+        # Get any missing data from the content.
+        _missing_data: set = super().missing_data
+
+        # Extend the set with any missing data from the subject.
+        for name in Field(self._subject).placeholder_names:
+            if self.values.get(name) is None:
+                _missing_data.add(name)
+
+        return _missing_data
 
 
 class PlainTextEmailTemplate(WithSubjectTemplate):
