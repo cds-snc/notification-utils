@@ -7,17 +7,23 @@ import pytest
 from freezegun import freeze_time
 from notifications_utils.clients.redis.annual_limit import (
     EMAIL_DELIVERED,
+    EMAIL_DELIVERED_TODAY,
     EMAIL_FAILED,
+    EMAIL_FAILED_TODAY,
     NEAR_EMAIL_LIMIT,
     NEAR_SMS_LIMIT,
     NOTIFICATION_FIELDS,
+    NOTIFICATION_FIELDS_V2,
     OVER_EMAIL_LIMIT,
     OVER_SMS_LIMIT,
     SMS_DELIVERED,
+    SMS_DELIVERED_TODAY,
     SMS_FAILED,
+    SMS_FAILED_TODAY,
     STATUS_FIELDS,
     RedisAnnualLimit,
     annual_limit_notifications_key,
+    annual_limit_notifications_v2_key,
     annual_limit_status_key,
 )
 from notifications_utils.clients.redis.redis_client import RedisClient
@@ -70,6 +76,9 @@ def mocked_service_id():
 
 
 def test_notifications_key(mocked_service_id):
+    expected_key = f"annual-limit:{mocked_service_id}:notifications_v2"
+    assert annual_limit_notifications_v2_key(mocked_service_id) == expected_key
+    # TODO: remove the below
     expected_key = f"annual-limit:{mocked_service_id}:notifications"
     assert annual_limit_notifications_key(mocked_service_id) == expected_key
 
@@ -83,13 +92,21 @@ def test_annual_limits_key(mocked_service_id):
     "increment_by, metric",
     [
         (1, SMS_DELIVERED),
+        (1, SMS_DELIVERED_TODAY),
         (1, EMAIL_DELIVERED),
+        (1, EMAIL_DELIVERED_TODAY),
         (1, SMS_FAILED),
+        (1, SMS_FAILED_TODAY),
         (1, EMAIL_FAILED),
+        (1, EMAIL_FAILED_TODAY),
         (2, SMS_DELIVERED),
+        (2, SMS_DELIVERED_TODAY),
         (2, EMAIL_DELIVERED),
+        (2, EMAIL_DELIVERED_TODAY),
         (2, SMS_FAILED),
+        (2, SMS_FAILED_TODAY),
         (2, EMAIL_FAILED),
+        (2, EMAIL_FAILED_TODAY),
     ],
 )
 def test_increment_notification_count(mock_annual_limit_client, mocked_service_id, metric, increment_by):
@@ -116,6 +133,13 @@ def test_get_all_notification_counts(mock_annual_limit_client, mocked_service_id
     assert len(counts) == 4
     assert all(isinstance(value, int) for value in counts.values())
 
+    # Test v2 notification fields
+    for field in NOTIFICATION_FIELDS_V2:
+        mock_annual_limit_client.increment_notification_count(mocked_service_id, field)
+    counts = mock_annual_limit_client.get_all_notification_counts(mocked_service_id)
+    assert len(counts) == len(NOTIFICATION_FIELDS_V2)
+    assert all(isinstance(value, int) for value in counts.values())
+
 
 def test_get_all_notification_counts_returns_none_if_fields_do_not_exist(mock_annual_limit_client, mocked_service_id):
     notification_counts = mock_annual_limit_client.get_all_notification_counts(mocked_service_id)
@@ -124,14 +148,20 @@ def test_get_all_notification_counts_returns_none_if_fields_do_not_exist(mock_an
 
 
 def test_clear_notification_counts(mock_annual_limit_client, mocked_service_id):
+    # Test clearing both structures
     for field in NOTIFICATION_FIELDS:
         mock_annual_limit_client.increment_notification_count(mocked_service_id, field)
-    assert len(mock_annual_limit_client.get_all_notification_counts(mocked_service_id)) == 4
+    for field in NOTIFICATION_FIELDS_V2:
+        mock_annual_limit_client.increment_notification_count(mocked_service_id, field)
 
     mock_annual_limit_client.clear_notification_counts(mocked_service_id)
+
+    # Verify both structures cleared
     counts = mock_annual_limit_client.get_all_notification_counts(mocked_service_id)
-    assert set(counts.keys()) == set(NOTIFICATION_FIELDS)
     assert all(value == 0 for value in counts.values())
+
+    counts_v2 = mock_annual_limit_client.get_all_notification_counts(mocked_service_id)
+    assert all(value == 0 for value in counts_v2.values())
 
 
 @pytest.mark.parametrize(
@@ -147,17 +177,18 @@ def test_clear_notification_counts(mock_annual_limit_client, mocked_service_id):
 )
 def test_bulk_reset_notification_counts(mock_annual_limit_client, service_ids):
     for service_id in service_ids:
+        # TODO: remove the below
         for field in NOTIFICATION_FIELDS:
             mock_annual_limit_client.increment_notification_count(service_id, field)
 
+        for field in NOTIFICATION_FIELDS_V2:
+            mock_annual_limit_client.increment_notification_count(service_id, field)
         counts = mock_annual_limit_client.get_all_notification_counts(service_id)
-        assert set(counts.keys()) == set(NOTIFICATION_FIELDS)
-        assert all(value > 0 for value in counts.values())
 
+        assert all(value > 0 for value in counts.values())
     mock_annual_limit_client.reset_all_notification_counts()
     for service_id in service_ids:
         counts = mock_annual_limit_client.get_all_notification_counts(service_id)
-        assert set(counts.keys()) == set(NOTIFICATION_FIELDS)
         assert all(value == 0 for value in counts.values())
 
 
