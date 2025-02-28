@@ -1,6 +1,7 @@
 FROM mcr.microsoft.com/vscode/devcontainers/python:3.12
 
 ENV POETRY_VERSION="1.7.1"
+ENV POETRY_VENV_PATH="/home/vscode/.venv/workspace"
 
 RUN apt-get update \
     && apt-get -y install --no-install-recommends apt-utils 2>&1 \
