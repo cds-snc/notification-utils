@@ -14,10 +14,21 @@ echo -e "autoload -Uz compinit && compinit"
 pip install poetry==${POETRY_VERSION} poetry-plugin-sort \
   && poetry --version
 
+
+# Disable poetry auto-venv creation
+poetry config virtualenvs.create false
+
 # Initialize poetry autocompletions
 mkdir ~/.zfunc
 touch ~/.zfunc/_poetry
 poetry completions zsh > ~/.zfunc/_poetry
+
+# Manually create and activate a virtual environment with a static path
+python -m venv "${POETRY_VENV_PATH}"
+source "${POETRY_VENV_PATH}/bin/activate"
+
+# Ensure newly created shells activate the poetry venv
+echo "source ${POETRY_VENV_PATH}/bin/activate" >> ~/.zshrc
 
 # Install dependencies
 poetry install

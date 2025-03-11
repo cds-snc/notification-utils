@@ -22,7 +22,8 @@
 				"charliermarsh.ruff",
 			],
 			"settings": {
-				"python.pythonPath": "/usr/local/bin/python",
+				"python.defaultInterpreterPath": "/home/vscode/.venv/workspace/bin/python",
+				"python.venvPath": "/home/vscode/.venv",
 				"ruff.lint.ignore": ["F401"],
 				"ruff.lint.run": "onSave",
 				"ruff.organizeImports": false,
