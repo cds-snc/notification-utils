@@ -338,20 +338,54 @@ def insert_action_link(markdown: str) -> str:
     return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)''', substitution, markdown)
 
 
-def insert_block_quotes(md: str) -> str:
+def insert_action_link_block_quote(markdown: str) -> str:
     """
-    Template markup uses ^ to denote a block quote, but Github markdown, which Mistune reflects, specifies a block
-    quote with the > character.  Rather than write a custom parser, templates should preprocess their text to replace
-    the former with the latter.  This preprocessing should take place before any manipulation by Mistune.
+    Converts block quotes containing action links into formatted HTML links with an image.
+    If text after the action links exists, then the additional texts is moved to a new link
+    within a blockquote.
 
     Given:
-        ^ This is a block quote.
+        markdown (str): ^ >> [text](url) additional text
+
+    Returns:
+        str: <a href="url"><img alt="call to action img" src="..." style="..."> <b>text</b></a><br />additional text
+    """
+    img_src = get_action_link_image_url()
+
+    def replacement(match: re.Match[str]) -> str:
+        """Dynamically constructs the replacement string for each match."""
+        link_html = (
+            f'<a href="{match.group(3)}">'
+            f'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> '
+            f'<b>{match.group(2)}</b></a>'
+        )
+
+        extra_text = match.group(4).strip() if match.group(4) else ""
+        if extra_text:
+            link_html += f'<br />{extra_text}'
+
+        return link_html
+
+    return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)(.*)?''', replacement, markdown)
+
+
+def insert_block_quotes(md: str) -> str:
+    """
+    Converts lines starting with `^` or `>` into block quotes, processing action links when present.
+
+    Given:
+        ^ This is a block quote OR ^ >> [text](url)
 
     Output:
-        > This is a block quote.
+        > This is a block quote OR  > <a href="url"><img alt="call to action img" src="..." style="..."> <b>text</b></a>
     """
+    modified_md = md
 
-    return re.sub(r'''^(\s*)\^(\s*)''', r'''\1>\2''', md, flags=re.M)
+    for match in re.finditer(r'^(?:\^|>)(?!>).*', md, flags=re.MULTILINE):
+        modified_line = insert_action_link_block_quote(match.group())
+        modified_md = modified_md.replace(match.group(), modified_line, 1)
+
+    return re.sub(r'''^(\s*)\^(\s*)''', r'''\1>\2''', modified_md, flags=re.M)
 
 
 def insert_list_spaces(md: str) -> str:
