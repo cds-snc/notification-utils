@@ -6,9 +6,9 @@ import phonenumbers
 import os
 from io import StringIO
 from contextlib import suppress
-from functools import lru_cache, partial
+from functools import lru_cache
 from itertools import islice
-from collections import OrderedDict, namedtuple
+from collections import OrderedDict
 from . import EMAIL_REGEX_PATTERN, hostname_part, tld_part
 from notifications_utils.formatters import strip_and_remove_obscure_whitespace, strip_whitespace
 from notifications_utils.template import Template
@@ -18,8 +18,8 @@ from notifications_utils.international_billing_rates import (
 )
 
 
-country_code = os.getenv("PHONE_COUNTRY_CODE", "1")
-region_code = os.getenv("PHONE_REGION_CODE", "US")
+DEFAULT_COUNTRY_CODE = os.getenv("PHONE_COUNTRY_CODE", "1")
+DEFAULT_REGION_CODE = os.getenv("PHONE_REGION_CODE", "US")
 
 first_column_headings = {
     'email': ['email address'],
@@ -305,7 +305,6 @@ class RecipientCSV():
                     value,
                     self.template_type,
                     column=key,
-                    international_sms=self.international_sms
                 )
             except (InvalidEmailError, InvalidPhoneError, InvalidAddressError) as error:
                 return str(error)
@@ -323,108 +322,79 @@ class InvalidEmailError(Exception):
         super().__init__(message or 'Not a valid email address')
 
 
-class InvalidPhoneError(InvalidEmailError):
-    pass
+class InvalidPhoneError(Exception):
+
+    def __init__(self, message=None):
+        super().__init__(message or 'Not a valid number')
 
 
 class InvalidAddressError(InvalidEmailError):
     pass
 
 
-def normalise_phone_number(number):
-    match = parse_number(number, region_code) or parse_number(number)
-
-    if match:
-        return phonenumbers.format_number(match.number, phonenumbers.PhoneNumberFormat.E164)
-
-    return False
-
-
-def is_local_phone_number(number):
-    if parse_number(number, region_code) is False:
-        return False
-    else:
-        return True
-
-
-international_phone_info = namedtuple('PhoneNumber', [
-    'international',
-    'country_prefix',
-    'billable_units',
-])
-
-
-def get_international_phone_info(number):
-
-    number = validate_phone_number(number, international=True)
-    prefix = get_international_prefix(number)
-
-    return international_phone_info(
-        international=(prefix != country_code),
-        country_prefix=prefix,
-        billable_units=get_billable_units_for_prefix(prefix)
-    )
-
-
-def get_international_prefix(number):
-    number = phonenumbers.parse(number, None)
-    return str(number.country_code)
-
-
-def get_billable_units_for_prefix(prefix):
-    return INTERNATIONAL_BILLING_RATES[prefix]['billable_units']
-
-
-def validate_local_phone_number(number, column=None):
-    match = parse_number(number, region_code)
-    if match:
-        return phonenumbers.format_number(match.number, phonenumbers.PhoneNumberFormat.E164)
-    else:
-        raise InvalidPhoneError('Not a valid local number')
-
-
-def validate_phone_number(number, column=None, international=False):  # noqa:   C901
-
-    if ';' in number:
-        raise InvalidPhoneError('Not a valid number')
-
-    if (not international) or is_local_phone_number(number):
-        return validate_local_phone_number(number)
-
-    normalized_number = normalise_phone_number(number)
-
-    if not normalized_number:
+class ValidatedPhoneNumber:
+    def __init__(self, number: str):
+        # raises InvalidPhoneNumber if letters present
+        _reject_vanity_number(number)
         try:
-            parsed_number = phonenumbers.parse(number, region_code)
-            is_valid_number = phonenumbers.is_valid_number(parsed_number)
-            if not is_valid_number:
-                logging.warning('Failed to validate parsed number: %s', parsed_number)
-                raise InvalidPhoneError(
-                    'Field contains an invalid number due to either formatting '
-                    'or an impossible combination of area code and/or telephone prefix.'
-                )
-        except phonenumbers.phonenumberutil.NumberParseException:
+            self._parsed: phonenumbers.PhoneNumber = phonenumbers.parse(number, DEFAULT_REGION_CODE)
+        except (TypeError, phonenumbers.NumberParseException):
+            raise InvalidPhoneError('Not a possible number')
+        if str(self._parsed.country_code) not in INTERNATIONAL_BILLING_RATES:
+            raise InvalidPhoneError('Not a valid country prefix')
+        if not phonenumbers.is_valid_number(self._parsed):
             raise InvalidPhoneError('Not a valid number')
 
-    if len(normalized_number) < 8:
-        raise InvalidPhoneError('Not enough digits')
+    @property
+    def formatted(self) -> str:
+        """Phone number as E164 formatted string."""
+        return phonenumbers.format_number(self._parsed, phonenumbers.PhoneNumberFormat.E164)
 
-    if get_international_prefix(normalized_number) is None:
-        raise InvalidPhoneError('Not a valid country prefix')
+    @property
+    def international(self) -> bool:
+        """Is phone number international."""
+        return self.country_code != DEFAULT_COUNTRY_CODE
 
-    return normalized_number
+    @property
+    def country_code(self) -> str:
+        """Country code of phone number as a string."""
+        return str(self._parsed.country_code)
+
+    @property
+    def region_code(self) -> str:
+        """Region code of phone number."""
+        return phonenumbers.region_code_for_number(self._parsed)
+
+    @property
+    def billable_units(self) -> int:
+        """Billable units for phone number referenced using country code.
+
+        Validated number country codes are always present in INTERNATIONAL_BILLING_RATES
+        """
+        return INTERNATIONAL_BILLING_RATES[self.country_code]['billable_units']
 
 
-validate_and_format_phone_number = validate_phone_number
+def _reject_vanity_number(number: str) -> None:
+    """Raise InvalidPhoneError is number string has alpha characters."""
+    _number = re.sub(r'\s*(x|ext|extension)\s*\d+$', '', number, flags=re.IGNORECASE).strip()
+
+    # do not allow letters in phone number (vanity)
+    if re.search(r'[A-Za-z]', _number) is not None:
+        raise InvalidPhoneError('Phone numbers must not contain letters')
 
 
-def try_validate_and_format_phone_number(number, column=None, international=None, log_msg=None):
+def validate_phone_number(number, column=None) -> str:
+    """Wrapper function to retain compatability with validate_recipient."""
+    return ValidatedPhoneNumber(number).formatted
+
+
+def try_validate_and_format_phone_number(number, log_msg=None):
     """
     For use in places where you shouldn't error if the phone number is invalid - for example if firetext pass us
     something in
     """
     try:
-        return validate_and_format_phone_number(number, column, international)
+        return ValidatedPhoneNumber(number).formatted
     except InvalidPhoneError as exc:
         if log_msg:
             logging.warning(log_msg)
@@ -493,10 +463,10 @@ def validate_address(address_line, column):
     return address_line
 
 
-def validate_recipient(recipient, template_type, column=None, international_sms=False):
+def validate_recipient(recipient, template_type, column=None):
     return {
         'email': validate_email_address,
-        'sms': partial(validate_phone_number, international=international_sms),
+        'sms': validate_phone_number,
         'letter': validate_address,
     }[template_type](recipient, column)
 
@@ -506,19 +476,10 @@ def format_recipient(recipient):
     if not isinstance(recipient, str):
         return ''
     with suppress(InvalidPhoneError):
-        return validate_and_format_phone_number(recipient)
+        return ValidatedPhoneNumber(recipient).formatted
     with suppress(InvalidEmailError):
         return validate_and_format_email_address(recipient)
     return recipient
-
-
-def format_phone_number_human_readable(phone_number):
-    match = parse_number(phone_number, region_code) or parse_number(phone_number)
-
-    if match:
-        return phonenumbers.format_number(match.number, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
-
-    return phone_number
 
 
 def allowed_to_send_to(recipient, whitelist):
@@ -535,19 +496,3 @@ def insert_or_append_to_dict(dict_, key, value):
             dict_[key] = [dict_[key], value]
     else:
         dict_.update({key: value})
-
-
-def parse_number(number, region=None):
-    matches = []
-    for match in phonenumbers.PhoneNumberMatcher(number, region):
-        matches.append(match)
-
-    if len(matches) > 0:
-        if region is not None:
-            if matches[0].number.country_code == int(country_code):
-                return matches[0]
-            else:
-                return False
-        return matches[0]
-    else:
-        return False
