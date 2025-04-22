@@ -5,6 +5,7 @@ import pytest
 from markupsafe import Markup
 
 from notifications_utils.formatters import (
+    ACTION_LINK_IMAGE_STYLE,
     BLOCK_QUOTE_STYLE,
     H1_STYLE,
     H2_STYLE,
@@ -248,6 +249,71 @@ def test_get_html_email_body_with_action_links(content, values, expected):
                 'link text</a></p>\n'
             )
         ),
+        (
+            'spaces in link and text placeholders: [link ((foo bar)) text](https://test.com/((foo bar)))',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">spaces in link and text placeholders: '
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((foo%20bar))">'
+                'link <span class=\'placeholder\'><mark>((foo bar))</mark></span> text</a></p>\n'
+            )
+        ),
+        (
+            'tab in link placeholder: [link text](https://test.com/((foo\tbar)))',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">tab in link placeholder: '
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((foo%09bar))">'
+                'link text</a></p>\n'
+            )
+        ),
+        (
+            'multiple spaces in placeholder link, placeholder at end: [link text](https://test.com/(( foo  bar )))',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">multiple spaces in placeholder link, placeholder at end: '
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((%20foo%20%20bar%20))">'
+                'link text</a></p>\n'
+            )
+        ),
+        (
+            'image tag should be stripped: ![alt text](https://test.com/)',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">image tag should be stripped: </p>\n'
+            )
+        ),
+        (
+            'image tag with src space should be stripped: ![alt text](https://te st.com/)',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">image tag with src space should be stripped: </p>\n'
+            )
+        ),
+        (
+            'image tag with space in placeholder should be stripped: ![alt text](https://((foo bar)).com/)',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">image tag with space in placeholder should be stripped: </p>\n'
+            )
+        ),
+        (
+            '^ >>[link text](https://test.com((foo)))',
+            (
+                f'<blockquote style="{BLOCK_QUOTE_STYLE}">\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="https://test.com((foo))">'
+                f'<img alt="call to action img" '
+                f'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                f'style="{ACTION_LINK_IMAGE_STYLE}"> <b>link text</b></a></p>\n'
+                f'</blockquote>\n'
+            )
+        ),
+        (
+            '^ >>[link ((foo bar)) text](https://test.com(( foo bar )))',
+            (
+                f'<blockquote style="{BLOCK_QUOTE_STYLE}">\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="https://test.com((%20foo%20bar%20))">'
+                f'<img alt="call to action img" '
+                f'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                f'style="{ACTION_LINK_IMAGE_STYLE}">'
+                f' <b>link <span class=\'placeholder\'><mark>((foo bar))</mark></span> text</b></a></p>\n'
+                f'</blockquote>\n'
+            )
+        ),
     ],
     ids=[
         'formatting with placeholder',
@@ -256,7 +322,15 @@ def test_get_html_email_body_with_action_links(content, values, expected):
         'formatting with placeholder in markdown link url',
         'formatting with placeholder in markdown link url and text around placeholder',
         'formatting when placeholder is markdown link url',
-        'formatting with multiple placeholders in markdown link'
+        'formatting with multiple placeholders in markdown link',
+        'spaces in link and text placeholders',
+        'tab in link placeholder',
+        'multiple spaces in placeholder link, placeholder at end',
+        'image tag should be stripped',
+        'image tag with src space should be stripped',
+        'image tag with space in placeholder should be stripped',
+        'block quote action link, placeholder in link',
+        'block quote spaces in placeholder action link and text',
     ]
 )
 def test_get_html_email_body_preview_with_placeholder_in_markdown_link(content, expected):
