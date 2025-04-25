@@ -14,7 +14,6 @@ from notifications_utils.sanitise_text import SanitiseSMS
 from . import email_with_smart_quotes_regex
 
 LINK_STYLE = "word-wrap: break-word;"
-CTA_LINK_STYLE = "background-color: rgb(178, 227, 255); border-bottom-color: rgb(255, 255, 255); border-bottom-left-radius: 0px; border-bottom-right-radius: 0px; border-bottom-style: solid; border-bottom-width: 2px; box-shadow: rgb(26, 49, 82) 0px 2px 0px 0px; color: rgb(0, 0, 0); display: inline-flex; font-size: 20px; font-weight: 700; height: 47px; line-height: 25px; margin-bottom: 0px; margin-left: 0px; margin-right: 25px; margin-top: 30px; padding-bottom: 10px; padding-inline-end: 12px; padding-inline-start: 12px; padding-left: 12px; padding-right: 12px; padding-top: 10px;"
 
 OBSCURE_WHITESPACE = (
     "\u180e"  # Mongolian vowel separator
@@ -24,9 +23,6 @@ OBSCURE_WHITESPACE = (
     "\u2060"  # word joiner
     "\ufeff"  # zero width non-breaking space
 )
-
-# CTA link marker
-CTA_MARKER = "#CTA"
 
 EMAIL_P_OPEN_TAG = '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
 EMAIL_P_CLOSE_TAG = "</p>"
@@ -332,18 +328,6 @@ def normalise_whitespace(value):
     return " ".join(strip_and_remove_obscure_whitespace(value).split())
 
 
-def is_cta_link(link):
-    """Check if a link has the CTA marker at the end"""
-    return link.endswith(CTA_MARKER)
-
-
-def strip_cta_marker(link):
-    """Remove the CTA marker from a link if present"""
-    if is_cta_link(link):
-        return link[: -len(CTA_MARKER)]
-    return link
-
-
 class NotifyLetterMarkdownPreviewRenderer(mistune.Renderer):
     def block_code(self, code, language=None):
         return code
@@ -482,21 +466,12 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         ).format(text)
 
     def link(self, link, title, content):
-        if is_cta_link(link):
-            clean_link = strip_cta_marker(link)
-            return ('<a style="{}"{}{}>{}</a>').format(
-                CTA_LINK_STYLE,
-                ' href="{}"'.format(clean_link),
-                ' title="{}"'.format(title) if title else "",
-                content,
-            )
-        else:
-            return ('<a style="{}"{}{}>{}</a>').format(
-                LINK_STYLE,
-                ' href="{}"'.format(link),
-                ' title="{}"'.format(title) if title else "",
-                content,
-            )
+        return ('<a style="{}"{}{}>{}</a>').format(
+            LINK_STYLE,
+            ' href="{}"'.format(link),
+            ' title="{}"'.format(title) if title else "",
+            content,
+        )
 
     def autolink(self, link, is_email=False):
         if is_email:
