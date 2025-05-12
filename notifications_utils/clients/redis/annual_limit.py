@@ -246,9 +246,27 @@ class RedisAnnualLimit:
         # Store V2 fields
         self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_v2_key(service_id), mapping=v2_mapping)
 
-        # Store V1 fields
-        legacy_mapping = {k: mapping[k] for k in NOTIFICATION_FIELDS if k in mapping}
-        self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_key(service_id), mapping=legacy_mapping)
+        # Create a legacy mapping from either original legacy keys or mapped from V2 keys
+        legacy_mapping = {}
+
+        # First try to use any legacy fields directly present in the mapping
+        for k in NOTIFICATION_FIELDS:
+            if k in mapping:
+                legacy_mapping[k] = mapping[k]
+
+        # If legacy fields aren't present, map from V2 fields
+        if SMS_DELIVERED_TODAY in mapping and SMS_DELIVERED not in legacy_mapping:
+            legacy_mapping[SMS_DELIVERED] = mapping[SMS_DELIVERED_TODAY]
+        if EMAIL_DELIVERED_TODAY in mapping and EMAIL_DELIVERED not in legacy_mapping:
+            legacy_mapping[EMAIL_DELIVERED] = mapping[EMAIL_DELIVERED_TODAY]
+        if SMS_FAILED_TODAY in mapping and SMS_FAILED not in legacy_mapping:
+            legacy_mapping[SMS_FAILED] = mapping[SMS_FAILED_TODAY]
+        if EMAIL_FAILED_TODAY in mapping and EMAIL_FAILED not in legacy_mapping:
+            legacy_mapping[EMAIL_FAILED] = mapping[EMAIL_FAILED_TODAY]
+
+        # Store legacy fields if we have any
+        if legacy_mapping:
+            self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_key(service_id), mapping=legacy_mapping)
 
         # Only after successful storage, set the seeded flag
         self.set_seeded_at(service_id)
