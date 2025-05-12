@@ -21,6 +21,8 @@ from notifications_utils.clients.redis.annual_limit import (
     SMS_FAILED,
     SMS_FAILED_TODAY,
     STATUS_FIELDS,
+    TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY,
+    TOTAL_SMS_FISCAL_YEAR_TO_YESTERDAY,
     RedisAnnualLimit,
     annual_limit_notifications_key,
     annual_limit_notifications_v2_key,
@@ -389,3 +391,98 @@ def test_check_has_over_limit_been_sent(mock_annual_limit_client, mocked_service
     assert mock_annual_limit_client.check_has_over_limit_been_sent(mocked_service_id, "email") == datetime.utcnow().strftime(
         "%Y-%m-%d"
     )
+
+
+# Add these tests after test_seed_annual_limit_notifications_skips_seeding_if_no_notifications_to_seed
+@freeze_time("2024-10-25 12:00:00.000000")
+def test_seed_annual_limit_notifications_with_partial_fields(mock_annual_limit_client, mocked_service_id):
+    """Test that seeding works with partial fields without requiring an exact match."""
+    # Create a mapping with only some of the V2 fields
+    partial_mapping = {
+        EMAIL_DELIVERED_TODAY: 10,
+        SMS_DELIVERED_TODAY: 5,
+        # Deliberately omit some fields like TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY
+    }
+
+    # Seed with partial data
+    mock_annual_limit_client.seed_annual_limit_notifications(mocked_service_id, partial_mapping)
+
+    # Verify seeded_at is set
+    assert mock_annual_limit_client.was_seeded_today(mocked_service_id) is True
+
+    # Verify the fields we provided are stored
+    counts = mock_annual_limit_client.get_all_notification_counts(mocked_service_id)
+    assert counts[EMAIL_DELIVERED_TODAY] == 10
+    assert counts[SMS_DELIVERED_TODAY] == 5
+
+    # Missing fields should be zero or None, but not error
+    assert EMAIL_FAILED_TODAY in counts
+    assert TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY in counts
+
+
+@freeze_time("2024-10-25 12:00:00.000000")
+def test_seed_annual_limit_notifications_with_extra_fields(mock_annual_limit_client, mocked_service_id):
+    """Test that seeding works with extra fields beyond the expected ones."""
+    # Create a mapping with all required fields plus an extra one
+    complete_mapping = {
+        EMAIL_DELIVERED_TODAY: 10,
+        EMAIL_FAILED_TODAY: 2,
+        SMS_DELIVERED_TODAY: 5,
+        SMS_FAILED_TODAY: 1,
+        TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY: 100,
+        TOTAL_SMS_FISCAL_YEAR_TO_YESTERDAY: 50,
+        "extra_field": 42,  # Field not in NOTIFICATION_FIELDS_V2
+    }
+
+    # Seed with extra data
+    mock_annual_limit_client.seed_annual_limit_notifications(mocked_service_id, complete_mapping)
+
+    # Verify all expected fields were stored
+    counts = mock_annual_limit_client.get_all_notification_counts(mocked_service_id)
+    assert counts[EMAIL_DELIVERED_TODAY] == 10
+    assert counts[EMAIL_FAILED_TODAY] == 2
+    assert counts[SMS_DELIVERED_TODAY] == 5
+    assert counts[SMS_FAILED_TODAY] == 1
+    assert counts[TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY] == 100
+    assert counts[TOTAL_SMS_FISCAL_YEAR_TO_YESTERDAY] == 50
+
+    # Extra field should be ignored without error
+    assert "extra_field" not in counts
+
+
+@freeze_time("2024-10-25 12:00:00.000000")
+def test_seed_annual_limit_notifications_preserves_fields_on_reseeding(mock_annual_limit_client, mocked_service_id):
+    """Test that reseeding preserves all fields, even ones not included in second seeding."""
+
+    # First seed with complete data
+    initial_mapping = {
+        EMAIL_DELIVERED_TODAY: 10,
+        EMAIL_FAILED_TODAY: 2,
+        SMS_DELIVERED_TODAY: 5,
+        SMS_FAILED_TODAY: 1,
+        TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY: 100,
+        TOTAL_SMS_FISCAL_YEAR_TO_YESTERDAY: 50,
+    }
+    mock_annual_limit_client.seed_annual_limit_notifications(mocked_service_id, initial_mapping)
+
+    # Force reset of seeded_at to allow reseeding
+    mock_annual_limit_client._redis_client.delete_hash_fields(annual_limit_notifications_v2_key(mocked_service_id), ["seeded_at"])
+
+    # Reseed with only partial data
+    partial_mapping = {
+        EMAIL_DELIVERED_TODAY: 15,  # Updated value
+        SMS_DELIVERED_TODAY: 7,  # Updated value
+        # Omit other fields
+    }
+    mock_annual_limit_client.seed_annual_limit_notifications(mocked_service_id, partial_mapping)
+
+    # Check that updated fields changed
+    counts = mock_annual_limit_client.get_all_notification_counts(mocked_service_id)
+    assert counts[EMAIL_DELIVERED_TODAY] == 15  # Updated
+    assert counts[SMS_DELIVERED_TODAY] == 7  # Updated
+
+    # Check that omitted fields were preserved, not deleted
+    assert counts[EMAIL_FAILED_TODAY] == 2  # Original value preserved
+    assert counts[SMS_FAILED_TODAY] == 1  # Original value preserved
+    assert counts[TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY] == 100  # Original value preserved
+    assert counts[TOTAL_SMS_FISCAL_YEAR_TO_YESTERDAY] == 50  # Original value preserved
