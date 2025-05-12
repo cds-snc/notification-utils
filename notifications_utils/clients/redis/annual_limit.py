@@ -231,14 +231,46 @@ class RedisAnnualLimit:
         """
         if not mapping or all(notification_count == 0 for notification_count in mapping.values()):
             current_app.logger.info(
-                f"Skipping seeding of annual limit notifications for service {service_id}. No mapping provided, or mapping is empty indicating no notification to seed."
+                f"Skipping seeding of annual limit notifications for service {service_id}. No mapping provided, or mapping is empty."
             )
             return
-        # TODO: Remove the else once all services have been migrated to the new Redis structure
-        self.set_seeded_at(service_id)
-        if set(mapping.keys()) == set(NOTIFICATION_FIELDS_V2):
-            self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_v2_key(service_id), mapping=mapping)
-        self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_key(service_id), mapping=mapping)
+
+        # Extract only V2 fields that exist in the mapping
+        v2_mapping = {k: mapping[k] for k in NOTIFICATION_FIELDS_V2 if k in mapping}
+
+        # Log if we're missing any V2 fields
+        if set(v2_mapping.keys()) != set(NOTIFICATION_FIELDS_V2):
+            missing_fields = set(NOTIFICATION_FIELDS_V2) - set(v2_mapping.keys())
+            current_app.logger.warning(f"Missing V2 fields when seeding annual limit for service {service_id}: {missing_fields}")
+
+        # Store V2 fields
+        v2_result = self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_v2_key(service_id), mapping=v2_mapping)
+
+        # Create a legacy mapping from either original legacy keys or mapped from V2 keys
+        legacy_mapping = {}
+
+        # First try to use any legacy fields directly present in the mapping
+        for k in NOTIFICATION_FIELDS:
+            if k in mapping:
+                legacy_mapping[k] = mapping[k]
+
+        # If legacy fields aren't present, map from V2 fields
+        if SMS_DELIVERED_TODAY in mapping and SMS_DELIVERED not in legacy_mapping:
+            legacy_mapping[SMS_DELIVERED] = mapping[SMS_DELIVERED_TODAY]
+        if EMAIL_DELIVERED_TODAY in mapping and EMAIL_DELIVERED not in legacy_mapping:
+            legacy_mapping[EMAIL_DELIVERED] = mapping[EMAIL_DELIVERED_TODAY]
+        if SMS_FAILED_TODAY in mapping and SMS_FAILED not in legacy_mapping:
+            legacy_mapping[SMS_FAILED] = mapping[SMS_FAILED_TODAY]
+        if EMAIL_FAILED_TODAY in mapping and EMAIL_FAILED not in legacy_mapping:
+            legacy_mapping[EMAIL_FAILED] = mapping[EMAIL_FAILED_TODAY]
+
+        # Store legacy fields if we have any
+        if legacy_mapping:
+            self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_key(service_id), mapping=legacy_mapping)
+
+        # Only after successful storage, set the seeded flag
+        if v2_result:
+            self.set_seeded_at(service_id)
 
     def was_seeded_today(self, service_id):
         last_seeded_time = self.get_seeded_at(service_id)
