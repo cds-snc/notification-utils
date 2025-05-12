@@ -244,7 +244,7 @@ class RedisAnnualLimit:
             current_app.logger.warning(f"Missing V2 fields when seeding annual limit for service {service_id}: {missing_fields}")
 
         # Store V2 fields
-        self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_v2_key(service_id), mapping=v2_mapping)
+        v2_result = self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_v2_key(service_id), mapping=v2_mapping)
 
         # Create a legacy mapping from either original legacy keys or mapped from V2 keys
         legacy_mapping = {}
@@ -269,7 +269,8 @@ class RedisAnnualLimit:
             self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_key(service_id), mapping=legacy_mapping)
 
         # Only after successful storage, set the seeded flag
-        self.set_seeded_at(service_id)
+        if v2_result:
+            self.set_seeded_at(service_id)
 
     def was_seeded_today(self, service_id):
         last_seeded_time = self.get_seeded_at(service_id)
