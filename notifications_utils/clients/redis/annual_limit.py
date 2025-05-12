@@ -231,14 +231,27 @@ class RedisAnnualLimit:
         """
         if not mapping or all(notification_count == 0 for notification_count in mapping.values()):
             current_app.logger.info(
-                f"Skipping seeding of annual limit notifications for service {service_id}. No mapping provided, or mapping is empty indicating no notification to seed."
+                f"Skipping seeding of annual limit notifications for service {service_id}. No mapping provided, or mapping is empty."
             )
             return
-        # TODO: Remove the else once all services have been migrated to the new Redis structure
+
+        # Extract only V2 fields that exist in the mapping
+        v2_mapping = {k: mapping[k] for k in NOTIFICATION_FIELDS_V2 if k in mapping}
+
+        # Log if we're missing any V2 fields
+        if set(v2_mapping.keys()) != set(NOTIFICATION_FIELDS_V2):
+            missing_fields = set(NOTIFICATION_FIELDS_V2) - set(v2_mapping.keys())
+            current_app.logger.warning(f"Missing V2 fields when seeding annual limit for service {service_id}: {missing_fields}")
+
+        # Store V2 fields
+        self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_v2_key(service_id), mapping=v2_mapping)
+
+        # Store V1 fields
+        legacy_mapping = {k: mapping[k] for k in NOTIFICATION_FIELDS if k in mapping}
+        self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_key(service_id), mapping=legacy_mapping)
+
+        # Only after successful storage, set the seeded flag
         self.set_seeded_at(service_id)
-        if set(mapping.keys()) == set(NOTIFICATION_FIELDS_V2):
-            self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_v2_key(service_id), mapping=mapping)
-        self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_key(service_id), mapping=mapping)
 
     def was_seeded_today(self, service_id):
         last_seeded_time = self.get_seeded_at(service_id)
