@@ -125,9 +125,16 @@ class RedisClient:
         if self.active:
             try:
                 if pattern:
+                    current_app.logger.info(
+                        f"[alimit-debug-redis] bulk_set_hash_fields - Pattern branch. pattern: {pattern}, key: {key}, mapping: {mapping}"
+                    )
                     for key in self.redis_store.scan_iter(pattern):
                         self.redis_store.hmset(key, mapping)
+                    return True
                 if key:
+                    current_app.logger.info(
+                        f"[alimit-debug-redis] bulk_set_hash_fields - key branch. pattern: {pattern}, key: {key}, mapping: {mapping}"
+                    )
                     return self.redis_store.hmset(key, mapping)
             except Exception as e:
                 self.__handle_exception(e, raise_exception, "bulk_set_hash_fields", pattern)

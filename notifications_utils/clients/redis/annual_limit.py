@@ -243,17 +243,13 @@ class RedisAnnualLimit:
             missing_fields = set(NOTIFICATION_FIELDS_V2) - set(v2_mapping.keys())
             current_app.logger.warning(f"Missing V2 fields when seeding annual limit for service {service_id}: {missing_fields}")
 
-        if str(service_id) == "44c1a3f5-6a11-4952-b6f4-94dd46d009f2":
-            current_app.logger.info(f"[alimit-debug-redis] seed_annual_limit_notifications - v2_mapping: {v2_mapping}")
-
         # Store V2 fields
-        self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_v2_key(service_id), mapping=v2_mapping)
-        v2_values = prepare_byte_dict(
-            self._redis_client.get_all_from_hash(annual_limit_status_key(service_id)), str, NOTIFICATION_FIELDS_V2
+        current_app.logger.info(
+            f"[alimit-debug-redis] Setting notification_v2 values for service_id: {service_id} with mapping: {v2_mapping}"
         )
-
-        if str(service_id) == "44c1a3f5-6a11-4952-b6f4-94dd46d009f2":
-            current_app.logger.info(f"[alimit-debug-redis] seed_annual_limit_notifications - v2_values: {v2_values}")
+        self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_v2_key(service_id), mapping=v2_mapping)
+        v2_values = prepare_byte_dict(self._redis_client.get_all_from_hash(annual_limit_notifications_v2_key(service_id)), str)
+        current_app.logger.info(f"[alimit-debug-redis] Finished setting values, result is: {v2_values}")
 
         # Create a legacy mapping from either original legacy keys or mapped from V2 keys
         legacy_mapping = {}
@@ -273,26 +269,15 @@ class RedisAnnualLimit:
         if EMAIL_FAILED_TODAY in mapping and EMAIL_FAILED not in legacy_mapping:
             legacy_mapping[EMAIL_FAILED] = mapping[EMAIL_FAILED_TODAY]
 
-        if str(service_id) == "44c1a3f5-6a11-4952-b6f4-94dd46d009f2":
-            current_app.logger.info(f"[alimit-debug-redis] seed_annual_limit_notifications - v1_mapping: {legacy_mapping}")
-
         # Store legacy fields if we have any
         if legacy_mapping:
-            if str(service_id) == "44c1a3f5-6a11-4952-b6f4-94dd46d009f2":
-                current_app.logger.info(f"[alimit-debug-redis] seed_annual_limit_notifications - v1_mapping: {legacy_mapping}")
-
             self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_key(service_id), mapping=legacy_mapping)
-            v1_values = prepare_byte_dict(
-                self._redis_client.get_all_from_hash(annual_limit_status_key(service_id)), str, NOTIFICATION_FIELDS_V2
-            )
 
-            if str(service_id) == "44c1a3f5-6a11-4952-b6f4-94dd46d009f2":
-                current_app.logger.info(f"[alimit-debug-redis] seed_annual_limit_notifications - v1_values: {v1_values}")
-
-        if str(service_id) == "44c1a3f5-6a11-4952-b6f4-94dd46d009f2":
-            current_app.logger.info("[alimit-debug-redis] setting seeded_at")
-
+        current_app.logger.info(f"[alimit-debug-redis] Setting seeded_at for service {service_id}")
         self.set_seeded_at(service_id)
+        current_app.logger.info(
+            f"[alimit-debug-redis] Finished setting seeded_at, new value is: {self.get_seeded_at(service_id)}"
+        )
 
     def was_seeded_today(self, service_id):
         last_seeded_time = self.get_seeded_at(service_id)
