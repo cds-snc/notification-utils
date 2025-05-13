@@ -244,7 +244,12 @@ class RedisAnnualLimit:
             current_app.logger.warning(f"Missing V2 fields when seeding annual limit for service {service_id}: {missing_fields}")
 
         # Store V2 fields
-        v2_result = self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_v2_key(service_id), mapping=v2_mapping)
+        current_app.logger.info(
+            f"[alimit-debug-redis] Setting notification_v2 values for service_id: {service_id} with mapping: {v2_mapping}"
+        )
+        self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_v2_key(service_id), mapping=v2_mapping)
+        v2_values = prepare_byte_dict(self._redis_client.get_all_from_hash(annual_limit_notifications_v2_key(service_id)), str)
+        current_app.logger.info(f"[alimit-debug-redis] Finished setting values, result is: {v2_values}")
 
         # Create a legacy mapping from either original legacy keys or mapped from V2 keys
         legacy_mapping = {}
@@ -268,9 +273,11 @@ class RedisAnnualLimit:
         if legacy_mapping:
             self._redis_client.bulk_set_hash_fields(key=annual_limit_notifications_key(service_id), mapping=legacy_mapping)
 
-        # Only after successful storage, set the seeded flag
-        if v2_result:
-            self.set_seeded_at(service_id)
+        current_app.logger.info(f"[alimit-debug-redis] Setting seeded_at for service {service_id}")
+        self.set_seeded_at(service_id)
+        current_app.logger.info(
+            f"[alimit-debug-redis] Finished setting seeded_at, new value is: {self.get_seeded_at(service_id)}"
+        )
 
     def was_seeded_today(self, service_id):
         last_seeded_time = self.get_seeded_at(service_id)
