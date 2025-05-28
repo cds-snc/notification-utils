@@ -248,7 +248,7 @@ def _getAdditionalLoggingDetails():
         # Add timing information if available
         if hasattr(g, "start"):
             time_taken = (monotonic() - g.start) * 1000  # Convert to milliseconds
-            additionalDetails += f"time_taken: '{time_taken:.2f}ms' "
+            additionalDetails += f"time_taken: {time_taken:.2f}ms "
 
         try:
             # log request fields if they are present
