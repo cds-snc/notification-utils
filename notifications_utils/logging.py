@@ -245,6 +245,11 @@ def _getAdditionalLoggingDetails():
         bodyFields = ("template_id", "service_id", "notification_id")
         additionalDetails = " [Request details: "
 
+        # Add timing information if available
+        if hasattr(g, "start"):
+            time_taken = (monotonic() - g.start) * 1000  # Convert to milliseconds
+            additionalDetails += f"time_taken: '{time_taken:.2f}ms' "
+
         try:
             # log request fields if they are present
             for field in requestFields:
