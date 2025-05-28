@@ -191,6 +191,11 @@ def test_logger_adds_extra_context_details(app, mocker, debugconfig, testcases):
     def createApp(app):
         app.debug = debugconfig
 
+        @app.before_request
+        def record_request_details():
+            g.start = monotonic()  # Add this line
+            g.endpoint = request.endpoint
+
         @app.route("/info", methods=["POST"])
         def info():
             app.logger.info("info")
@@ -242,6 +247,8 @@ def test_logger_adds_extra_context_details(app, mocker, debugconfig, testcases):
             assert "template_id" in errorMessage
             # ensure request data (endpoint) is shown
             assert "endpoint" in errorMessage
+            # ensure time_taken is shown
+            assert "time_taken" in errorMessage
 
 
 @pytest.mark.parametrize("debugconfig", [True, False])
