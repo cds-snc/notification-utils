@@ -7,11 +7,15 @@ from pathlib import Path
 from time import monotonic
 from typing import Any
 
+from aws_xray_sdk.core import xray_recorder
 from flask import g, request
 from flask.ctx import has_request_context
 from pythonjsonlogger.jsonlogger import JsonFormatter as BaseJSONFormatter
 
-LOG_FORMAT = "%(asctime)s %(app_name)s %(name)s %(levelname)s " '%(request_id)s "%(message)s" [in %(pathname)s:%(lineno)d]'
+LOG_FORMAT = (
+    "%(asctime)s %(app_name)s %(name)s %(levelname)s %(request_id)s "
+    "%(message)s [in %(pathname)s:%(lineno)d] [xray:%(xray_trace_id)s]"
+)
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
 regex_pattern_for_replace_api_signed_secret = "[a-zA-Z0-9]{51}\.[a-zA-Z0-9-_]{27}"  # noqa: W605
@@ -140,6 +144,7 @@ def configure_handler(handler, app, formatter):
     handler.setFormatter(formatter)
     handler.addFilter(AppNameFilter(app.config["NOTIFY_APP_NAME"]))
     handler.addFilter(RequestIdFilter())
+    handler.addFilter(XRayTraceIdFilter())
 
     return handler
 
@@ -186,6 +191,18 @@ class RequestIdFilter(logging.Filter):
         return record
 
 
+class XRayTraceIdFilter(logging.Filter):
+    @property
+    def trace_id(self):
+        if xray_recorder.current_segment():
+            return xray_recorder.current_segment().trace_id
+        return "no-trace-id"
+
+    def filter(self, record):
+        record.xray_trace_id = self.trace_id
+        return record
+
+
 class CustomLogFormatter(logging.Formatter):
     """Accepts a format string for the message and formats it with the extra fields"""
 
@@ -219,6 +236,7 @@ class JSONFormatter(BaseJSONFormatter):
             "asctime": "time",
             "request_id": "requestId",
             "app_name": "application",
+            "xray_trace_id": "traceId",
         }
         for key, newkey in rename_map.items():
             log_record[newkey] = log_record.pop(key)
