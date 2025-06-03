@@ -13,8 +13,8 @@ from flask.ctx import has_request_context
 from pythonjsonlogger.jsonlogger import JsonFormatter as BaseJSONFormatter
 
 LOG_FORMAT = (
-    "%(asctime)s %(app_name)s %(name)s %(levelname)s %(request_id)s [%(xray_trace_id)s] "
-    '%(message)s" [in %(pathname)s:%(lineno)d]'
+    "%(asctime)s %(app_name)s %(name)s %(levelname)s %(request_id)s "
+    '%(message)s" [in %(pathname)s:%(lineno)d] [xray:%(xray_trace_id)s]'
 )
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
