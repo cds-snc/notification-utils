@@ -7,10 +7,12 @@ from pathlib import Path
 from time import monotonic
 from typing import Any
 
-from aws_xray_sdk.core import xray_recorder
+from aws_lambda_powertools import Tracer
 from flask import g, request
 from flask.ctx import has_request_context
 from pythonjsonlogger.jsonlogger import JsonFormatter as BaseJSONFormatter
+
+tracer = Tracer()
 
 LOG_FORMAT = (
     "%(asctime)s %(app_name)s %(name)s %(levelname)s %(request_id)s "
@@ -194,9 +196,7 @@ class RequestIdFilter(logging.Filter):
 class XRayTraceIdFilter(logging.Filter):
     @property
     def trace_id(self):
-        if xray_recorder.current_segment():
-            return xray_recorder.current_segment().trace_id
-        return "no-trace-id"
+        return tracer.current_trace_id or "no-trace-id"
 
     def filter(self, record):
         record.xray_trace_id = self.trace_id
