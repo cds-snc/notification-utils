@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "notifications-utils"
-version = "53.2.4"
+version = "53.2.5"
 description = "Shared python code for Notification - Provides logging utils etc."
 authors = ["Canadian Digital Service"]
 license = "MIT license"
@@ -13,6 +13,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = "~3.12.7"
+aws-lambda-powertools = "^3.14.0"
 aws-xray-sdk = "2.14.0"
 # required by both api and admin
 awscli = "1.33.35"
