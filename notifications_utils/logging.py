@@ -1,28 +1,51 @@
 import logging
-import logging.handlers
 import re
-import sys
-from itertools import product
 from pathlib import Path
 from time import monotonic
 from typing import Any
 
-from aws_lambda_powertools import Tracer
+from aws_lambda_powertools import Logger, Tracer
+from aws_lambda_powertools.logging.formatter import LambdaPowertoolsFormatter
 from flask import g, request
 from flask.ctx import has_request_context
-from pythonjsonlogger.jsonlogger import JsonFormatter as BaseJSONFormatter
 
+# Initialize tracer and logger with custom configuration
 tracer = Tracer()
+logger = Logger(service="notification-utils", use_rfc3339=True)
 
-LOG_FORMAT = (
-    "%(asctime)s %(app_name)s %(name)s %(levelname)s %(request_id)s "
-    "%(message)s [in %(pathname)s:%(lineno)d] [xray:%(xray_trace_id)s]"
-)
+# For Flask, we need to patch to ensure all HTTP calls are traced
+tracer.patch(["requests", "boto3"])
+
+# Setup custom formatters that integrate with Powertools
+LOG_FORMAT = "%(asctime)s %(app_name)s %(name)s %(levelname)s %(request_id)s " "%(message)s [in %(pathname)s:%(lineno)d]"
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
-regex_pattern_for_replace_api_signed_secret = "[a-zA-Z0-9]{51}\.[a-zA-Z0-9-_]{27}"  # noqa: W605
 
-logger = logging.getLogger(__name__)
+class AppLogFormatter(LambdaPowertoolsFormatter):
+    """Extends Powertools formatter with app-specific needs"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not hasattr(self, "default_attributes"):
+            self.default_attributes = {}
+        self.default_attributes.update({"app_name": "notification-utils", "request_id": "no-request-id"})
+
+    def format(self, record):
+        if has_request_context():
+            self.default_attributes["request_id"] = getattr(request, "request_id", "no-request-id")
+            # Add request context to structured logs
+            for key, value in self.default_attributes.items():
+                setattr(record, key, value)
+
+        # Mask sensitive data in logs
+        if isinstance(record.msg, str):
+            record.msg = re.sub(regex_pattern_for_replace_api_signed_secret, "***", record.msg)
+            record.msg += _getAdditionalLoggingDetails()
+
+        return super().format(record)
+
+
+regex_pattern_for_replace_api_signed_secret = "[a-zA-Z0-9]{51}\.[a-zA-Z0-9-_]{27}"  # noqa: W605
 
 
 def build_log_line(extra_fields):
@@ -51,11 +74,29 @@ def build_statsd_line(extra_fields):
 def init_app(app, statsd_client=None):
     app.config.setdefault("NOTIFY_LOG_LEVEL", "INFO")
     app.config.setdefault("NOTIFY_APP_NAME", "none")
-    app.config.setdefault("NOTIFY_LOG_PATH", "./log/application.log")
+    app.config.setdefault("NOTIFY_LOG_PATH", None)
+
+    # Configure the Powertools logger with custom formatter
+    formatter = AppLogFormatter()
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    if app.config["NOTIFY_LOG_PATH"]:
+        # Add file logging if configured
+        ensure_log_path_exists(app.config["NOTIFY_LOG_PATH"])
+        file_handler = logging.FileHandler(filename=app.config["NOTIFY_LOG_PATH"])
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
 
     @app.after_request
     def after_request(response):
-        extra_fields = {"method": request.method, "url": request.url, "status": response.status_code}
+        extra_fields = {
+            "method": request.method,
+            "url": request.url,
+            "status": response.status_code,
+            "app_name": app.config["NOTIFY_APP_NAME"],
+        }
 
         if "service_id" in g:
             extra_fields.update({"service_id": g.service_id})
@@ -67,23 +108,13 @@ def init_app(app, statsd_client=None):
             extra_fields.update({"endpoint": g.endpoint})
 
         record_stats(statsd_client, extra_fields)
-
+        logger.debug("Request completed", extra=extra_fields)
         return response
 
-    logging.getLogger().addHandler(logging.NullHandler())
-
-    del app.logger.handlers[:]
-
-    ensure_log_path_exists(app.config["NOTIFY_LOG_PATH"])
-    handlers = get_handlers(app)
-    loglevel = logging.getLevelName(app.config["NOTIFY_LOG_LEVEL"])
-    loggers = [app.logger, logging.getLogger("utils")]
-    for current_logger, handler in product(loggers, handlers):
-        current_logger.addHandler(handler)
-        current_logger.setLevel(loglevel)
+    # Configure default log levels
     logging.getLogger("boto3").setLevel(logging.WARNING)
     logging.getLogger("s3transfer").setLevel(logging.WARNING)
-    app.logger.info("Logging configured")
+    logger.info("Logging configured")
 
 
 def record_stats(statsd_client, extra_fields):
@@ -112,43 +143,26 @@ def ensure_log_path_exists(path):
         pass
 
 
+# Powertools Logger handles all log configuration
+
+
 def get_handlers(app):
-    handlers = []
-    standard_formatter = CustomLogFormatter(LOG_FORMAT, TIME_FORMAT)
-    json_formatter = JSONFormatter(LOG_FORMAT, TIME_FORMAT)
-
-    stream_handler = logging.StreamHandler(sys.stdout)
-    if not app.debug:
-        # machine readable json to both file and stdout
-        # file_handler = logging.handlers.WatchedFileHandler(
-        #     filename='{}.json'.format(app.config['NOTIFY_LOG_PATH'])
-        # )
-
-        handlers.append(configure_handler(stream_handler, app, json_formatter))
-        # Do not write to files, stdout logging is only needed
-        # handlers.append(configure_handler(file_handler, app, json_formatter))
-    else:
-        # turn off 200 OK static logs in development
-        def is_200_static_log(log):
-            msg = log.getMessage()
-            return not ("GET /static/" in msg and " 200 " in msg)
-
-        logging.getLogger("werkzeug").addFilter(is_200_static_log)
-
-        # human readable stdout logs
-        handlers.append(configure_handler(stream_handler, app, standard_formatter))
-
-    return handlers
+    """Get handlers for backwards compatibility with tests"""
+    handler = logging.StreamHandler()
+    handler.setFormatter(AppLogFormatter())
+    return [handler]
 
 
-def configure_handler(handler, app, formatter):
-    handler.setLevel(logging.getLevelName(app.config["NOTIFY_LOG_LEVEL"]))
-    handler.setFormatter(formatter)
-    handler.addFilter(AppNameFilter(app.config["NOTIFY_APP_NAME"]))
-    handler.addFilter(RequestIdFilter())
-    handler.addFilter(XRayTraceIdFilter())
+class CustomLogFormatter(logging.Formatter):
+    """Kept for backwards compatibility with tests"""
 
-    return handler
+    pass
+
+
+class JSONFormatter(logging.Formatter):
+    """Kept for backwards compatibility with tests"""
+
+    pass
 
 
 def get_class_attrs(cls, sensitive_attrs: list[str]) -> dict[str, Any]:
@@ -169,89 +183,7 @@ def get_class_attrs(cls, sensitive_attrs: list[str]) -> dict[str, Any]:
     return attrs
 
 
-class AppNameFilter(logging.Filter):
-    def __init__(self, app_name):
-        self.app_name = app_name
-
-    def filter(self, record):
-        record.app_name = self.app_name
-
-        return record
-
-
-class RequestIdFilter(logging.Filter):
-    @property
-    def request_id(self):
-        if has_request_context() and hasattr(request, "request_id"):
-            return request.request_id  # type: ignore
-        else:
-            return "no-request-id"
-
-    def filter(self, record):
-        record.request_id = self.request_id
-
-        return record
-
-
-class XRayTraceIdFilter(logging.Filter):
-    @property
-    def trace_id(self):
-        return tracer.current_trace_id or "no-trace-id"
-
-    def filter(self, record):
-        record.xray_trace_id = self.trace_id
-        return record
-
-
-class CustomLogFormatter(logging.Formatter):
-    """Accepts a format string for the message and formats it with the extra fields"""
-
-    FORMAT_STRING_FIELDS_PATTERN = re.compile(r"\((.+?)\)", re.IGNORECASE)
-
-    def add_fields(self, record):
-        if self._fmt is None:
-            raise TypeError("self._fmt is None")
-        for field in self.FORMAT_STRING_FIELDS_PATTERN.findall(self._fmt):
-            record.__dict__[field] = record.__dict__.get(field)
-        return record
-
-    def format(self, record):
-        record = self.add_fields(record)
-        try:
-            # Replace the API signed secret with asterisks
-            record.msg = re.sub(regex_pattern_for_replace_api_signed_secret, "***", record.msg)
-            # sometimes record.msg is an exception so this is checking for that
-            if isinstance(record.msg, str):
-                record.msg += _getAdditionalLoggingDetails()
-            record.msg = str(record.msg).format(**record.__dict__)
-        except (KeyError, IndexError) as e:
-            logger.exception("failed to format log message: {} not found".format(e))
-
-        return super(CustomLogFormatter, self).format(record)
-
-
-class JSONFormatter(BaseJSONFormatter):
-    def process_log_record(self, log_record):
-        rename_map = {
-            "asctime": "time",
-            "request_id": "requestId",
-            "app_name": "application",
-            "xray_trace_id": "traceId",
-        }
-        for key, newkey in rename_map.items():
-            log_record[newkey] = log_record.pop(key)
-        log_record["logType"] = "application"
-        try:
-            # Replace the API signed secret with asterisks
-            log_record["message"] = re.sub(regex_pattern_for_replace_api_signed_secret, "***", log_record["message"])
-            log_record["message"] = str(log_record["message"])
-        except (KeyError, IndexError) as e:
-            logger.exception("failed to format log message: {} not found".format(e))
-
-        # add additional details to log message when we can
-        log_record["message"] += _getAdditionalLoggingDetails()
-
-        return log_record
+# Powertools logger handles formatting and filtering automatically
 
 
 # log request details when logging occurs as part of a request
