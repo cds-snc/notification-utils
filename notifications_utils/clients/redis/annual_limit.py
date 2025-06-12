@@ -47,6 +47,7 @@ SMS_DELIVERED_TODAY = "sms_delivered_today"
 EMAIL_DELIVERED_TODAY = "email_delivered_today"
 SMS_FAILED_TODAY = "sms_failed_today"
 EMAIL_FAILED_TODAY = "email_failed_today"
+SEEDED_AT = "seeded_at"
 TOTAL_SMS_FISCAL_YEAR_TO_YESTERDAY = "total_sms_fiscal_year_to_yesterday"
 TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY = "total_email_fiscal_year_to_yesterday"
 
@@ -64,7 +65,6 @@ NEAR_SMS_LIMIT = "near_sms_limit"
 NEAR_EMAIL_LIMIT = "near_email_limit"
 OVER_SMS_LIMIT = "over_sms_limit"
 OVER_EMAIL_LIMIT = "over_email_limit"
-SEEDED_AT = "seeded_at"
 
 STATUS_FIELDS = [NEAR_SMS_LIMIT, NEAR_EMAIL_LIMIT, OVER_SMS_LIMIT, OVER_EMAIL_LIMIT]
 
@@ -194,7 +194,8 @@ class RedisAnnualLimit:
             if not service_ids
             else [annual_limit_notifications_v2_key(service_id) for service_id in service_ids]
         )
-        self._redis_client.delete_hash_fields(hashes=hashes, fields=NOTIFICATION_FIELDS_V2)
+        # We also want to remove the seeded_at field from the notifications_v2 hash
+        self._redis_client.delete_hash_fields(hashes=hashes, fields=NOTIFICATION_FIELDS_V2 + [SEEDED_AT])
         # TODO: Remove the else once all services have been migrated to the new Redis structure
         hashes = (
             annual_limit_notifications_key("*")
