@@ -6,8 +6,8 @@ from unittest import mock
 
 import pytest
 from bs4 import BeautifulSoup
-from flask import Markup
 from freezegun import freeze_time
+from markupsafe import Markup
 from notifications_utils.formatters import unlink_govuk_escaped
 from notifications_utils.template import (
     EmailPreviewTemplate,
@@ -385,13 +385,13 @@ def test_content_of_preheader_in_html_emails_with_allow_html(
         [
             HTMLEmailTemplate,
             {},
-            ("the quick brown fox\n" "\n" "jumped over the lazy dog\n"),
+            ("the quick brown fox\n\njumped over the lazy dog\n"),
             "notifications_utils.template.notify_email_markdown",
         ],
         [
             LetterPreviewTemplate,
             {},
-            ("the quick brown fox\n" "\n" "jumped over the lazy dog\n"),
+            ("the quick brown fox\n\njumped over the lazy dog\n"),
             "notifications_utils.template.notify_letter_preview_markdown",
         ],
     ],
@@ -405,7 +405,7 @@ def test_markdown_in_templates(
     with mock.patch(markdown_renderer, return_value="") as mock_markdown_renderer:
         str(
             template_class(
-                {"content": ("the quick ((colour)) ((animal))\n" "\n" "jumped over the lazy dog"), "subject": "animal story"},
+                {"content": ("the quick ((colour)) ((animal))\n\njumped over the lazy dog"), "subject": "animal story"},
                 {"animal": "fox", "colour": "brown"},
                 **extra_args,
             )
@@ -612,14 +612,14 @@ def test_sms_preview_adds_newlines(nl2br):
 @pytest.mark.parametrize(
     "content",
     [
-        ("one newline\n" "two newlines\n" "\n" "end"),  # Unix-style
-        ("one newline\r\n" "two newlines\r\n" "\r\n" "end"),  # Windows-style
-        ("one newline\r" "two newlines\r" "\r" "end"),  # Mac Classic style
-        ("\t\t\n\r one newline\xa0\n" "two newlines\r" "\r\n" "end\n\n  \r \n \t "),  # A mess
+        ("one newline\ntwo newlines\n\nend"),  # Unix-style
+        ("one newline\r\ntwo newlines\r\n\r\nend"),  # Windows-style
+        ("one newline\rtwo newlines\r\rend"),  # Mac Classic style
+        ("\t\t\n\r one newline\xa0\ntwo newlines\r\r\nend\n\n  \r \n \t "),  # A mess
     ],
 )
 def test_sms_message_normalises_newlines(content):
-    assert repr(str(SMSMessageTemplate({"content": content}))) == repr("one newline\n" "two newlines\n" "\n" "end")
+    assert repr(str(SMSMessageTemplate({"content": content}))) == repr("one newline\ntwo newlines\n\nend")
 
 
 @pytest.mark.skip(reason="not in use")
@@ -665,7 +665,7 @@ def test_sms_message_normalises_newlines(content):
                 "address line 2": "City of Town",
                 "postcode": "SW1A 1AA",
             },
-            Markup("123 Fake Street\n" "City of Town\n" "\n" "\n" "\n" "\n" "SW1A 1AA"),
+            Markup("123 Fake Street\nCity of Town\n\n\n\n\nSW1A 1AA"),
         ),
     ],
 )
@@ -767,7 +767,7 @@ def test_letter_preview_renderer_without_mocks(jinja_template):
 
     jinja_template_locals = jinja_template.call_args_list[0][0][0]
 
-    assert jinja_template_locals["address"] == ("<ul>" "<li>name</li>" "<li>street</li>" "<li>SW1 1AA</li>" "</ul>")
+    assert jinja_template_locals["address"] == ("<ul><li>name</li><li>street</li><li>SW1 1AA</li></ul>")
     assert jinja_template_locals["subject"] == "Subject"
     assert jinja_template_locals["message"] == "<p>Foo</p>"
     assert jinja_template_locals["date"] == "1 January 2001"
@@ -1103,7 +1103,7 @@ def test_templates_handle_html_and_redacting(
             {},
             [
                 mock.call(Markup("subject")),
-                mock.call('<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">' "content" "</p>"),
+                mock.call('<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">content</p>'),
                 mock.call("\n\ncontent"),
                 mock.call(Markup("subject")),
                 mock.call(Markup("subject")),
@@ -1113,7 +1113,7 @@ def test_templates_handle_html_and_redacting(
             EmailPreviewTemplate,
             {},
             [
-                mock.call('<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">' "content" "</p>"),
+                mock.call('<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">content</p>'),
                 mock.call(Markup("subject")),
                 mock.call(Markup("subject")),
                 mock.call(Markup("subject")),
@@ -1189,7 +1189,7 @@ def test_templates_remove_whitespace_before_punctuation(
             HTMLEmailTemplate,
             {},
             [
-                mock.call('<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">' "content" "</p>"),
+                mock.call('<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">content</p>'),
                 mock.call("\n\ncontent"),
                 mock.call(Markup("subject")),
             ],
@@ -1198,7 +1198,7 @@ def test_templates_remove_whitespace_before_punctuation(
             EmailPreviewTemplate,
             {},
             [
-                mock.call('<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">' "content" "</p>"),
+                mock.call('<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">content</p>'),
                 mock.call(Markup("subject")),
             ],
         ),
@@ -1904,16 +1904,16 @@ def test_letter_address_format(address, expected):
     "markdown, expected",
     [
         (
-            ("Here is a list of bullets:\n" "\n" "* one\n" "* two\n" "* three\n" "\n" "New paragraph"),
-            ("<ul>\n" "<li>one</li>\n" "<li>two</li>\n" "<li>three</li>\n" "</ul>\n" "<p>New paragraph</p>\n"),
+            ("Here is a list of bullets:\n\n* one\n* two\n* three\n\nNew paragraph"),
+            ("<ul>\n<li>one</li>\n<li>two</li>\n<li>three</li>\n</ul>\n<p>New paragraph</p>\n"),
         ),
         (
-            ("# List title:\n" "\n" "* one\n" "* two\n" "* three\n"),
-            ("<h2>List title:</h2>\n" "<ul>\n" "<li>one</li>\n" "<li>two</li>\n" "<li>three</li>\n" "</ul>\n"),
+            ("# List title:\n\n* one\n* two\n* three\n"),
+            ("<h2>List title:</h2>\n<ul>\n<li>one</li>\n<li>two</li>\n<li>three</li>\n</ul>\n"),
         ),
         (
-            ("Here’s an ordered list:\n" "\n" "1. one\n" "2. two\n" "3. three\n"),
-            ("<p>Here’s an ordered list:</p><ol>\n" "<li>one</li>\n" "<li>two</li>\n" "<li>three</li>\n" "</ol>"),
+            ("Here’s an ordered list:\n\n1. one\n2. two\n3. three\n"),
+            ("<p>Here’s an ordered list:</p><ol>\n<li>one</li>\n<li>two</li>\n<li>three</li>\n</ol>"),
         ),
     ],
 )
@@ -2008,15 +2008,15 @@ def test_non_sms_ignores_message_too_long(template_class, kwargs):
 
 
 @pytest.mark.parametrize(
-    ("content," "expected_preview_markup,"),
+    ("content,expected_preview_markup,"),
     [
         (
             "a\n\n\nb",
-            ("<p>a</p>" "<p>b</p>"),
+            ("<p>a</p><p>b</p>"),
         ),
         (
-            ("a\n" "\n" "* one\n" "* two\n" "* three\n" "and a half\n" "\n" "\n" "\n" "\n" "foo"),
-            ("<p>a</p><ul>\n" "<li>one</li>\n" "<li>two</li>\n" "<li>three<br>and a half</li>\n" "</ul>\n" "<p>foo</p>"),
+            ("a\n\n* one\n* two\n* three\nand a half\n\n\n\n\nfoo"),
+            ("<p>a</p><ul>\n<li>one</li>\n<li>two</li>\n<li>three<br>and a half</li>\n</ul>\n<p>foo</p>"),
         ),
     ],
 )
@@ -2101,16 +2101,7 @@ def test_nested_lists_in_lettr_markup():
     template_content = str(
         LetterPreviewTemplate(
             {
-                "content": (
-                    "nested list:\n"
-                    "\n"
-                    "1. one\n"
-                    "2. two\n"
-                    "3. three\n"
-                    "  - three one\n"
-                    "  - three two\n"
-                    "  - three three\n"
-                ),
+                "content": ("nested list:\n\n1. one\n2. two\n3. three\n  - three one\n  - three two\n  - three three\n"),
                 "subject": "foo",
             }
         )
@@ -2203,7 +2194,7 @@ def test_plain_text_email_whitespace():
     (
         (
             PlainTextEmailTemplate,
-            ("Heading link: https://example.com\n" "-----------------------------------------------------------------\n"),
+            ("Heading link: https://example.com\n-----------------------------------------------------------------\n"),
         ),
         (
             HTMLEmailTemplate,

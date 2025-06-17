@@ -4,8 +4,8 @@ from datetime import datetime
 from html import unescape
 from os import path
 
-from flask import Markup
 from jinja2 import Environment, FileSystemLoader
+from markupsafe import Markup
 
 from notifications_utils import EMAIL_CHAR_COUNT_LIMIT, SMS_CHAR_COUNT_LIMIT, TEMPLATE_NAME_CHAR_COUNT_LIMIT
 from notifications_utils.columns import Columns

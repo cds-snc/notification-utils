@@ -7,7 +7,7 @@ from typing import List
 import bleach
 import mistune
 import smartypants
-from flask import Markup
+from markupsafe import Markup
 
 from notifications_utils.sanitise_text import SanitiseSMS
 
