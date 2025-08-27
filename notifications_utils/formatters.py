@@ -418,7 +418,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
     def list(self, body, ordered=True):
         return (
             (
-                '<table role="presentation" style="padding: 0 0 0 0;">'
+                '<table role="presentation" style="padding: 0 0 20px 0;">'
                 "<tr>"
                 '<td style="font-family: Helvetica, Arial, sans-serif;">'
                 '<ol style="margin: 0; padding: 0; list-style-type: decimal; margin-inline-start: 20px;">'
@@ -430,7 +430,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
             ).format(body)
             if ordered
             else (
-                '<table role="presentation" style="padding: 0 0 0 0;">'
+                '<table role="presentation" style="padding: 0 0 20px 0;">'
                 "<tr>"
                 '<td style="font-family: Helvetica, Arial, sans-serif;">'
                 '<ul style="margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;">'
@@ -694,3 +694,27 @@ def remove_tags(_content: str, *tags) -> str:
     for tag in tags:
         content = re.compile(tag).sub("", content)
     return content
+
+
+def remove_nested_list_padding(_content: str) -> str:
+    """Remove bottom padding from nested lists.
+
+    Lists that are nested inside <li> elements should not have the 20px bottom
+    padding. This function finds table elements that contain lists and are
+    nested inside list items, and removes their padding.
+    """
+    # Pattern to match table elements with 20px padding that are inside <li> elements
+    # This regex looks for:
+    # - <li...> (opening li tag)
+    # - any content (non-greedy)
+    # - <table role="presentation" style="padding: 0 0 20px 0;"> (table with padding)
+    # - any content until </table>
+    # - any content until </li>
+    nested_list_pattern = re.compile(
+        r'(<li[^>]*>.*?)<table role="presentation" style="padding: 0 0 20px 0;">(.*?</table>.*?</li>)', re.DOTALL
+    )
+
+    # Replace the table with padding with one without padding
+    result = nested_list_pattern.sub(r'\1<table role="presentation" style="padding: 0;">\2', _content)
+
+    return result
