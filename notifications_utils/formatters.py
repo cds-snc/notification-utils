@@ -703,35 +703,45 @@ def remove_nested_list_padding(_content: str) -> str:
     padding. This function finds table elements that contain lists and are
     nested inside list items, and removes their padding.
     """
-    # We need to handle multiple tables within the same li, so we'll use a different approach
-    # First, find all table elements with the specific padding that are inside li elements
+    # Pattern to match the table element we want to replace
+    table_pattern = '<table role="presentation" style="padding: 0 0 20px 0;">'
+    replacement = '<table role="presentation" style="padding: 0;">'
 
-    # Use a simple approach: replace all occurrences of the specific table pattern
-    # only when they appear after an opening <li> tag and before a closing </li> tag
+    result = []
+    i = 0
+    li_depth = 0  # Track nesting depth of <li> elements
 
-    # Split content by <li and </li> to process each li section
-    import re
+    while i < len(_content):
+        # Check if we're at the start of an <li> tag
+        if _content[i : i + 3] == "<li":
+            # Find the end of this <li> tag
+            tag_end = _content.find(">", i)
+            if tag_end != -1:
+                li_depth += 1
+                result.append(_content[i : tag_end + 1])
+                i = tag_end + 1
+                continue
 
-    # We need to be more sophisticated - only replace tables that are inside <li> elements
-    # Use a callback function to check if we're inside an <li> element
+        # Check if we're at a </li> tag
+        elif _content[i : i + 5] == "</li>":
+            li_depth = max(0, li_depth - 1)
+            result.append(_content[i : i + 5])
+            i += 5
+            continue
 
-    result = _content
+        # Check if we're at our target table pattern
+        elif _content[i : i + len(table_pattern)] == table_pattern:
+            if li_depth > 0:
+                # We're inside an <li> element, so replace the padding
+                result.append(replacement)
+            else:
+                # We're not inside an <li> element, so keep original
+                result.append(table_pattern)
+            i += len(table_pattern)
+            continue
 
-    # Find all <li...>...</li> blocks and process them individually
-    li_pattern = re.compile(r"(<li[^>]*>)(.*?)(</li>)", re.DOTALL)
+        # Otherwise, just add the current character
+        result.append(_content[i])
+        i += 1
 
-    def replace_tables_in_li(match):
-        li_start = match.group(1)  # <li...>
-        li_content = match.group(2)  # content between <li> and </li>
-        li_end = match.group(3)  # </li>
-
-        # Replace all table occurrences in this li's content
-        modified_content = li_content.replace(
-            '<table role="presentation" style="padding: 0 0 20px 0;">', '<table role="presentation" style="padding: 0;">'
-        )
-
-        return li_start + modified_content + li_end
-
-    result = li_pattern.sub(replace_tables_in_li, result)
-
-    return result
+    return "".join(result)
