@@ -703,18 +703,35 @@ def remove_nested_list_padding(_content: str) -> str:
     padding. This function finds table elements that contain lists and are
     nested inside list items, and removes their padding.
     """
-    # Pattern to match table elements with 20px padding that are inside <li> elements
-    # This regex looks for:
-    # - <li...> (opening li tag)
-    # - any content (non-greedy)
-    # - <table role="presentation" style="padding: 0 0 20px 0;"> (table with padding)
-    # - any content until </table>
-    # - any content until </li>
-    nested_list_pattern = re.compile(
-        r'(<li[^>]*>.*?)<table role="presentation" style="padding: 0 0 20px 0;">(.*?</table>.*?</li>)', re.DOTALL
-    )
+    # We need to handle multiple tables within the same li, so we'll use a different approach
+    # First, find all table elements with the specific padding that are inside li elements
 
-    # Replace the table with padding with one without padding
-    result = nested_list_pattern.sub(r'\1<table role="presentation" style="padding: 0;">\2', _content)
+    # Use a simple approach: replace all occurrences of the specific table pattern
+    # only when they appear after an opening <li> tag and before a closing </li> tag
+
+    # Split content by <li and </li> to process each li section
+    import re
+
+    # We need to be more sophisticated - only replace tables that are inside <li> elements
+    # Use a callback function to check if we're inside an <li> element
+
+    result = _content
+
+    # Find all <li...>...</li> blocks and process them individually
+    li_pattern = re.compile(r"(<li[^>]*>)(.*?)(</li>)", re.DOTALL)
+
+    def replace_tables_in_li(match):
+        li_start = match.group(1)  # <li...>
+        li_content = match.group(2)  # content between <li> and </li>
+        li_end = match.group(3)  # </li>
+
+        # Replace all table occurrences in this li's content
+        modified_content = li_content.replace(
+            '<table role="presentation" style="padding: 0 0 20px 0;">', '<table role="presentation" style="padding: 0;">'
+        )
+
+        return li_start + modified_content + li_end
+
+    result = li_pattern.sub(replace_tables_in_li, result)
 
     return result
