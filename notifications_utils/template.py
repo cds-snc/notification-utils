@@ -30,7 +30,6 @@ from notifications_utils.formatters import (
     notify_plain_text_email_markdown,
     remove_empty_lines,
     remove_language_divs,
-    remove_nested_list_padding,
     remove_rtl_divs,
     remove_smart_quotes_from_email_addresses,
     remove_whitespace_before_punctuation,
@@ -827,7 +826,6 @@ def get_html_email_body(template_content, template_values, redact_missing_person
         .then(escape_lang_tags)
         .then(escape_rtl_tags)
         .then(notify_email_markdown)
-        .then(remove_nested_list_padding)
         .then(add_language_divs)
         .then(add_rtl_divs)
         .then(do_nice_typography)
