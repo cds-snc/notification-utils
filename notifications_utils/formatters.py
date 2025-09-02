@@ -7,7 +7,6 @@ from typing import List
 import bleach
 import mistune
 import smartypants
-from bs4 import BeautifulSoup
 from flask import Markup
 
 from notifications_utils.sanitise_text import SanitiseSMS
@@ -703,28 +702,45 @@ def remove_nested_list_padding(_content: str) -> str:
     padding. This function finds table elements that contain lists and are
     nested inside list items, and removes their padding.
     """
-    if not _content.strip():
-        return _content
+    # Pattern to match the table element we want to replace
+    table_pattern = '<table role="presentation" style="padding: 0 0 20px 0;">'
+    replacement = '<table role="presentation" style="padding: 0;">'
 
-    # Use BeautifulSoup to parse and modify the DOM structure
-    try:
-        soup = BeautifulSoup(_content, "html.parser")
-    except Exception:
-        # Fallback to original content if parsing fails
-        return _content
+    result = []
+    i = 0
+    li_depth = 0  # Track nesting depth of <li> elements
 
-    # Find all table elements with the specific padding style that are nested inside <li> elements
-    target_tables = soup.find_all(
-        "table", {"role": "presentation", "style": lambda style: style and "padding: 0 0 20px 0;" in style}
-    )
+    while i < len(_content):
+        # Check if we're at the start of an <li> tag
+        if _content[i : i + 3] == "<li":
+            # Find the end of this <li> tag
+            tag_end = _content.find(">", i)
+            if tag_end != -1:
+                li_depth += 1
+                result.append(_content[i : tag_end + 1])
+                i = tag_end + 1
+                continue
 
-    # For each table, check if it's nested inside an <li> element
-    for table in target_tables:
-        if table.find_parent("li"):
-            # Modify the style attribute
-            current_style = table.get("style", "")
-            new_style = current_style.replace("padding: 0 0 20px 0;", "padding: 0;")
-            table["style"] = new_style
+        # Check if we're at a </li> tag
+        elif _content[i : i + 5] == "</li>":
+            li_depth = max(0, li_depth - 1)
+            result.append(_content[i : i + 5])
+            i += 5
+            continue
 
-    # Return the modified HTML
-    return str(soup)
+        # Check if we're at our target table pattern
+        elif _content[i : i + len(table_pattern)] == table_pattern:
+            if li_depth > 0:
+                # We're inside an <li> element, so replace the padding
+                result.append(replacement)
+            else:
+                # We're not inside an <li> element, so keep original
+                result.append(table_pattern)
+            i += len(table_pattern)
+            continue
+
+        # Otherwise, just add the current character
+        result.append(_content[i])
+        i += 1
+
+    return "".join(result)
