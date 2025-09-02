@@ -1184,20 +1184,7 @@ class TestRemoveNestedListPadding:
                     </table>
                     More content
                 </li>""",
-                """<li>
-                    Item with content
-                    <table role="presentation" style="padding: 0;">
-                        <tr>
-                            <td>
-                                <ul>
-                                    <li>Nested item 1</li>
-                                    <li>Nested item 2</li>
-                                </ul>
-                            </td>
-                        </tr>
-                    </table>
-                    More content
-                </li>""",
+                '<li>\n                    Item with content\n                    <table role="presentation" style="padding: 0;">\n<tr>\n<td>\n<ul>\n<li>Nested item 1</li>\n<li>Nested item 2</li>\n</ul>\n</td>\n</tr>\n</table>\n                    More content\n                </li>',
             ),
             # Empty string should return empty string
             ("", ""),
@@ -1250,30 +1237,7 @@ class TestRemoveNestedListPadding:
             "</table>"
         )
 
-        expected_output = (
-            '<table role="presentation" style="padding: 0 0 20px 0;">'
-            "<tr>"
-            '<td style="font-family: Helvetica, Arial, sans-serif;">'
-            '<ul style="margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;">'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">'
-            "Top level item"
-            '<table role="presentation" style="padding: 0;">'
-            "<tr>"
-            '<td style="font-family: Helvetica, Arial, sans-serif;">'
-            '<ul style="margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;">'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">Nested item 1</li>'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">Nested item 2</li>'
-            "</ul>"
-            "</td>"
-            "</tr>"
-            "</table>"
-            "</li>"
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">Another top level item</li>'
-            "</ul>"
-            "</td>"
-            "</tr>"
-            "</table>"
-        )
+        expected_output = '<table role="presentation" style="padding: 0 0 20px 0;"><tr><td style="font-family: Helvetica, Arial, sans-serif;"><ul style="margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;"><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">Top level item<table role="presentation" style="padding: 0;"><tr><td style="font-family: Helvetica, Arial, sans-serif;"><ul style="margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;"><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">Nested item 1</li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">Nested item 2</li></ul></td></tr></table></li><li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">Another top level item</li></ul></td></tr></table>'
 
         assert remove_nested_list_padding(input_html) == expected_output
 
@@ -1296,21 +1260,6 @@ class TestRemoveNestedListPadding:
             "</div>"
         )
 
-        expected_output = (
-            "<div>"
-            "<p>Some paragraph before</p>"
-            "<ul>"
-            "<li>Item 1"
-            '<table role="presentation" style="padding: 0;">'
-            "<tr><td><ul><li>Nested item</li></ul></td></tr>"
-            "</table>"
-            "</li>"
-            "</ul>"
-            "<p>Some paragraph after</p>"
-            '<table role="presentation" style="padding: 0 0 20px 0;">'
-            "<tr><td>This should keep padding - not nested in li</td></tr>"
-            "</table>"
-            "</div>"
-        )
+        expected_output = '<div><p>Some paragraph before</p><ul><li>Item 1<table role="presentation" style="padding: 0;"><tr><td><ul><li>Nested item</li></ul></td></tr></table></li></ul><p>Some paragraph after</p><table role="presentation" style="padding: 0 0 20px 0;"><tr><td>This should keep padding - not nested in li</td></tr></table></div>'
 
         assert remove_nested_list_padding(input_html) == expected_output
