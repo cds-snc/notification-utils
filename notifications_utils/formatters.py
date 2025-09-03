@@ -705,9 +705,6 @@ def remove_nested_list_padding(_content: str) -> str:
     if not _content:
         return _content
 
-    # Use regex for the replacement to preserve all formatting including quotes
-    import re
-
     # Find all table tags with the specific attributes we want to modify
     pattern = r'<table\s+role\s*=\s*["\']presentation["\']\s+style\s*=\s*["\']padding:\s*0\s+0\s+20px\s+0\s*;["\'][^>]*>'
 
