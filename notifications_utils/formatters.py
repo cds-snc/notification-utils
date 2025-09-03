@@ -702,45 +702,79 @@ def remove_nested_list_padding(_content: str) -> str:
     padding. This function finds table elements that contain lists and are
     nested inside list items, and removes their padding.
     """
+    if not _content:
+        return _content
+
     # Pattern to match the table element we want to replace
-    table_pattern = '<table role="presentation" style="padding: 0 0 20px 0;">'
+    target_pattern = '<table role="presentation" style="padding: 0 0 20px 0;">'
     replacement = '<table role="presentation" style="padding: 0;">'
 
-    result = []
-    i = 0
-    li_depth = 0  # Track nesting depth of <li> elements
+    # Split content into HTML tags and text content
+    tokens = _tokenize_html(_content)
 
-    while i < len(_content):
-        # Check if we're at the start of an <li> tag
-        if _content[i : i + 3] == "<li":
-            # Find the end of this <li> tag
-            tag_end = _content.find(">", i)
-            if tag_end != -1:
-                li_depth += 1
-                result.append(_content[i : tag_end + 1])
-                i = tag_end + 1
-                continue
+    # Process tokens while tracking li depth
+    result_tokens = []
+    li_depth = 0
 
-        # Check if we're at a </li> tag
-        elif _content[i : i + 5] == "</li>":
+    for token in tokens:
+        if _is_opening_li_tag(token):
+            li_depth += 1
+            result_tokens.append(token)
+        elif token == "</li>":
             li_depth = max(0, li_depth - 1)
-            result.append(_content[i : i + 5])
-            i += 5
-            continue
+            result_tokens.append(token)
+        elif token == target_pattern and li_depth > 0:
+            # Replace padding when inside an <li> element
+            result_tokens.append(replacement)
+        else:
+            result_tokens.append(token)
 
-        # Check if we're at our target table pattern
-        elif _content[i : i + len(table_pattern)] == table_pattern:
-            if li_depth > 0:
-                # We're inside an <li> element, so replace the padding
-                result.append(replacement)
-            else:
-                # We're not inside an <li> element, so keep original
-                result.append(table_pattern)
-            i += len(table_pattern)
-            continue
+    return "".join(result_tokens)
 
-        # Otherwise, just add the current character
-        result.append(_content[i])
-        i += 1
 
-    return "".join(result)
+def _tokenize_html(content: str) -> list[str]:
+    """Split HTML content into tokens (tags and text).
+
+    Returns a list where each element is either:
+    - An HTML tag (including opening and closing tags)
+    - Text content between tags
+    """
+    tokens = []
+    current_pos = 0
+
+    while current_pos < len(content):
+        # Find the next HTML tag
+        tag_start = content.find("<", current_pos)
+
+        if tag_start == -1:
+            # No more tags, add remaining content
+            if current_pos < len(content):
+                tokens.append(content[current_pos:])
+            break
+
+        # Add text content before the tag (if any)
+        if tag_start > current_pos:
+            tokens.append(content[current_pos:tag_start])
+
+        # Find the end of the tag
+        tag_end = content.find(">", tag_start)
+        if tag_end == -1:
+            # Malformed HTML, treat as text
+            tokens.append(content[tag_start:])
+            break
+
+        # Add the complete tag
+        tokens.append(content[tag_start : tag_end + 1])
+        current_pos = tag_end + 1
+
+    return tokens
+
+
+def _is_opening_li_tag(token: str) -> bool:
+    """Check if a token is an opening <li> tag (with or without attributes)."""
+    if not token.startswith("<li"):
+        return False
+
+    # Could be <li> or <li ...attributes...>
+    # Make sure it's not a closing tag </li>
+    return not token.startswith("</li") and token.endswith(">")
