@@ -705,17 +705,76 @@ def remove_nested_list_padding(_content: str) -> str:
     if not _content:
         return _content
 
-    # Find all table tags with the specific attributes we want to modify
-    pattern = r'<table\s+role\s*=\s*["\']presentation["\']\s+style\s*=\s*["\']padding:\s*0\s+0\s+20px\s+0\s*;["\'][^>]*>'
+    # Pattern to match the table element we want to replace
+    target_pattern = '<table role="presentation" style="padding: 0 0 20px 0;">'
+    replacement = '<table role="presentation" style="padding: 0;">'
 
-    def replace_if_nested(match):
-        # Check if this table is inside an <li> by parsing content up to this point
-        content_before = _content[: match.start()]
-        li_depth = content_before.count("<li") - content_before.count("</li>")
+    # Split content into HTML tags and text content
+    tokens = _tokenize_html(_content)
 
-        if li_depth > 0:
-            # Replace the padding value while preserving quotes and spacing
-            return re.sub(r"padding:\s*0\s+0\s+20px\s+0\s*;", "padding: 0;", match.group(0))
-        return match.group(0)
+    # Process tokens while tracking li depth
+    result_tokens = []
+    li_depth = 0
 
-    return re.sub(pattern, replace_if_nested, _content, flags=re.IGNORECASE)
+    for token in tokens:
+        if _is_opening_li_tag(token):
+            li_depth += 1
+            result_tokens.append(token)
+        elif token == "</li>":
+            li_depth = max(0, li_depth - 1)
+            result_tokens.append(token)
+        elif token == target_pattern and li_depth > 0:
+            # Replace padding when inside an <li> element
+            result_tokens.append(replacement)
+        else:
+            result_tokens.append(token)
+
+    return "".join(result_tokens)
+
+
+def _tokenize_html(content: str) -> list[str]:
+    """Split HTML content into tokens (tags and text).
+
+    Returns a list where each element is either:
+    - An HTML tag (including opening and closing tags)
+    - Text content between tags
+    """
+    tokens = []
+    current_pos = 0
+
+    while current_pos < len(content):
+        # Find the next HTML tag
+        tag_start = content.find("<", current_pos)
+
+        if tag_start == -1:
+            # No more tags, add remaining content
+            if current_pos < len(content):
+                tokens.append(content[current_pos:])
+            break
+
+        # Add text content before the tag (if any)
+        if tag_start > current_pos:
+            tokens.append(content[current_pos:tag_start])
+
+        # Find the end of the tag
+        tag_end = content.find(">", tag_start)
+        if tag_end == -1:
+            # Malformed HTML, treat as text
+            tokens.append(content[tag_start:])
+            break
+
+        # Add the complete tag
+        tokens.append(content[tag_start : tag_end + 1])
+        current_pos = tag_end + 1
+
+    return tokens
+
+
+def _is_opening_li_tag(token: str) -> bool:
+    """Check if a token is an opening <li> tag (with or without attributes)."""
+    if not token.startswith("<li"):
+        return False
+
+    # Could be <li> or <li ...attributes...>
+    # Make sure it's not a closing tag </li>
+    return not token.startswith("</li") and token.endswith(">")
