@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "notifications-utils"
-version = "53.2.7"
+version = "53.2.8"
 description = "Shared python code for Notification - Provides logging utils etc."
 authors = ["Canadian Digital Service"]
 license = "MIT license"
@@ -39,7 +39,7 @@ PyYAML = "6.0.2"
 requests = "2.32.3"
 smartypants = "2.0.1"
 statsd = "3.3.0"
-werkzeug = "3.0.4"
+werkzeug = "3.0.6"
 
 [tool.poetry.group.test.dependencies]
 beautifulsoup4 = "^4.12.3"
