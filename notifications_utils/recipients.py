@@ -92,7 +92,7 @@ class RecipientCSV:
         remaining_messages=sys.maxsize,  # TODO FF_ANNUAL_LIMIT removal - remove this param
         remaining_daily_messages=sys.maxsize,
         remaining_annual_messages=sys.maxsize,
-        international_sms=True,  # allow sending to internation sms via csv
+        international_sms=True,  # allow sending to international sms via csv
         max_rows=50000,
         user_language="en",
     ):
