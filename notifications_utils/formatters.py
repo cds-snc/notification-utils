@@ -13,7 +13,7 @@ from notifications_utils.sanitise_text import SanitiseSMS
 
 from . import email_with_smart_quotes_regex
 
-LINK_STYLE = "word-wrap: break-word; word-break: break-all;"
+LINK_STYLE = "word-wrap: break-word; word-break: break-word;"
 
 OBSCURE_WHITESPACE = (
     "\u180e"  # Mongolian vowel separator
