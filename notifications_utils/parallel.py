@@ -43,4 +43,7 @@ def control_chunk_and_worker_size(data_size=None, chunk_size=None, max_workers=N
     else:
         worker_count = min(worker_count, MAX_WORKERS)
 
+    if worker_count < 1:
+        worker_count = 1
+
     return chunk_size, worker_count
