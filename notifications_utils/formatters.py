@@ -13,7 +13,7 @@ from notifications_utils.sanitise_text import SanitiseSMS
 
 from . import email_with_smart_quotes_regex
 
-LINK_STYLE = "word-wrap: break-word;"
+LINK_STYLE = "word-wrap: break-word; word-break: break-word;"
 
 OBSCURE_WHITESPACE = (
     "\u180e"  # Mongolian vowel separator
@@ -694,3 +694,87 @@ def remove_tags(_content: str, *tags) -> str:
     for tag in tags:
         content = re.compile(tag).sub("", content)
     return content
+
+
+def remove_nested_list_padding(_content: str) -> str:
+    """Remove bottom padding from nested lists.
+    Lists that are nested inside <li> elements should not have the 20px bottom
+    padding. This function finds table elements that contain lists and are
+    nested inside list items, and removes their padding.
+    """
+    if not _content:
+        return _content
+
+    # Pattern to match the table element we want to replace
+    target_pattern = '<table role="presentation" style="padding: 0 0 20px 0;">'
+    replacement = '<table role="presentation" style="padding: 0;">'
+
+    # Split content into HTML tags and text content
+    tokens = _tokenize_html(_content)
+
+    # Process tokens while tracking li depth
+    result_tokens = []
+    li_depth = 0
+
+    for token in tokens:
+        if _is_opening_li_tag(token):
+            li_depth += 1
+            result_tokens.append(token)
+        elif token == "</li>":
+            li_depth = max(0, li_depth - 1)
+            result_tokens.append(token)
+        elif token == target_pattern and li_depth > 0:
+            # Replace padding when inside an <li> element
+            result_tokens.append(replacement)
+        else:
+            result_tokens.append(token)
+
+    return "".join(result_tokens)
+
+
+def _tokenize_html(content: str) -> list[str]:
+    """Split HTML content into tokens (tags and text).
+
+    Returns a list where each element is either:
+    - An HTML tag (including opening and closing tags)
+    - Text content between tags
+    """
+    tokens = []
+    current_pos = 0
+
+    while current_pos < len(content):
+        # Find the next HTML tag
+        tag_start = content.find("<", current_pos)
+
+        if tag_start == -1:
+            # No more tags, add remaining content
+            if current_pos < len(content):
+                tokens.append(content[current_pos:])
+            break
+
+        # Add text content before the tag (if any)
+        if tag_start > current_pos:
+            tokens.append(content[current_pos:tag_start])
+
+        # Find the end of the tag
+        tag_end = content.find(">", tag_start)
+        if tag_end == -1:
+            # Malformed HTML, treat as text
+            tokens.append(content[tag_start:])
+            break
+
+        # Add the complete tag
+        tokens.append(content[tag_start : tag_end + 1])
+        current_pos = tag_end + 1
+
+    return tokens
+
+
+def _is_opening_li_tag(token: str) -> bool:
+    """Check if a token is an opening <li> tag (with or without attributes)."""
+    if not token.startswith("<li"):
+        return False
+
+    # Could be <li> or <li ...attributes...>
+    # Make sure it's not a closing tag </li>
+    return not token.startswith("</li") and token.endswith(">")

@@ -15,6 +15,7 @@ from notifications_utils.formatters import (
     notify_letter_preview_markdown,
     notify_plain_text_email_markdown,
     remove_language_divs,
+    remove_nested_list_padding,
     remove_smart_quotes_from_email_addresses,
     remove_whitespace_before_punctuation,
     replace_hyphens_with_en_dashes,
@@ -43,7 +44,7 @@ from notifications_utils.template import HTMLEmailTemplate, PlainTextEmailTempla
     ],
 )
 def test_makes_links_out_of_URLs(url):
-    link = '<a style="word-wrap: break-word;" href="{}">{}</a>'.format(url, url)
+    link = '<a style="word-wrap: break-word; word-break: break-word;" href="{}">{}</a>'.format(url, url)
     assert notify_email_markdown(url) == (
         '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">' "{}" "</p>"
     ).format(link)
@@ -56,13 +57,16 @@ def test_makes_links_out_of_URLs(url):
             ("this is some text with a link http://example.com in the middle"),
             (
                 "this is some text with a link "
-                '<a style="word-wrap: break-word;" href="http://example.com">http://example.com</a>'
+                '<a style="word-wrap: break-word; word-break: break-word;" href="http://example.com">http://example.com</a>'
                 " in the middle"
             ),
         ),
         (
             ("this link is in brackets (http://example.com)"),
-            ("this link is in brackets " '(<a style="word-wrap: break-word;" href="http://example.com">http://example.com</a>)'),
+            (
+                "this link is in brackets "
+                '(<a style="word-wrap: break-word; word-break: break-word;" href="http://example.com">http://example.com</a>)'
+            ),
         ),
     ],
 )
@@ -92,7 +96,7 @@ def test_doesnt_make_links_out_of_invalid_urls(url):
 def test_handles_placeholders_in_urls():
     assert notify_email_markdown("http://example.com/?token=<span class='placeholder'>((token))</span>&key=1") == (
         '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
-        '<a style="word-wrap: break-word;" href="http://example.com/?token=">'
+        '<a style="word-wrap: break-word; word-break: break-word;" href="http://example.com/?token=">'
         "http://example.com/?token="
         "</a>"
         "<span class='placeholder'>((token))</span>&amp;key=1"
@@ -105,13 +109,13 @@ def test_handles_placeholders_in_urls():
     [
         (
             """https://example.com"onclick="alert('hi')""",
-            """<a style="word-wrap: break-word;" href="https://example.com%22onclick=%22alert%28%27hi">https://example.com"onclick="alert('hi</a>')""",  # noqa
-            """<a style="word-wrap: break-word;" href="https://example.com%22onclick=%22alert%28%27hi">https://example.com"onclick="alert('hi</a>‘)""",  # noqa
+            """<a style="word-wrap: break-word; word-break: break-word;" href="https://example.com%22onclick=%22alert%28%27hi">https://example.com"onclick="alert('hi</a>')""",  # noqa
+            """<a style="word-wrap: break-word; word-break: break-word;" href="https://example.com%22onclick=%22alert%28%27hi">https://example.com"onclick="alert('hi</a>‘)""",  # noqa
         ),
         (
             """https://example.com"style='text-decoration:blink'""",
-            """<a style="word-wrap: break-word;" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>'""",  # noqa
-            """<a style="word-wrap: break-word;" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>’""",  # noqa
+            """<a style="word-wrap: break-word; word-break: break-word;" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>'""",  # noqa
+            """<a style="word-wrap: break-word; word-break: break-word;" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>’""",  # noqa
         ),
     ],
 )
@@ -124,7 +128,7 @@ def test_URLs_get_escaped(url, expected_html, expected_html_in_template):
 
 def test_HTML_template_has_URLs_replaced_with_links():
     assert (
-        '<a style="word-wrap: break-word;" href="https://service.example.com/accept_invite/a1b2c3d4">'
+        '<a style="word-wrap: break-word; word-break: break-word;" href="https://service.example.com/accept_invite/a1b2c3d4">'
         "https://service.example.com/accept_invite/a1b2c3d4"
         "</a>"
     ) in str(
@@ -149,7 +153,7 @@ def test_HTML_template_has_URLs_replaced_with_links():
             notify_email_markdown,
             (
                 '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
-                '<a style="word-wrap: break-word;" href="https://example.com">'
+                '<a style="word-wrap: break-word; word-break: break-word;" href="https://example.com">'
                 "https://example.com"
                 "</a>"
                 "</p>"
@@ -569,7 +573,7 @@ def test_table(markdown_function):
             "http://example.com",
             (
                 '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
-                '<a style="word-wrap: break-word;" href="http://example.com">http://example.com</a>'
+                '<a style="word-wrap: break-word; word-break: break-word;" href="http://example.com">http://example.com</a>'
                 "</p>"
             ),
         ],
@@ -578,7 +582,7 @@ def test_table(markdown_function):
             """https://example.com"onclick="alert('hi')""",
             (
                 '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
-                '<a style="word-wrap: break-word;" href="https://example.com%22onclick=%22alert%28%27hi">'
+                '<a style="word-wrap: break-word; word-break: break-word;" href="https://example.com%22onclick=%22alert%28%27hi">'
                 'https://example.com"onclick="alert(\'hi'
                 "</a>')"
                 "</p>"
@@ -687,7 +691,7 @@ def test_image(markdown_function):
             (
                 '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; '
                 'color: #0B0C0C;">'
-                '<a style="word-wrap: break-word;" href="http://example.com">Example</a>'
+                '<a style="word-wrap: break-word; word-break: break-word;" href="http://example.com">Example</a>'
                 "</p>"
             ),
         ],
@@ -710,7 +714,7 @@ def test_link(markdown_function, expected):
             (
                 '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; '
                 'color: #0B0C0C;">'
-                '<a style="word-wrap: break-word;" href="http://example.com" title="An example URL">'
+                '<a style="word-wrap: break-word; word-break: break-word;" href="http://example.com" title="An example URL">'
                 "Example"
                 "</a>"
                 "</p>"
@@ -1136,3 +1140,180 @@ bonjour
             testString
             == f'<div lang="fr-ca">{EMAIL_P_OPEN_TAG}Le français suis l\'anglais{EMAIL_P_CLOSE_TAG}</div><div lang="en-ca">{EMAIL_P_OPEN_TAG}hi{EMAIL_P_CLOSE_TAG}<div lang="fr-ca">{EMAIL_P_OPEN_TAG}NESTED!{EMAIL_P_CLOSE_TAG}</div></div><div lang="fr-ca">{EMAIL_P_OPEN_TAG}bonjour{EMAIL_P_CLOSE_TAG}</div>'  # noqa
         )
+
+
+class TestRemoveNestedListPadding:
+    @pytest.mark.parametrize(
+        "input_html, expected_output",
+        [
+            # Basic case: nested list inside li should have padding removed
+            (
+                '<li>Item 1<table role="presentation" style="padding: 0 0 20px 0;"><tr><td><ul><li>Nested item</li></ul></td></tr></table></li>',
+                '<li>Item 1<table role="presentation" style="padding: 0;"><tr><td><ul><li>Nested item</li></ul></td></tr></table></li>',
+            ),
+            # Multiple nested lists in same li
+            (
+                '<li>Item 1<table role="presentation" style="padding: 0 0 20px 0;"><tr><td><ul><li>Nested 1</li></ul></td></tr></table>Some text<table role="presentation" style="padding: 0 0 20px 0;"><tr><td><ol><li>Nested 2</li></ol></td></tr></table></li>',
+                '<li>Item 1<table role="presentation" style="padding: 0;"><tr><td><ul><li>Nested 1</li></ul></td></tr></table>Some text<table role="presentation" style="padding: 0;"><tr><td><ol><li>Nested 2</li></ol></td></tr></table></li>',
+            ),
+            # Multiple list items with nested lists
+            (
+                '<ul><li>Item 1<table role="presentation" style="padding: 0 0 20px 0;"><tr><td><ul><li>Nested</li></ul></td></tr></table></li><li>Item 2<table role="presentation" style="padding: 0 0 20px 0;"><tr><td><ol><li>Another nested</li></ol></td></tr></table></li></ul>',
+                '<ul><li>Item 1<table role="presentation" style="padding: 0;"><tr><td><ul><li>Nested</li></ul></td></tr></table></li><li>Item 2<table role="presentation" style="padding: 0;"><tr><td><ol><li>Another nested</li></ol></td></tr></table></li></ul>',
+            ),
+            # Non-nested lists should keep their padding (tables not inside li)
+            (
+                '<div><table role="presentation" style="padding: 0 0 20px 0;"><tr><td><ul><li>Not nested</li></ul></td></tr></table></div>',
+                '<div><table role="presentation" style="padding: 0 0 20px 0;"><tr><td><ul><li>Not nested</li></ul></td></tr></table></div>',
+            ),
+            # Li with attributes should work
+            (
+                '<li class="item" style="color: red;">Item<table role="presentation" style="padding: 0 0 20px 0;"><tr><td><ul><li>Nested</li></ul></td></tr></table></li>',
+                '<li class="item" style="color: red;">Item<table role="presentation" style="padding: 0;"><tr><td><ul><li>Nested</li></ul></td></tr></table></li>',
+            ),
+            # Complex nested content with line breaks and whitespace
+            (
+                """<li>
+                    Item with content
+                    <table role="presentation" style="padding: 0 0 20px 0;">
+                        <tr>
+                            <td>
+                                <ul>
+                                    <li>Nested item 1</li>
+                                    <li>Nested item 2</li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </table>
+                    More content
+                </li>""",
+                """<li>
+                    Item with content
+                    <table role="presentation" style="padding: 0;">
+                        <tr>
+                            <td>
+                                <ul>
+                                    <li>Nested item 1</li>
+                                    <li>Nested item 2</li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </table>
+                    More content
+                </li>""",
+            ),
+            # Empty string should return empty string
+            ("", ""),
+            # Content without any lists should be unchanged
+            (
+                "<div><p>Some paragraph</p><span>Some text</span></div>",
+                "<div><p>Some paragraph</p><span>Some text</span></div>",
+            ),
+            # Tables with different padding should not be affected
+            (
+                '<li>Item<table role="presentation" style="padding: 10px 0 20px 0;"><tr><td><ul><li>Different padding</li></ul></td></tr></table></li>',
+                '<li>Item<table role="presentation" style="padding: 10px 0 20px 0;"><tr><td><ul><li>Different padding</li></ul></td></tr></table></li>',
+            ),
+            # Tables without role="presentation" should not be affected
+            (
+                '<li>Item<table style="padding: 0 0 20px 0;"><tr><td><ul><li>No role</li></ul></td></tr></table></li>',
+                '<li>Item<table style="padding: 0 0 20px 0;"><tr><td><ul><li>No role</li></ul></td></tr></table></li>',
+            ),
+        ],
+    )
+    def test_remove_nested_list_padding(self, input_html, expected_output):
+        """Test that remove_nested_list_padding correctly removes padding from nested lists."""
+        assert remove_nested_list_padding(input_html) == expected_output
+
+    def test_remove_nested_list_padding_with_real_email_html(self):
+        """Test with realistic HTML that would be generated by the email formatter."""
+        # This is the kind of HTML that would be generated for a nested list in an email
+        input_html = (
+            '<table role="presentation" style="padding: 0 0 20px 0;">'
+            "<tr>"
+            '<td style="font-family: Helvetica, Arial, sans-serif;">'
+            '<ul style="margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;">'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">'
+            "Top level item"
+            '<table role="presentation" style="padding: 0 0 20px 0;">'
+            "<tr>"
+            '<td style="font-family: Helvetica, Arial, sans-serif;">'
+            '<ul style="margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;">'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">Nested item 1</li>'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">Nested item 2</li>'
+            "</ul>"
+            "</td>"
+            "</tr>"
+            "</table>"
+            "</li>"
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">Another top level item</li>'
+            "</ul>"
+            "</td>"
+            "</tr>"
+            "</table>"
+        )
+
+        expected_output = (
+            '<table role="presentation" style="padding: 0 0 20px 0;">'
+            "<tr>"
+            '<td style="font-family: Helvetica, Arial, sans-serif;">'
+            '<ul style="margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;">'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">'
+            "Top level item"
+            '<table role="presentation" style="padding: 0;">'
+            "<tr>"
+            '<td style="font-family: Helvetica, Arial, sans-serif;">'
+            '<ul style="margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;">'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">Nested item 1</li>'
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">Nested item 2</li>'
+            "</ul>"
+            "</td>"
+            "</tr>"
+            "</table>"
+            "</li>"
+            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">Another top level item</li>'
+            "</ul>"
+            "</td>"
+            "</tr>"
+            "</table>"
+        )
+
+        assert remove_nested_list_padding(input_html) == expected_output
+
+    def test_remove_nested_list_padding_preserves_other_content(self):
+        """Test that the function doesn't affect unrelated content."""
+        input_html = (
+            "<div>"
+            "<p>Some paragraph before</p>"
+            "<ul>"
+            "<li>Item 1"
+            '<table role="presentation" style="padding: 0 0 20px 0;">'
+            "<tr><td><ul><li>Nested item</li></ul></td></tr>"
+            "</table>"
+            "</li>"
+            "</ul>"
+            "<p>Some paragraph after</p>"
+            '<table role="presentation" style="padding: 0 0 20px 0;">'
+            "<tr><td>This should keep padding - not nested in li</td></tr>"
+            "</table>"
+            "</div>"
+        )
+
+        expected_output = (
+            "<div>"
+            "<p>Some paragraph before</p>"
+            "<ul>"
+            "<li>Item 1"
+            '<table role="presentation" style="padding: 0;">'
+            "<tr><td><ul><li>Nested item</li></ul></td></tr>"
+            "</table>"
+            "</li>"
+            "</ul>"
+            "<p>Some paragraph after</p>"
+            '<table role="presentation" style="padding: 0 0 20px 0;">'
+            "<tr><td>This should keep padding - not nested in li</td></tr>"
+            "</table>"
+            "</div>"
+        )
+
+        assert remove_nested_list_padding(input_html) == expected_output
