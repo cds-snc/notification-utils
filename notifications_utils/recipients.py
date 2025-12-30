@@ -3,6 +3,7 @@ import os
 import re
 import sys
 from collections import OrderedDict, namedtuple
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import suppress
 from functools import lru_cache, partial
 from io import StringIO
@@ -19,6 +20,7 @@ from notifications_utils.formatters import strip_and_remove_obscure_whitespace, 
 from notifications_utils.international_billing_rates import (
     INTERNATIONAL_BILLING_RATES,
 )
+from notifications_utils.parallel import control_chunk_and_worker_size
 from notifications_utils.sanitise_text import SanitiseSMS
 from notifications_utils.template import SMSMessageTemplate, Template
 
@@ -198,42 +200,111 @@ class RecipientCSV:
 
     def get_rows(self):
         column_headers = self._raw_column_headers  # this is for caching
-        length_of_column_headers = len(column_headers)
+        rows_as_lists_of_columns = list(self._rows)
 
-        rows_as_lists_of_columns = self._rows
+        # Skip header row
+        if rows_as_lists_of_columns:
+            rows_as_lists_of_columns = rows_as_lists_of_columns[1:]
 
-        next(rows_as_lists_of_columns, None)  # skip the header row
-
-        for index, row in enumerate(rows_as_lists_of_columns):
-            output_dict = OrderedDict()
-
-            for column_name, column_value in zip(column_headers, row):
-                column_value = strip_and_remove_obscure_whitespace(column_value)
-                if Columns.make_key(column_name) in self.recipient_column_headers_lang_check_as_column_keys:
-                    output_dict[column_name] = column_value or None
+        # For small datasets or non-SMS, use sequential processing
+        if len(rows_as_lists_of_columns) < 1000 or self.template_type != "sms":
+            for index, row in enumerate(rows_as_lists_of_columns):
+                if index < self.max_rows:
+                    yield self._process_single_row(row, index, column_headers)
                 else:
-                    insert_or_append_to_dict(output_dict, column_name, column_value or None)
+                    yield None
+        else:
+            # Use parallel processing for large SMS datasets
+            yield from self._get_rows_parallel(rows_as_lists_of_columns, column_headers)
 
-            length_of_row = len(row)
+    def _process_single_row(self, row, index, column_headers):
+        """Process a single CSV row into a Row object."""
+        length_of_column_headers = len(column_headers)
+        output_dict = OrderedDict()
 
-            if length_of_column_headers < length_of_row:
-                output_dict[None] = row[length_of_column_headers:]
-            elif length_of_column_headers > length_of_row:
-                for key in column_headers[length_of_row:]:
-                    insert_or_append_to_dict(output_dict, key, None)
-
-            if index < self.max_rows:
-                yield Row(
-                    output_dict,
-                    index=index,
-                    error_fn=self._get_error_for_field,
-                    recipient_column_headers=self.recipient_column_headers,
-                    placeholders=self.placeholders_as_column_keys,
-                    template=self.template,
-                    template_type=self.template_type,
-                )
+        for column_name, column_value in zip(column_headers, row):
+            column_value = strip_and_remove_obscure_whitespace(column_value)
+            if Columns.make_key(column_name) in self.recipient_column_headers_lang_check_as_column_keys:
+                output_dict[column_name] = column_value or None
             else:
-                yield None
+                insert_or_append_to_dict(output_dict, column_name, column_value or None)
+
+        length_of_row = len(row)
+
+        if length_of_column_headers < length_of_row:
+            output_dict[None] = row[length_of_column_headers:]
+        elif length_of_column_headers > length_of_row:
+            for key in column_headers[length_of_row:]:
+                insert_or_append_to_dict(output_dict, key, None)
+
+        return Row(
+            output_dict,
+            index=index,
+            error_fn=self._get_error_for_field,
+            recipient_column_headers=self.recipient_column_headers,
+            placeholders=self.placeholders_as_column_keys,
+            template=self.template,
+            template_type=self.template_type,
+        )
+
+    def _get_rows_parallel(self, rows_data, column_headers):
+        """Process rows in parallel for better performance on large datasets."""
+        total_rows = min(len(rows_data), self.max_rows)
+
+        # Determine optimal chunk size and worker count
+        chunk_size, max_workers = control_chunk_and_worker_size(data_size=total_rows, chunk_size=None, max_workers=None)
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit chunks for parallel processing
+            futures = {}
+            for chunk_start in range(0, total_rows, chunk_size):
+                chunk_end = min(chunk_start + chunk_size, total_rows)
+                chunk = rows_data[chunk_start:chunk_end]
+
+                future = executor.submit(
+                    _process_row_chunk,
+                    chunk,
+                    chunk_start,
+                    column_headers,
+                    self.recipient_column_headers_lang_check_as_column_keys,
+                    self.recipient_column_headers,
+                    self.placeholders_as_column_keys,
+                    self.template_type,
+                    self.international_sms,
+                    self.template.content if self.template else None,
+                    self.template.__class__.__name__ if self.template else None,
+                )
+                futures[future] = chunk_start
+
+            # Collect results in order
+            results = {}
+            for future in as_completed(futures):
+                chunk_start = futures[future]
+                try:
+                    chunk_results = future.result()
+                    results.update(chunk_results)
+                except Exception as e:
+                    # Log error if Flask app context is available
+                    try:
+                        current_app.logger.error(f"Error processing chunk starting at {chunk_start}: {e}")
+                    except RuntimeError:
+                        # No Flask app context in parallel processing
+                        import sys
+
+                        print(f"Error processing chunk starting at {chunk_start}: {e}", file=sys.stderr)
+
+                    # Return empty rows for failed chunks
+                    chunk_end = min(chunk_start + chunk_size, total_rows)
+                    for idx in range(chunk_start, chunk_end):
+                        results[idx] = None
+
+            # Yield results in order
+            for idx in range(total_rows):
+                yield results.get(idx)
+
+        # Yield None for rows beyond max_rows
+        for _ in range(len(rows_data) - total_rows):
+            yield None
 
     # TODO FF_ANNUAL_LIMIT removal - remove this property
     @property
@@ -653,3 +724,110 @@ def parse_number(number, region=None):
         return matches[0]
     else:
         return False
+
+
+def _process_row_chunk(
+    rows,
+    start_index,
+    column_headers,
+    recipient_column_keys,
+    recipient_column_headers,
+    placeholders_keys,
+    template_type,
+    international_sms,
+    template_content,
+    template_class_name,
+):
+    """Worker function to process a chunk of CSV rows in parallel threads.
+
+    Uses ThreadPoolExecutor since phonenumbers library releases the GIL during
+    regex operations, making threading efficient for phone number validation.
+
+    Args:
+        rows: List of raw CSV rows to process
+        start_index: Starting index for this chunk
+        column_headers: List of column header names
+        recipient_column_keys: Keys for recipient columns
+        recipient_column_headers: Headers for recipient columns
+        placeholders_keys: Keys for placeholder columns
+        template_type: Type of template (sms, email, letter)
+        international_sms: Whether to allow international SMS
+        template_content: Content of the template (for message length validation)
+        template_class_name: Class name of the template
+
+    Returns:
+        Dict mapping row index to Row object
+    """
+    # No need to re-import in threads - they share the same memory space
+
+    # Create error function for this chunk
+    def chunk_error_fn(key, value):
+        formatted_key = Columns.make_key(key)
+
+        # Check if it's a recipient column
+        recipient_keys_list = [Columns.make_key(h) for h in recipient_column_headers]
+        if formatted_key in recipient_keys_list:
+            if value in [None, ""] or isinstance(value, list):
+                return Cell.missing_field_error
+
+            try:
+                validate_recipient(value, template_type, column=key, international_sms=international_sms)
+            except (InvalidEmailError, InvalidPhoneError, InvalidAddressError) as error:
+                return str(error)
+
+        # Check if it's a placeholder column
+        if formatted_key not in placeholders_keys:
+            return
+
+        if value in [None, ""]:
+            return Cell.missing_field_error
+
+        # SMS message length validation
+        if template_content and formatted_key in placeholders_keys and template_type == "sms":
+            try:
+                validate_sms_message_length(value, template_content)
+            except ValueError as error:
+                return str(error)
+
+        return None
+
+    results = {}
+    length_of_column_headers = len(column_headers)
+
+    for idx, row in enumerate(rows):
+        row_index = start_index + idx
+        output_dict = OrderedDict()
+
+        # Build output dictionary
+        for column_name, column_value in zip(column_headers, row):
+            column_value = strip_and_remove_obscure_whitespace(column_value)
+            if Columns.make_key(column_name) in recipient_column_keys:
+                output_dict[column_name] = column_value or None
+            else:
+                insert_or_append_to_dict(output_dict, column_name, column_value or None)
+
+        length_of_row = len(row)
+
+        if length_of_column_headers < length_of_row:
+            output_dict[None] = row[length_of_column_headers:]
+        elif length_of_column_headers > length_of_row:
+            for key in column_headers[length_of_row:]:
+                insert_or_append_to_dict(output_dict, key, None)
+
+        # Create Row object
+        try:
+            row_obj = Row(
+                output_dict,
+                index=row_index,
+                error_fn=chunk_error_fn,
+                recipient_column_headers=recipient_column_headers,
+                placeholders=placeholders_keys,
+                template=None,  # Template validation handled in chunk_error_fn
+                template_type=template_type,
+            )
+            results[row_index] = row_obj
+        except Exception:
+            # If row creation fails, create a minimal error row
+            results[row_index] = None
+
+    return results

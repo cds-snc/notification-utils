@@ -1152,3 +1152,171 @@ def test_multi_line_placeholders_work():
     )
 
     assert recipients.rows[0].personalisation["data"] == "a\nb\n\nc"
+
+
+def test_parallel_processing_uses_threads_for_large_sms_datasets():
+    """Test that parallel processing is triggered for large SMS datasets (>= 1000 rows)."""
+    # Create CSV with 1500 rows to trigger parallel processing
+    csv_content = "phone number,name\n" + "\n".join([f"650253{i % 10000:04d},User{i}" for i in range(1500)])
+
+    recipients = RecipientCSV(
+        csv_content,
+        template_type="sms",
+        placeholders=["name"],
+    )
+
+    rows = list(recipients.rows)
+    assert len(rows) == 1500
+    assert all(row.recipient for row in rows)
+    assert not recipients.has_errors
+
+
+def test_sequential_processing_for_small_datasets():
+    """Test that small datasets (< 1000 rows) use sequential processing."""
+    csv_content = "phone number,name\n" + "\n".join([f"650253{i:04d},User{i}" for i in range(500)])
+
+    recipients = RecipientCSV(
+        csv_content,
+        template_type="sms",
+        placeholders=["name"],
+    )
+
+    rows = list(recipients.rows)
+    assert len(rows) == 500
+    assert all(row.recipient for row in rows)
+    assert not recipients.has_errors
+
+
+def test_sequential_processing_for_email_regardless_of_size():
+    """Test that email templates always use sequential processing."""
+    csv_content = "email address,name\n" + "\n".join([f"user{i}@example.com,User{i}" for i in range(1500)])
+
+    recipients = RecipientCSV(
+        csv_content,
+        template_type="email",
+        placeholders=["name"],
+    )
+
+    rows = list(recipients.rows)
+    assert len(rows) == 1500
+    assert all(row.recipient for row in rows)
+    assert not recipients.has_errors
+
+
+def test_parallel_processing_detects_errors_correctly():
+    """Test that parallel processing correctly identifies rows with errors."""
+    csv_content = "phone number,name\n"
+    # Add valid rows
+    for i in range(500):
+        csv_content += f"650253{i:04d},User{i}\n"
+    # Add invalid rows
+    csv_content += "invalid_phone,BadUser1\n"
+    csv_content += "1234,BadUser2\n"
+    # Add more valid rows
+    for i in range(500, 1000):
+        csv_content += f"650253{i:04d},User{i}\n"
+
+    recipients = RecipientCSV(
+        csv_content,
+        template_type="sms",
+        placeholders=["name"],
+    )
+
+    rows = list(recipients.rows)
+    assert len(rows) == 1002
+    assert recipients.has_errors
+    assert _index_rows(recipients.rows_with_bad_recipients) == {500, 501}
+
+
+def test_parallel_processing_handles_missing_data():
+    """Test that parallel processing correctly identifies missing data."""
+    csv_content = "phone number,name\n"
+    # Add rows with missing names to trigger errors
+    for i in range(600):
+        if i % 100 == 0:
+            csv_content += f"650253{i:04d},\n"  # Missing name
+        else:
+            csv_content += f"650253{i:04d},User{i}\n"
+
+    recipients = RecipientCSV(
+        csv_content,
+        template_type="sms",
+        placeholders=["name"],
+    )
+
+    rows = list(recipients.rows)
+    assert len(rows) == 600
+    assert recipients.has_errors
+    # Rows at index 0, 100, 200, 300, 400, 500 have missing names
+    assert _index_rows(recipients.rows_with_missing_data) == {0, 100, 200, 300, 400, 500}
+
+
+def test_parallel_processing_preserves_row_order():
+    """Test that parallel processing maintains the correct row order."""
+    csv_content = "phone number,name\n" + "\n".join([f"650253{i % 10000:04d},User{i}" for i in range(1200)])
+
+    recipients = RecipientCSV(
+        csv_content,
+        template_type="sms",
+        placeholders=["name"],
+    )
+
+    rows = list(recipients.rows)
+    # Verify order is preserved
+    for i, row in enumerate(rows):
+        assert row.index == i
+        expected_name = f"User{i}"
+        assert row.personalisation["name"] == expected_name
+
+
+def test_parallel_processing_with_international_numbers():
+    """Test parallel processing correctly validates international numbers."""
+    csv_content = "phone number,name\n"
+    # Mix of US and international numbers
+    for i in range(600):
+        if i % 2 == 0:
+            csv_content += f"+1650253{i % 10000:04d},User{i}\n"  # US
+        else:
+            csv_content += f"+44207946{i % 10000:04d},User{i}\n"  # UK
+
+    recipients = RecipientCSV(
+        csv_content,
+        template_type="sms",
+        placeholders=["name"],
+        international_sms=True,
+    )
+
+    rows = list(recipients.rows)
+    assert len(rows) == 600
+    assert not recipients.has_errors
+
+
+def test_parallel_processing_with_message_length_validation():
+    """Test that parallel processing validates SMS message length correctly."""
+    template = SMSMessageTemplate(
+        {"content": "Hello ((name)), this is a test message!", "template_type": "sms"},
+        sender=None,
+        prefix=None,
+    )
+
+    csv_content = "phone number,name\n"
+    # Add valid rows
+    for i in range(500):
+        csv_content += f"650253{i:04d},User\n"
+    # Add row with very long name that will make message too long
+    csv_content += f"6502539999,{'A' * SMS_CHAR_COUNT_LIMIT}\n"
+    # Add more valid rows
+    for i in range(501, 1100):
+        csv_content += f"650253{i % 10000:04d},User\n"
+
+    recipients = RecipientCSV(
+        csv_content,
+        template_type="sms",
+        placeholders=["name"],
+        template=template,
+    )
+
+    rows = list(recipients.rows)
+    assert len(rows) == 1101
+    assert recipients.has_errors
+    assert _index_rows(recipients.rows_with_message_too_long) == {500}
