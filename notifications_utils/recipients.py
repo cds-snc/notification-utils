@@ -289,18 +289,39 @@ class RecipientCSV:
                         current_app.logger.error(f"Error processing chunk starting at {chunk_start}: {e}")
                     except RuntimeError:
                         # No Flask app context in parallel processing
-                        import sys
-
                         print(f"Error processing chunk starting at {chunk_start}: {e}", file=sys.stderr)
 
-                    # Return empty rows for failed chunks
+                    # Create placeholder Row objects for failed chunks
+                    # Note: We need to yield Row objects, not None, to maintain type consistency
                     chunk_end = min(chunk_start + chunk_size, total_rows)
                     for idx in range(chunk_start, chunk_end):
-                        results[idx] = None
+                        # Create a minimal Row with an error
+                        error_row = Row(
+                            OrderedDict(),
+                            index=idx,
+                            error_fn=lambda k, v: None,
+                            recipient_column_headers=self.recipient_column_headers,
+                            placeholders=self.placeholders_as_column_keys,
+                            template=None,
+                            template_type=self.template_type,
+                        )
+                        results[idx] = error_row
 
             # Yield results in order
             for idx in range(total_rows):
-                yield results.get(idx)
+                if idx in results:
+                    yield results[idx]
+                else:
+                    # This shouldn't happen, but handle missing indices gracefully
+                    yield Row(
+                        OrderedDict(),
+                        index=idx,
+                        error_fn=lambda k, v: None,
+                        recipient_column_headers=self.recipient_column_headers,
+                        placeholders=self.placeholders_as_column_keys,
+                        template=None,
+                        template_type=self.template_type,
+                    )
 
         # Yield None for rows beyond max_rows
         for _ in range(len(rows_data) - total_rows):
@@ -740,8 +761,15 @@ def _process_row_chunk(
 ):
     """Worker function to process a chunk of CSV rows in parallel threads.
 
-    Uses ThreadPoolExecutor since phonenumbers library releases the GIL during
-    regex operations, making threading efficient for phone number validation.
+    This function is designed for parallel execution using ThreadPoolExecutor.
+    Threading is efficient here because the phonenumbers library releases the
+    Python GIL during its regex operations, allowing true parallel processing
+    of phone number validation across multiple CPU cores.
+
+    Note: Template validation differs from sequential processing (_process_single_row).
+    Instead of passing a Template object to Row, validation is performed inline via
+    chunk_error_fn. This avoids serialization issues when passing Template objects
+    across thread boundaries and ensures thread-safe validation.
 
     Args:
         rows: List of raw CSV rows to process
@@ -758,7 +786,6 @@ def _process_row_chunk(
     Returns:
         Dict mapping row index to Row object
     """
-    # No need to re-import in threads - they share the same memory space
 
     # Create error function for this chunk
     def chunk_error_fn(key, value):
@@ -777,7 +804,7 @@ def _process_row_chunk(
 
         # Check if it's a placeholder column
         if formatted_key not in placeholders_keys:
-            return
+            return None
 
         if value in [None, ""]:
             return Cell.missing_field_error
@@ -797,6 +824,7 @@ def _process_row_chunk(
     for idx, row in enumerate(rows):
         row_index = start_index + idx
         output_dict = OrderedDict()
+        has_message_too_long = False
 
         # Build output dictionary
         for column_name, column_value in zip(column_headers, row):
@@ -805,6 +833,14 @@ def _process_row_chunk(
                 output_dict[column_name] = column_value or None
             else:
                 insert_or_append_to_dict(output_dict, column_name, column_value or None)
+
+            # Check if this column has a message too long error
+            formatted_key = Columns.make_key(column_name)
+            if template_content and formatted_key in placeholders_keys and template_type == "sms":
+                try:
+                    validate_sms_message_length(column_value or "", template_content)
+                except ValueError:
+                    has_message_too_long = True
 
         length_of_row = len(row)
 
@@ -815,19 +851,22 @@ def _process_row_chunk(
                 insert_or_append_to_dict(output_dict, key, None)
 
         # Create Row object
-        try:
-            row_obj = Row(
-                output_dict,
-                index=row_index,
-                error_fn=chunk_error_fn,
-                recipient_column_headers=recipient_column_headers,
-                placeholders=placeholders_keys,
-                template=None,  # Template validation handled in chunk_error_fn
-                template_type=template_type,
-            )
-            results[row_index] = row_obj
-        except Exception:
-            # If row creation fails, create a minimal error row
-            results[row_index] = None
+        # Note: template=None because validation is performed inline in chunk_error_fn
+        # to avoid serialization issues in parallel processing
+        row_obj = Row(
+            output_dict,
+            index=row_index,
+            error_fn=chunk_error_fn,
+            recipient_column_headers=recipient_column_headers,
+            placeholders=placeholders_keys,
+            template=None,
+            template_type=template_type,
+        )
+
+        # Set message_too_long flag if detected
+        if has_message_too_long:
+            row_obj.message_too_long = True
+
+        results[row_index] = row_obj
 
     return results

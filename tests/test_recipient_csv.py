@@ -1306,7 +1306,7 @@ def test_parallel_processing_with_message_length_validation():
     # Add row with very long name that will make message too long
     csv_content += f"6502539999,{'A' * SMS_CHAR_COUNT_LIMIT}\n"
     # Add more valid rows
-    for i in range(501, 1100):
+    for i in range(501, 1101):
         csv_content += f"650253{i % 10000:04d},User\n"
 
     recipients = RecipientCSV(
