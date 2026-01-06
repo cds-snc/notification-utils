@@ -299,7 +299,7 @@ class RecipientCSV:
                         error_row = Row(
                             OrderedDict(),
                             index=idx,
-                            error_fn=lambda k, v: None,
+                            error_fn=_noop_error_fn,
                             recipient_column_headers=self.recipient_column_headers,
                             placeholders=self.placeholders_as_column_keys,
                             template=None,
@@ -316,7 +316,7 @@ class RecipientCSV:
                     yield Row(
                         OrderedDict(),
                         index=idx,
-                        error_fn=lambda k, v: None,
+                        error_fn=_noop_error_fn,
                         recipient_column_headers=self.recipient_column_headers,
                         placeholders=self.placeholders_as_column_keys,
                         template=None,
