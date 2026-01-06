@@ -747,6 +747,24 @@ def parse_number(number, region=None):
         return False
 
 
+def _noop_error_fn(key, value):
+    """No-op error function for Row objects when validation is not needed."""
+    return None
+
+
+def _check_message_too_long(column_value, template_content, formatted_key, placeholders_keys, template_type):
+    """Check if an SMS message would be too long with the given variable content.
+
+    Returns True if the message would exceed SMS_CHAR_COUNT_LIMIT, False otherwise.
+    """
+    if template_content and formatted_key in placeholders_keys and template_type == "sms":
+        try:
+            validate_sms_message_length(column_value or "", template_content)
+        except ValueError:
+            return True
+    return False
+
+
 def _process_row_chunk(
     rows,
     start_index,
@@ -810,11 +828,8 @@ def _process_row_chunk(
             return Cell.missing_field_error
 
         # SMS message length validation
-        if template_content and formatted_key in placeholders_keys and template_type == "sms":
-            try:
-                validate_sms_message_length(value, template_content)
-            except ValueError as error:
-                return str(error)
+        if _check_message_too_long(value, template_content, formatted_key, placeholders_keys, template_type):
+            return f"Maximum {SMS_CHAR_COUNT_LIMIT} characters. Some messages may be too long due to custom content."
 
         return None
 
@@ -836,11 +851,8 @@ def _process_row_chunk(
 
             # Check if this column has a message too long error
             formatted_key = Columns.make_key(column_name)
-            if template_content and formatted_key in placeholders_keys and template_type == "sms":
-                try:
-                    validate_sms_message_length(column_value or "", template_content)
-                except ValueError:
-                    has_message_too_long = True
+            if _check_message_too_long(column_value, template_content, formatted_key, placeholders_keys, template_type):
+                has_message_too_long = True
 
         length_of_row = len(row)
 
