@@ -769,9 +769,11 @@ def add_cta_buttons(_content: str) -> str:
 
             # Only replace if exactly one link
             if link_count == 1:
-                # Add text-decoration: none to the <a> tag
+                # Add text-decoration: none and color to the <a> tag with !important
                 link_styled_content = regex_module.sub(
-                    r'<a style="([^"]*)"', r'<a style="text-decoration: none; color:  rgb(0,0,0);\1"', cta_content
+                    r'<a style="([^"]*)"',
+                    r'<a style="text-decoration: none !important; color: #393939 !important; \1"',
+                    cta_content,
                 )
                 # Add color and remove margin from the <p> tag
                 link_styled_content = regex_module.sub(r'<p style="[^"]*"', r'<p style="Margin: 0;"', link_styled_content)
