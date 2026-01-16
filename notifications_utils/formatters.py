@@ -718,7 +718,7 @@ def add_callout_divs(_content: str) -> str:
     if _content.count(CALLOUT_OPEN_LITERAL) == _content.count(CALLOUT_CLOSE_LITERAL):
         _content = _content.replace(
             CALLOUT_OPEN_LITERAL,
-            '<div style="margin-bottom: 20px; background: #fffdf5; padding: 15px 15px 0 15px; border-radius: 10px; box-shadow: 0 1px 3px #0000000d, 0 1px 2px #0000001a; border: 1px solid #edeaea">',
+            '<div style="margin-bottom: 20px; background: #fffdf5; padding: 15px 15px 0 15px; border-radius: 10px; box-shadow: 0 1px 3px #0000000d, 0 1px 2px #0000001a; border: 1px solid #dcd6d6">',
         )
         _content = _content.replace(CALLOUT_CLOSE_LITERAL, "</div>")
 
@@ -771,12 +771,10 @@ def add_cta_buttons(_content: str) -> str:
             if link_count == 1:
                 # Add text-decoration: none to the <a> tag
                 link_styled_content = regex_module.sub(
-                    r'<a style="([^"]*)"', r'<a style="text-decoration: none; \1"', cta_content
+                    r'<a style="([^"]*)"', r'<a style="text-decoration: none; color: #393939 !important;\1"', cta_content
                 )
                 # Add color and remove margin from the <p> tag
-                link_styled_content = regex_module.sub(
-                    r'<p style="[^"]*"', r'<p style="Margin: 0; color: #393939 !important;"', link_styled_content
-                )
+                link_styled_content = regex_module.sub(r'<p style="[^"]*"', r'<p style="Margin: 0;"', link_styled_content)
                 button_style = "margin-bottom: 20px; border-radius: 4px; background: #ffbf47; padding: 0.55em 1em 0.45em; text-align: center; display: inline-block; cursor: pointer;"
                 return f'<div style="{button_style}">{link_styled_content}</div>'
             else:
