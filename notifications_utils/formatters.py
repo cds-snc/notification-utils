@@ -33,12 +33,20 @@ EN_OPEN = r"\[\[en\]\]"  # matches [[en]]
 EN_CLOSE = r"\[\[/en\]\]"  # matches [[/en]]
 RTL_OPEN = r"\[\[rtl\]\]"  # matches [[rtl]]
 RTL_CLOSE = r"\[\[/rtl\]\]"  # matches [[/rtl]]
+CALLOUT_OPEN = r"\[\[callout\]\]"  # matches [[callout]]
+CALLOUT_CLOSE = r"\[\[/callout\]\]"  # matches [[/callout]]
+CTA_OPEN = r"\[\[cta\]\]"  # matches [[cta]]
+CTA_CLOSE = r"\[\[/cta\]\]"  # matches [[/cta]]
 FR_OPEN_LITERAL = "[[fr]]"
 FR_CLOSE_LITERAL = "[[/fr]]"
 EN_OPEN_LITERAL = "[[en]]"
 EN_CLOSE_LITERAL = "[[/en]]"
 RTL_OPEN_LITERAL = "[[rtl]]"
 RTL_CLOSE_LITERAL = "[[/rtl]]"
+CALLOUT_OPEN_LITERAL = "[[callout]]"
+CALLOUT_CLOSE_LITERAL = "[[/callout]]"
+CTA_OPEN_LITERAL = "[[cta]]"
+CTA_CLOSE_LITERAL = "[[/cta]]"
 BR_TAG = r"<br\s?/>"
 
 
@@ -683,6 +691,108 @@ def remove_rtl_divs(_content: str) -> str:
     """Remove the tags from content. This fn is for use in the email
     preheader, since this is plain text not html"""
     return remove_tags(_content, RTL_OPEN, RTL_CLOSE)
+
+
+def escape_callout_tags(_content: str) -> str:
+    """
+    Escape callout tags into code tags in the content so mistune doesn't put them inside p tags.  This makes it simple
+    to replace them afterwards, and avoids creating invalid HTML in the process
+    """
+
+    # check to ensure we have the same number of opening and closing tags before escaping tags
+    if _content.count(CALLOUT_OPEN_LITERAL) == _content.count(CALLOUT_CLOSE_LITERAL):
+        _content = _content.replace(CALLOUT_OPEN_LITERAL, f"\n```\n{CALLOUT_OPEN_LITERAL}\n```\n")
+        _content = _content.replace(CALLOUT_CLOSE_LITERAL, f"\n```\n{CALLOUT_CLOSE_LITERAL}\n```\n")
+
+    return _content
+
+
+def add_callout_divs(_content: str) -> str:
+    """
+    Custom parser to add the callout divs.
+
+    String replace callout tags in-place with styled div elements.
+    """
+
+    # check to ensure we have the same number of opening and closing tags before replacing tags
+    if _content.count(CALLOUT_OPEN_LITERAL) == _content.count(CALLOUT_CLOSE_LITERAL):
+        _content = _content.replace(
+            CALLOUT_OPEN_LITERAL,
+            '<div style="margin-bottom: 20px; background: #fffdf5; padding: 15px 15px 0 15px; border-radius: 10px; box-shadow: 0 1px 3px #0000000d, 0 1px 2px #0000001a; border: 1px solid #edeaea">',
+        )
+        _content = _content.replace(CALLOUT_CLOSE_LITERAL, "</div>")
+
+    return _content
+
+
+def remove_callout_divs(_content: str) -> str:
+    """Remove the tags from content. This fn is for use in the email
+    preheader, since this is plain text not html"""
+    return remove_tags(_content, CALLOUT_OPEN, CALLOUT_CLOSE)
+
+
+def escape_cta_tags(_content: str) -> str:
+    """
+    Escape CTA tags into code tags in the content so mistune doesn't put them inside p tags.  This makes it simple
+    to replace them afterwards, and avoids creating invalid HTML in the process
+    """
+
+    # check to ensure we have the same number of opening and closing tags before escaping tags
+    if _content.count(CTA_OPEN_LITERAL) == _content.count(CTA_CLOSE_LITERAL):
+        _content = _content.replace(CTA_OPEN_LITERAL, f"\n```\n{CTA_OPEN_LITERAL}\n```\n")
+        _content = _content.replace(CTA_CLOSE_LITERAL, f"\n```\n{CTA_CLOSE_LITERAL}\n```\n")
+
+    return _content
+
+
+def add_cta_buttons(_content: str) -> str:
+    """
+    Custom parser to add CTA button divs.
+
+    String replace CTA tags in-place with styled div elements, but only if the content
+    contains exactly one link (<a> tag). If zero or multiple links, leave tags unprocessed.
+    """
+
+    # check to ensure we have the same number of opening and closing tags before replacing tags
+    if _content.count(CTA_OPEN_LITERAL) == _content.count(CTA_CLOSE_LITERAL):
+        # Find all CTA blocks and validate each one
+        result = _content
+        import re as regex_module
+
+        # Pattern to match CTA blocks
+        cta_pattern = regex_module.compile(r"\[\[cta\]\](.*?)\[\[/cta\]\]", regex_module.DOTALL)
+
+        def replace_cta(match):
+            cta_content = match.group(1)
+            # Count <a> tags in this CTA block
+            link_count = cta_content.count("<a ")
+
+            # Only replace if exactly one link
+            if link_count == 1:
+                # Add text-decoration: none to the <a> tag
+                link_styled_content = regex_module.sub(
+                    r'<a style="([^"]*)"', r'<a style="text-decoration: none; \1"', cta_content
+                )
+                # Add color and remove margin from the <p> tag
+                link_styled_content = regex_module.sub(
+                    r'<p style="[^"]*"', r'<p style="Margin: 0; color: #393939 !important;"', link_styled_content
+                )
+                button_style = "margin-bottom: 20px; border-radius: 4px; background: #ffbf47; padding: 0.55em 1em 0.45em; text-align: center; display: inline-block; cursor: pointer;"
+                return f'<div style="{button_style}">{link_styled_content}</div>'
+            else:
+                # Leave unprocessed if not exactly one link
+                return match.group(0)
+
+        result = cta_pattern.sub(replace_cta, result)
+        return result
+
+    return _content
+
+
+def remove_cta_tags(_content: str) -> str:
+    """Remove the tags from content. This fn is for use in the email
+    preheader, since this is plain text not html"""
+    return remove_tags(_content, CTA_OPEN, CTA_CLOSE)
 
 
 def remove_tags(_content: str, *tags) -> str:
