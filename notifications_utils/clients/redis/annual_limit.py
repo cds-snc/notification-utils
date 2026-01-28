@@ -39,6 +39,11 @@ SEEDED_AT = "seeded_at"
 TOTAL_SMS_FISCAL_YEAR_TO_YESTERDAY = "total_sms_fiscal_year_to_yesterday"
 TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY = "total_email_fiscal_year_to_yesterday"
 
+# Billable units fields
+SMS_BILLABLE_UNITS_DELIVERED_TODAY = "sms_billable_units_delivered_today"
+SMS_BILLABLE_UNITS_FAILED_TODAY = "sms_billable_units_failed_today"
+TOTAL_SMS_BILLABLE_UNITS_FISCAL_YEAR_TO_YESTERDAY = "total_sms_billable_units_fiscal_year_to_yesterday"
+
 NOTIFICATION_FIELDS_V2 = [
     SMS_DELIVERED_TODAY,
     EMAIL_DELIVERED_TODAY,
@@ -46,6 +51,12 @@ NOTIFICATION_FIELDS_V2 = [
     EMAIL_FAILED_TODAY,
     TOTAL_SMS_FISCAL_YEAR_TO_YESTERDAY,
     TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY,
+]
+
+BILLABLE_UNITS_FIELDS = [
+    SMS_BILLABLE_UNITS_DELIVERED_TODAY,
+    SMS_BILLABLE_UNITS_FAILED_TODAY,
+    TOTAL_SMS_BILLABLE_UNITS_FISCAL_YEAR_TO_YESTERDAY,
 ]
 
 NEAR_SMS_LIMIT = "near_sms_limit"
@@ -123,7 +134,7 @@ class RedisAnnualLimit:
             service_id (str): _description_
             field (str): _description_
         """
-        if field in NOTIFICATION_FIELDS_V2:
+        if field in NOTIFICATION_FIELDS_V2 + BILLABLE_UNITS_FIELDS:
             self._redis_client.increment_hash_value(annual_limit_notifications_v2_key(service_id), field)
 
     def get_notification_count(self, service_id: str, field: str):
@@ -285,6 +296,17 @@ class RedisAnnualLimit:
 
     def increment_email_failed(self, service_id: str):
         self.increment_notification_count(service_id, EMAIL_FAILED_TODAY)
+
+    # Helper methods for billable units tracking
+    def increment_sms_billable_units_delivered(self, service_id: str, billable_units: int = 1):
+        """Increment SMS billable units delivered today."""
+        for _ in range(billable_units):
+            self.increment_notification_count(service_id, SMS_BILLABLE_UNITS_DELIVERED_TODAY)
+
+    def increment_sms_billable_units_failed(self, service_id: str, billable_units: int = 1):
+        """Increment SMS billable units failed today."""
+        for _ in range(billable_units):
+            self.increment_notification_count(service_id, SMS_BILLABLE_UNITS_FAILED_TODAY)
 
     # Helper methods for annual limits statuses
     def set_nearing_sms_limit(self, service_id: str):
