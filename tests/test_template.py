@@ -216,7 +216,7 @@ class TestTemplateParts:
         sms = SMSMessageTemplate(template)
         parts = sms.message_parts()
 
-        assert parts["character_count"] == 11  # 9 ASCII bytes + 2 bytes for 'â' = 11 total bytes
+        assert parts["character_count"] == 11  # "Helo byd " (9 bytes) + "â" (2 bytes) = 11 total bytes
         assert parts["fragment_count"] == 1
         assert parts["unicode"] == {"â"}  # Set containing unicode char
 
