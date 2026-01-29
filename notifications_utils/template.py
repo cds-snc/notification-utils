@@ -225,6 +225,17 @@ class SMSMessageTemplate(Template):
     def is_name_too_long(self):
         return len(self.name) > self.NAME_CHAR_LIMIT
 
+    def message_parts(self):
+        content_with_placeholders = str(self)
+        character_count = self.content_count
+        unicode = is_unicode(content_with_placeholders)
+        fragment_count = get_sms_fragment_count(character_count, unicode)
+        return {
+            "character_count": character_count,
+            "fragment_count": fragment_count,
+            "unicode": unicode,
+        }
+
 
 class SMSPreviewTemplate(SMSMessageTemplate):
     def __init__(
@@ -803,7 +814,7 @@ def get_sms_fragment_count(character_count, is_unicode):
 
 
 def is_unicode(content):
-    return set(content) & set(SanitiseSMS.WELSH_NON_GSM_CHARACTERS)
+    return set(content) & (set(SanitiseSMS.WELSH_NON_GSM_CHARACTERS) | set(SanitiseSMS.FRENCH_NON_GSM_CHARACTERS))
 
 
 def get_html_email_body(template_content, template_values, redact_missing_personalisation=False, html="escape"):
