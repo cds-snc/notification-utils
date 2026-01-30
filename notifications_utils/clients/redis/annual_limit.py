@@ -198,13 +198,16 @@ class RedisAnnualLimit:
             )
             return
 
-        # Extract only V2 fields that exist in the mapping
-        v2_mapping = {k: mapping[k] for k in NOTIFICATION_FIELDS_V2 if k in mapping}
+        # Extract V2 fields and billable units fields that exist in the mapping
+        # Always include billable units fields - they'll just be 0 when not used
+        fields_to_save = NOTIFICATION_FIELDS_V2 + BILLABLE_UNITS_FIELDS
 
-        # Log if we're missing any V2 fields
-        if set(v2_mapping.keys()) != set(NOTIFICATION_FIELDS_V2):
-            missing_fields = set(NOTIFICATION_FIELDS_V2) - set(v2_mapping.keys())
-            current_app.logger.warning(f"Missing V2 fields when seeding annual limit for service {service_id}: {missing_fields}")
+        v2_mapping = {k: mapping[k] for k in fields_to_save if k in mapping}
+
+        # Log if we're missing any expected fields
+        if set(v2_mapping.keys()) != set(fields_to_save):
+            missing_fields = set(fields_to_save) - set(v2_mapping.keys())
+            current_app.logger.warning(f"Missing fields when seeding annual limit for service {service_id}: {missing_fields}")
 
         # Store V2 fields
         current_app.logger.info(
