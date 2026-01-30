@@ -198,9 +198,11 @@ class RedisAnnualLimit:
             )
             return
 
-        # Extract V2 fields and billable units fields that exist in the mapping
-        # Always include billable units fields - they'll just be 0 when not used
-        fields_to_save = NOTIFICATION_FIELDS_V2 + BILLABLE_UNITS_FIELDS
+        # Extract V2 fields and conditionally include billable units fields
+        # TODO FF_USE_BILLABLE_UNITS removal - Include billable units fields when FF is enabled
+        fields_to_save = NOTIFICATION_FIELDS_V2.copy()
+        if current_app.config.get("FF_USE_BILLABLE_UNITS"):
+            fields_to_save.extend(BILLABLE_UNITS_FIELDS)
 
         v2_mapping = {k: mapping[k] for k in fields_to_save if k in mapping}
 
