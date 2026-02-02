@@ -142,8 +142,9 @@ class RedisAnnualLimit:
         The increment_value defaults to 1 for normal notifications.
 
         Args:
-            service_id (str): _description_
-            field (str): _description_
+            service_id (str): service id
+            field (str): redis key we want to increment the value of. This should be one of the fields in NOTIFICATION_FIELDS_V2
+            increment_value (int, optional): value to increment by Defaults to 1.
         """
         if field in NOTIFICATION_FIELDS_V2 + BILLABLE_UNITS_FIELDS:
             self._redis_client.increment_hash_value(annual_limit_notifications_v2_key(service_id), field, incr_by=increment_value)

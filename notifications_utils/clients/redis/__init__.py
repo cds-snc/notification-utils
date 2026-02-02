@@ -61,21 +61,21 @@ def over_email_daily_limit_cache_key(service_id) -> str:
     return f"over-daily-email-limit-{email_daily_count_cache_key(service_id)}"
 
 
-def billable_units_sms_daily_count_cache_key(service_id):
+def billable_units_sms_daily_count_cache_key(service_id) -> str:
     """
     Used to keep track of how many SMS billable units a service has used in a day.
     """
     return "billable-units-sms-{}-{}-{}".format(str(service_id), datetime.utcnow().strftime("%Y-%m-%d"), "count")
 
 
-def near_billable_units_sms_daily_limit_cache_key(service_id):
+def near_billable_units_sms_daily_limit_cache_key(service_id) -> str:
     """
     Cache key that stores a str with the current date time indicating the service is nearing the daily SMS billable units limit.
     """
     return f"nearing-daily-limit-{billable_units_sms_daily_count_cache_key(service_id)}"
 
 
-def over_billable_units_sms_daily_limit_cache_key(service_id):
+def over_billable_units_sms_daily_limit_cache_key(service_id) -> str:
     """
     Cache key that stores a str with the current date time indicating the service is over the daily SMS billable units limit.
     """
