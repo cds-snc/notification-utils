@@ -9,14 +9,19 @@ from notifications_utils.clients.redis.annual_limit import (
     EMAIL_DELIVERED_TODAY,
     EMAIL_FAILED_TODAY,
     NEAR_EMAIL_LIMIT,
+    NEAR_SMS_BILLABLE_UNITS_LIMIT,
     NEAR_SMS_LIMIT,
     NOTIFICATION_FIELDS_V2,
     OVER_EMAIL_LIMIT,
+    OVER_SMS_BILLABLE_UNITS_LIMIT,
     OVER_SMS_LIMIT,
+    SMS_BILLABLE_UNITS_DELIVERED_TODAY,
+    SMS_BILLABLE_UNITS_FAILED_TODAY,
     SMS_DELIVERED_TODAY,
     SMS_FAILED_TODAY,
     STATUS_FIELDS,
     TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY,
+    TOTAL_SMS_BILLABLE_UNITS_FISCAL_YEAR_TO_YESTERDAY,
     TOTAL_SMS_FISCAL_YEAR_TO_YESTERDAY,
     RedisAnnualLimit,
     annual_limit_notifications_v2_key,
@@ -446,3 +451,177 @@ def test_seed_annual_limit_notifications_preserves_fields_on_reseeding(mock_annu
     assert counts[SMS_FAILED_TODAY] == 1  # Original value preserved
     assert counts[TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY] == 100  # Original value preserved
     assert counts[TOTAL_SMS_FISCAL_YEAR_TO_YESTERDAY] == 50  # Original value preserved
+
+
+# Billable units tests
+@pytest.mark.parametrize("billable_units", [1, 2, 3, 5])
+def test_increment_sms_billable_units_delivered(mock_annual_limit_client, mocked_service_id, billable_units):
+    mock_annual_limit_client.increment_sms_billable_units_delivered(mocked_service_id, billable_units)
+    count = mock_annual_limit_client.get_notification_count(mocked_service_id, SMS_BILLABLE_UNITS_DELIVERED_TODAY)
+    assert count == billable_units
+
+
+@pytest.mark.parametrize("billable_units", [1, 2, 3, 5])
+def test_increment_sms_billable_units_failed(mock_annual_limit_client, mocked_service_id, billable_units):
+    mock_annual_limit_client.increment_sms_billable_units_failed(mocked_service_id, billable_units)
+    count = mock_annual_limit_client.get_notification_count(mocked_service_id, SMS_BILLABLE_UNITS_FAILED_TODAY)
+    assert count == billable_units
+
+
+def test_increment_sms_billable_units_delivered_multiple_times(mock_annual_limit_client, mocked_service_id):
+    # Increment 3 times with different billable unit counts
+    mock_annual_limit_client.increment_sms_billable_units_delivered(mocked_service_id, 2)
+    mock_annual_limit_client.increment_sms_billable_units_delivered(mocked_service_id, 3)
+    mock_annual_limit_client.increment_sms_billable_units_delivered(mocked_service_id, 1)
+
+    count = mock_annual_limit_client.get_notification_count(mocked_service_id, SMS_BILLABLE_UNITS_DELIVERED_TODAY)
+    assert count == 6  # 2 + 3 + 1
+
+
+def test_increment_sms_billable_units_failed_multiple_times(mock_annual_limit_client, mocked_service_id):
+    # Increment 3 times with different billable unit counts
+    mock_annual_limit_client.increment_sms_billable_units_failed(mocked_service_id, 2)
+    mock_annual_limit_client.increment_sms_billable_units_failed(mocked_service_id, 4)
+    mock_annual_limit_client.increment_sms_billable_units_failed(mocked_service_id, 1)
+
+    count = mock_annual_limit_client.get_notification_count(mocked_service_id, SMS_BILLABLE_UNITS_FAILED_TODAY)
+    assert count == 7  # 2 + 4 + 1
+
+
+def test_increment_notification_count_with_custom_increment_value(mock_annual_limit_client, mocked_service_id):
+    # Test that increment_notification_count respects increment_value parameter
+    mock_annual_limit_client.increment_notification_count(
+        mocked_service_id, SMS_BILLABLE_UNITS_DELIVERED_TODAY, increment_value=5
+    )
+    count = mock_annual_limit_client.get_notification_count(mocked_service_id, SMS_BILLABLE_UNITS_DELIVERED_TODAY)
+    assert count == 5
+
+
+def test_increment_notification_count_with_default_increment_value(mock_annual_limit_client, mocked_service_id):
+    # Test that increment_notification_count defaults to 1 when increment_value not provided
+    mock_annual_limit_client.increment_notification_count(mocked_service_id, SMS_DELIVERED_TODAY)
+    mock_annual_limit_client.increment_notification_count(mocked_service_id, SMS_DELIVERED_TODAY)
+    count = mock_annual_limit_client.get_notification_count(mocked_service_id, SMS_DELIVERED_TODAY)
+    assert count == 2
+
+
+@freeze_time("2024-10-25 12:00:00.000000")
+def test_set_nearing_sms_billable_units_limit(mock_annual_limit_client, mocked_service_id):
+    mock_annual_limit_client.set_nearing_sms_billable_units_limit(mocked_service_id)
+    result = mock_annual_limit_client.get_annual_limit_status(mocked_service_id, NEAR_SMS_BILLABLE_UNITS_LIMIT)
+    assert result == datetime.utcnow().strftime("%Y-%m-%d")
+
+
+@freeze_time("2024-10-25 12:00:00.000000")
+def test_set_over_sms_billable_units_limit(mock_annual_limit_client, mocked_service_id):
+    mock_annual_limit_client.set_over_sms_billable_units_limit(mocked_service_id)
+    result = mock_annual_limit_client.get_annual_limit_status(mocked_service_id, OVER_SMS_BILLABLE_UNITS_LIMIT)
+    assert result == datetime.utcnow().strftime("%Y-%m-%d")
+
+
+@freeze_time("2024-10-25 12:00:00.000000")
+def test_check_has_warning_been_sent_with_billable_units_sms(mock_annual_limit_client, mocked_service_id):
+    mock_annual_limit_client.set_annual_limit_status(mocked_service_id, NEAR_SMS_BILLABLE_UNITS_LIMIT, datetime.utcnow())
+
+    result = mock_annual_limit_client.check_has_warning_been_sent_with_billable_units(mocked_service_id, "sms")
+    assert result == datetime.utcnow().strftime("%Y-%m-%d")
+
+
+def test_check_has_warning_been_sent_with_billable_units_email(mock_annual_limit_client, mocked_service_id):
+    # Email type should return the NEAR_EMAIL_LIMIT field
+    mock_annual_limit_client.set_annual_limit_status(mocked_service_id, NEAR_EMAIL_LIMIT, datetime.utcnow())
+
+    result = mock_annual_limit_client.check_has_warning_been_sent_with_billable_units(mocked_service_id, "email")
+    assert result == datetime.utcnow().strftime("%Y-%m-%d")
+
+
+def test_check_has_warning_been_sent_with_billable_units_returns_none_when_not_set(mock_annual_limit_client, mocked_service_id):
+    result = mock_annual_limit_client.check_has_warning_been_sent_with_billable_units(mocked_service_id, "sms")
+    assert result is None
+
+
+@freeze_time("2024-10-25 12:00:00.000000")
+def test_check_has_over_limit_been_sent_with_billable_units_sms(mock_annual_limit_client, mocked_service_id):
+    mock_annual_limit_client.set_annual_limit_status(mocked_service_id, OVER_SMS_BILLABLE_UNITS_LIMIT, datetime.utcnow())
+
+    result = mock_annual_limit_client.check_has_over_limit_been_sent_with_billable_units(mocked_service_id, "sms")
+    assert result == datetime.utcnow().strftime("%Y-%m-%d")
+
+
+def test_check_has_over_limit_been_sent_with_billable_units_email(mock_annual_limit_client, mocked_service_id):
+    # Email type should return the OVER_EMAIL_LIMIT field
+    mock_annual_limit_client.set_annual_limit_status(mocked_service_id, OVER_EMAIL_LIMIT, datetime.utcnow())
+
+    result = mock_annual_limit_client.check_has_over_limit_been_sent_with_billable_units(mocked_service_id, "email")
+    assert result == datetime.utcnow().strftime("%Y-%m-%d")
+
+
+def test_check_has_over_limit_been_sent_with_billable_units_returns_none_when_not_set(
+    mock_annual_limit_client, mocked_service_id
+):
+    result = mock_annual_limit_client.check_has_over_limit_been_sent_with_billable_units(mocked_service_id, "sms")
+    assert result is None
+
+
+def test_billable_units_in_all_notification_counts(mock_annual_limit_client, mocked_service_id):
+    # Set billable units values
+    mock_annual_limit_client.increment_sms_billable_units_delivered(mocked_service_id, 5)
+    mock_annual_limit_client.increment_sms_billable_units_failed(mocked_service_id, 3)
+
+    counts = mock_annual_limit_client.get_all_notification_counts(mocked_service_id)
+
+    # Verify billable units fields are included
+    assert SMS_BILLABLE_UNITS_DELIVERED_TODAY in counts
+    assert SMS_BILLABLE_UNITS_FAILED_TODAY in counts
+    assert TOTAL_SMS_BILLABLE_UNITS_FISCAL_YEAR_TO_YESTERDAY in counts
+
+    assert counts[SMS_BILLABLE_UNITS_DELIVERED_TODAY] == 5
+    assert counts[SMS_BILLABLE_UNITS_FAILED_TODAY] == 3
+    assert counts[TOTAL_SMS_BILLABLE_UNITS_FISCAL_YEAR_TO_YESTERDAY] == 0
+
+
+@freeze_time("2024-10-25 12:00:00.000000")
+def test_seed_annual_limit_notifications_with_billable_units(mock_annual_limit_client, mocked_service_id):
+    mapping = {
+        EMAIL_DELIVERED_TODAY: 10,
+        EMAIL_FAILED_TODAY: 2,
+        SMS_DELIVERED_TODAY: 5,
+        SMS_FAILED_TODAY: 1,
+        TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY: 100,
+        TOTAL_SMS_FISCAL_YEAR_TO_YESTERDAY: 50,
+        SMS_BILLABLE_UNITS_DELIVERED_TODAY: 15,
+        SMS_BILLABLE_UNITS_FAILED_TODAY: 3,
+        TOTAL_SMS_BILLABLE_UNITS_FISCAL_YEAR_TO_YESTERDAY: 200,
+    }
+
+    mock_annual_limit_client.seed_annual_limit_notifications(mocked_service_id, mapping)
+
+    counts = mock_annual_limit_client.get_all_notification_counts(mocked_service_id)
+
+    assert counts[SMS_BILLABLE_UNITS_DELIVERED_TODAY] == 15
+    assert counts[SMS_BILLABLE_UNITS_FAILED_TODAY] == 3
+    assert counts[TOTAL_SMS_BILLABLE_UNITS_FISCAL_YEAR_TO_YESTERDAY] == 200
+    assert mock_annual_limit_client.was_seeded_today(mocked_service_id) is True
+
+
+def test_reset_all_notification_counts_includes_billable_units(mock_annual_limit_client, mocked_service_id):
+    # Set all types of counts including billable units
+    mock_annual_limit_client.increment_sms_delivered(mocked_service_id)
+    mock_annual_limit_client.increment_sms_billable_units_delivered(mocked_service_id, 3)
+    mock_annual_limit_client.increment_sms_billable_units_failed(mocked_service_id, 2)
+
+    # Verify counts are set
+    counts_before = mock_annual_limit_client.get_all_notification_counts(mocked_service_id)
+    assert counts_before[SMS_DELIVERED_TODAY] == 1
+    assert counts_before[SMS_BILLABLE_UNITS_DELIVERED_TODAY] == 3
+    assert counts_before[SMS_BILLABLE_UNITS_FAILED_TODAY] == 2
+
+    # Reset all counts
+    mock_annual_limit_client.reset_all_notification_counts([mocked_service_id])
+
+    # Verify all counts are reset (hash is deleted, so returns empty dict or 0 values)
+    counts_after = mock_annual_limit_client.get_all_notification_counts(mocked_service_id)
+    assert counts_after.get(SMS_DELIVERED_TODAY, 0) == 0
+    assert counts_after.get(SMS_BILLABLE_UNITS_DELIVERED_TODAY, 0) == 0
+    assert counts_after.get(SMS_BILLABLE_UNITS_FAILED_TODAY, 0) == 0
+    assert counts_after.get(TOTAL_SMS_BILLABLE_UNITS_FISCAL_YEAR_TO_YESTERDAY, 0) == 0
