@@ -232,7 +232,11 @@ def test_seed_annual_limit_notifications_skips_seeding_if_no_notifications_to_se
 @freeze_time("2024-10-25 12:00:00.000000")
 @pytest.mark.parametrize("seeded_at_value, expected_value", [(b"2024-10-25", True), (None, False)])
 def test_was_seeded_today(mock_annual_limit_client, seeded_at_value, expected_value, mocked_service_id, mocker):
-    mocker.patch.object(mock_annual_limit_client._redis_client, "get_hash_field", return_value=seeded_at_value)
+    mocker.patch.object(
+        mock_annual_limit_client._redis_client,
+        "get_hash_field",
+        return_value=seeded_at_value,
+    )
     result = mock_annual_limit_client.was_seeded_today(mocked_service_id)
     assert result == expected_value
 
@@ -247,7 +251,11 @@ def test_set_seeded_at(mock_annual_limit_client, mocked_service_id):
 @freeze_time("2024-10-25 12:00:00.000000")
 @pytest.mark.parametrize("seeded_at_value, expected_value", [(b"2024-10-25", "2024-10-25"), (None, None)])
 def test_get_seeded_at(mock_annual_limit_client, seeded_at_value, expected_value, mocked_service_id, mocker):
-    mocker.patch.object(mock_annual_limit_client._redis_client, "get_hash_field", return_value=seeded_at_value)
+    mocker.patch.object(
+        mock_annual_limit_client._redis_client,
+        "get_hash_field",
+        return_value=seeded_at_value,
+    )
     result = mock_annual_limit_client.get_seeded_at(mocked_service_id)
     assert result == expected_value
 
@@ -455,20 +463,23 @@ def test_seed_annual_limit_notifications_preserves_fields_on_reseeding(mock_annu
 
 # Billable units tests
 @pytest.mark.parametrize("billable_units", [1, 2, 3, 5])
-def test_increment_sms_billable_units_delivered(mock_annual_limit_client, mocked_service_id, billable_units):
+def test_increment_sms_billable_units_delivered(app, mock_annual_limit_client, mocked_service_id, billable_units):
+    app.config["FF_USE_BILLABLE_UNITS"] = True
     mock_annual_limit_client.increment_sms_billable_units_delivered(mocked_service_id, billable_units)
     count = mock_annual_limit_client.get_notification_count(mocked_service_id, SMS_BILLABLE_UNITS_DELIVERED_TODAY)
     assert count == billable_units
 
 
 @pytest.mark.parametrize("billable_units", [1, 2, 3, 5])
-def test_increment_sms_billable_units_failed(mock_annual_limit_client, mocked_service_id, billable_units):
+def test_increment_sms_billable_units_failed(app, mock_annual_limit_client, mocked_service_id, billable_units):
+    app.config["FF_USE_BILLABLE_UNITS"] = True
     mock_annual_limit_client.increment_sms_billable_units_failed(mocked_service_id, billable_units)
     count = mock_annual_limit_client.get_notification_count(mocked_service_id, SMS_BILLABLE_UNITS_FAILED_TODAY)
     assert count == billable_units
 
 
-def test_increment_sms_billable_units_delivered_multiple_times(mock_annual_limit_client, mocked_service_id):
+def test_increment_sms_billable_units_delivered_multiple_times(app, mock_annual_limit_client, mocked_service_id):
+    app.config["FF_USE_BILLABLE_UNITS"] = True
     # Increment 3 times with different billable unit counts
     mock_annual_limit_client.increment_sms_billable_units_delivered(mocked_service_id, 2)
     mock_annual_limit_client.increment_sms_billable_units_delivered(mocked_service_id, 3)
@@ -478,7 +489,8 @@ def test_increment_sms_billable_units_delivered_multiple_times(mock_annual_limit
     assert count == 6  # 2 + 3 + 1
 
 
-def test_increment_sms_billable_units_failed_multiple_times(mock_annual_limit_client, mocked_service_id):
+def test_increment_sms_billable_units_failed_multiple_times(app, mock_annual_limit_client, mocked_service_id):
+    app.config["FF_USE_BILLABLE_UNITS"] = True
     # Increment 3 times with different billable unit counts
     mock_annual_limit_client.increment_sms_billable_units_failed(mocked_service_id, 2)
     mock_annual_limit_client.increment_sms_billable_units_failed(mocked_service_id, 4)
@@ -488,7 +500,8 @@ def test_increment_sms_billable_units_failed_multiple_times(mock_annual_limit_cl
     assert count == 7  # 2 + 4 + 1
 
 
-def test_increment_notification_count_with_custom_increment_value(mock_annual_limit_client, mocked_service_id):
+def test_increment_notification_count_with_custom_increment_value(app, mock_annual_limit_client, mocked_service_id):
+    app.config["FF_USE_BILLABLE_UNITS"] = True
     # Test that increment_notification_count respects increment_value parameter
     mock_annual_limit_client.increment_notification_count(
         mocked_service_id, SMS_BILLABLE_UNITS_DELIVERED_TODAY, increment_value=5
@@ -563,7 +576,8 @@ def test_check_has_over_limit_been_sent_with_billable_units_returns_none_when_no
     assert result is None
 
 
-def test_billable_units_in_all_notification_counts(mock_annual_limit_client, mocked_service_id):
+def test_billable_units_in_all_notification_counts(app, mock_annual_limit_client, mocked_service_id):
+    app.config["FF_USE_BILLABLE_UNITS"] = True
     # Set billable units values
     mock_annual_limit_client.increment_sms_billable_units_delivered(mocked_service_id, 5)
     mock_annual_limit_client.increment_sms_billable_units_failed(mocked_service_id, 3)
@@ -581,7 +595,8 @@ def test_billable_units_in_all_notification_counts(mock_annual_limit_client, moc
 
 
 @freeze_time("2024-10-25 12:00:00.000000")
-def test_seed_annual_limit_notifications_with_billable_units(mock_annual_limit_client, mocked_service_id):
+def test_seed_annual_limit_notifications_with_billable_units(app, mock_annual_limit_client, mocked_service_id):
+    app.config["FF_USE_BILLABLE_UNITS"] = True
     mapping = {
         EMAIL_DELIVERED_TODAY: 10,
         EMAIL_FAILED_TODAY: 2,
@@ -604,7 +619,8 @@ def test_seed_annual_limit_notifications_with_billable_units(mock_annual_limit_c
     assert mock_annual_limit_client.was_seeded_today(mocked_service_id) is True
 
 
-def test_reset_all_notification_counts_includes_billable_units(mock_annual_limit_client, mocked_service_id):
+def test_reset_all_notification_counts_includes_billable_units(app, mock_annual_limit_client, mocked_service_id):
+    app.config["FF_USE_BILLABLE_UNITS"] = True
     # Set all types of counts including billable units
     mock_annual_limit_client.increment_sms_delivered(mocked_service_id)
     mock_annual_limit_client.increment_sms_billable_units_delivered(mocked_service_id, 3)

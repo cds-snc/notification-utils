@@ -167,10 +167,15 @@ class RedisAnnualLimit:
             seeded_at_byte = bytes(SEEDED_AT, "utf-8")
             if seeded_at_byte in all_keys:
                 del all_keys[seeded_at_byte]
+
+            # Include billable units fields only if feature flag is enabled
+            use_billable_units = current_app.config.get("FF_USE_BILLABLE_UNITS", False)
+            required_fields = NOTIFICATION_FIELDS_V2 + (BILLABLE_UNITS_FIELDS if use_billable_units else [])
+
             return prepare_byte_dict(
                 all_keys,
                 int,
-                NOTIFICATION_FIELDS_V2,
+                required_fields,
             )
         return {}
 
