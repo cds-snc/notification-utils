@@ -132,6 +132,7 @@ class Field:
 
         if placeholder.is_conditional():
             conditional_text = self.sanitizer(placeholder.conditional_text)
+            sanitized_name = self.sanitizer(placeholder.name)
 
             if "\n" in conditional_text and self.markdown_renderer:
                 # Multi-line conditional: pre-render markdown so lists, links, etc.
@@ -139,12 +140,12 @@ class Field:
                 # mistune pass treats it as an HTML block and won't break it apart.
                 stripped = conditional_text.strip()
                 rendered = self.markdown_renderer(stripped).strip() if stripped else ""
-                return self.conditional_placeholder_tag_block.format(self.sanitizer(placeholder.name), rendered) + "\n"
+                return self.conditional_placeholder_tag_block.format(sanitized_name, rendered) + "\n"
             elif "\n" in conditional_text:
                 # Multi-line but no renderer available: convert newlines to <br>
                 conditional_text = conditional_text.strip("\n").replace("\n", "<br>")
 
-            return self.conditional_placeholder_tag.format(self.sanitizer(placeholder.name), conditional_text)
+            return self.conditional_placeholder_tag.format(sanitized_name, conditional_text)
 
         return self.placeholder_tag.format(self.sanitizer(placeholder.name))
 
