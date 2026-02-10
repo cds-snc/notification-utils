@@ -839,7 +839,7 @@ def _render_conditional_email_markdown(content):
     """Render markdown for multiline conditional preview content.
 
     Conditionals are pre-rendered, so we need to mirror the parsing pipeline in get_html_email_body
-    to ensure that language tags, RTL, lists, etc. that are inside condtionals are also pre-rendered
+    to ensure that language tags, RTL, lists, etc. that are inside conditionals are also pre-rendered
     else the main markdown rendering pass in get_html_email_body breaks them apart and mangles formatting.
     """
     result = escape_lang_tags(content)
