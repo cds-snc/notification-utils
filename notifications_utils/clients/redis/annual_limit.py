@@ -54,9 +54,6 @@ NOTIFICATION_FIELDS_V2 = [
     EMAIL_FAILED_TODAY,
     TOTAL_SMS_FISCAL_YEAR_TO_YESTERDAY,
     TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY,
-    SMS_BILLABLE_UNITS_DELIVERED_TODAY,
-    SMS_BILLABLE_UNITS_FAILED_TODAY,
-    TOTAL_SMS_BILLABLE_UNITS_FISCAL_YEAR_TO_YESTERDAY,
 ]
 
 BILLABLE_UNITS_FIELDS = [
@@ -146,7 +143,11 @@ class RedisAnnualLimit:
             field (str): redis key we want to increment the value of. This should be one of the fields in NOTIFICATION_FIELDS_V2
             increment_value (int, optional): value to increment by Defaults to 1.
         """
-        if field in NOTIFICATION_FIELDS_V2 + BILLABLE_UNITS_FIELDS:
+        # Check if billable units feature flag is enabled for billable units fields
+        use_billable_units = current_app.config.get("FF_USE_BILLABLE_UNITS", False)
+        allowed_fields = NOTIFICATION_FIELDS_V2 + (BILLABLE_UNITS_FIELDS if use_billable_units else [])
+
+        if field in allowed_fields:
             self._redis_client.increment_hash_value(annual_limit_notifications_v2_key(service_id), field, incr_by=increment_value)
 
     def get_notification_count(self, service_id: str, field: str):
@@ -186,7 +187,13 @@ class RedisAnnualLimit:
             else [annual_limit_notifications_v2_key(service_id) for service_id in service_ids]
         )
         # We also want to remove the seeded_at field from the notifications_v2 hash
-        self._redis_client.delete_hash_fields(hashes=hashes, fields=NOTIFICATION_FIELDS_V2 + [SEEDED_AT])
+        # Include billable units fields only if feature flag is enabled
+        use_billable_units = current_app.config.get("FF_USE_BILLABLE_UNITS", False)
+        fields_to_delete = NOTIFICATION_FIELDS_V2 + [SEEDED_AT]
+        if use_billable_units:
+            fields_to_delete += BILLABLE_UNITS_FIELDS
+
+        self._redis_client.delete_hash_fields(hashes=hashes, fields=fields_to_delete)
 
     def seed_annual_limit_notifications(self, service_id: str, mapping: dict):
         """Seeds annual limit notifications for a service.
@@ -213,7 +220,11 @@ class RedisAnnualLimit:
             )
             return
 
+        # Only include billable units fields if feature flag is enabled
+        use_billable_units = current_app.config.get("FF_USE_BILLABLE_UNITS", False)
         fields_to_save = NOTIFICATION_FIELDS_V2.copy()
+        if use_billable_units:
+            fields_to_save += BILLABLE_UNITS_FIELDS
 
         v2_mapping = {k: mapping[k] for k in fields_to_save if k in mapping}
 
@@ -315,10 +326,12 @@ class RedisAnnualLimit:
 
     # Helper methods for billable units tracking
     def increment_sms_billable_units_delivered(self, service_id: str, billable_units: int = 1):
-        self.increment_notification_count(service_id, SMS_BILLABLE_UNITS_DELIVERED_TODAY, billable_units)
+        if current_app.config.get("FF_USE_BILLABLE_UNITS", False):
+            self.increment_notification_count(service_id, SMS_BILLABLE_UNITS_DELIVERED_TODAY, billable_units)
 
     def increment_sms_billable_units_failed(self, service_id: str, billable_units: int = 1):
-        self.increment_notification_count(service_id, SMS_BILLABLE_UNITS_FAILED_TODAY, billable_units)
+        if current_app.config.get("FF_USE_BILLABLE_UNITS", False):
+            self.increment_notification_count(service_id, SMS_BILLABLE_UNITS_FAILED_TODAY, billable_units)
 
     # Helper methods for annual limits statuses
     def set_nearing_sms_limit(self, service_id: str):
