@@ -17,6 +17,9 @@ annual-limit: {
             email_failed_today: int,
             total_sms_fiscal_year_to_yesterday: int,
             total_email_fiscal_year_to_yesterday: int,
+            sms_billable_units_delivered_today: int,
+            sms_billable_units_failed_today: int,
+            total_sms_billable_units_fiscal_year_to_yesterday: int,
             seeded_at: Datetime
         }
     }
@@ -39,6 +42,11 @@ SEEDED_AT = "seeded_at"
 TOTAL_SMS_FISCAL_YEAR_TO_YESTERDAY = "total_sms_fiscal_year_to_yesterday"
 TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY = "total_email_fiscal_year_to_yesterday"
 
+# Billable units fields
+SMS_BILLABLE_UNITS_DELIVERED_TODAY = "sms_billable_units_delivered_today"
+SMS_BILLABLE_UNITS_FAILED_TODAY = "sms_billable_units_failed_today"
+TOTAL_SMS_BILLABLE_UNITS_FISCAL_YEAR_TO_YESTERDAY = "total_sms_billable_units_fiscal_year_to_yesterday"
+
 NOTIFICATION_FIELDS_V2 = [
     SMS_DELIVERED_TODAY,
     EMAIL_DELIVERED_TODAY,
@@ -48,10 +56,18 @@ NOTIFICATION_FIELDS_V2 = [
     TOTAL_EMAIL_FISCAL_YEAR_TO_YESTERDAY,
 ]
 
+BILLABLE_UNITS_FIELDS = [
+    SMS_BILLABLE_UNITS_DELIVERED_TODAY,
+    SMS_BILLABLE_UNITS_FAILED_TODAY,
+    TOTAL_SMS_BILLABLE_UNITS_FISCAL_YEAR_TO_YESTERDAY,
+]
+
 NEAR_SMS_LIMIT = "near_sms_limit"
 NEAR_EMAIL_LIMIT = "near_email_limit"
 OVER_SMS_LIMIT = "over_sms_limit"
 OVER_EMAIL_LIMIT = "over_email_limit"
+NEAR_SMS_BILLABLE_UNITS_LIMIT = "near_sms_billable_units_limit"
+OVER_SMS_BILLABLE_UNITS_LIMIT = "over_sms_billable_units_limit"
 
 STATUS_FIELDS = [NEAR_SMS_LIMIT, NEAR_EMAIL_LIMIT, OVER_SMS_LIMIT, OVER_EMAIL_LIMIT]
 
@@ -115,16 +131,24 @@ class RedisAnnualLimit:
     def init_app(self, app, *args, **kwargs):
         pass
 
-    def increment_notification_count(self, service_id: str, field: str):
+    def increment_notification_count(self, service_id: str, field: str, increment_value: int = 1):
         """Increments the specified daily notification count field for a service.
         Fields that can be set: `sms_delivered`, `email_delivered`, `sms_failed`, `email_failed`
 
+        We need the increment_value to handle billable units which can be more than 1 per notification.
+        The increment_value defaults to 1 for normal notifications.
+
         Args:
-            service_id (str): _description_
-            field (str): _description_
+            service_id (str): service id
+            field (str): redis key we want to increment the value of. This should be one of the fields in NOTIFICATION_FIELDS_V2
+            increment_value (int, optional): value to increment by Defaults to 1.
         """
-        if field in NOTIFICATION_FIELDS_V2:
-            self._redis_client.increment_hash_value(annual_limit_notifications_v2_key(service_id), field)
+        # Check if billable units feature flag is enabled for billable units fields
+        use_billable_units = current_app.config.get("FF_USE_BILLABLE_UNITS", False)
+        allowed_fields = NOTIFICATION_FIELDS_V2 + (BILLABLE_UNITS_FIELDS if use_billable_units else [])
+
+        if field in allowed_fields:
+            self._redis_client.increment_hash_value(annual_limit_notifications_v2_key(service_id), field, incr_by=increment_value)
 
     def get_notification_count(self, service_id: str, field: str):
         """
@@ -143,10 +167,15 @@ class RedisAnnualLimit:
             seeded_at_byte = bytes(SEEDED_AT, "utf-8")
             if seeded_at_byte in all_keys:
                 del all_keys[seeded_at_byte]
+
+            # Include billable units fields only if feature flag is enabled
+            use_billable_units = current_app.config.get("FF_USE_BILLABLE_UNITS", False)
+            required_fields = NOTIFICATION_FIELDS_V2 + (BILLABLE_UNITS_FIELDS if use_billable_units else [])
+
             return prepare_byte_dict(
                 all_keys,
                 int,
-                NOTIFICATION_FIELDS_V2,
+                required_fields,
             )
         return {}
 
@@ -163,7 +192,13 @@ class RedisAnnualLimit:
             else [annual_limit_notifications_v2_key(service_id) for service_id in service_ids]
         )
         # We also want to remove the seeded_at field from the notifications_v2 hash
-        self._redis_client.delete_hash_fields(hashes=hashes, fields=NOTIFICATION_FIELDS_V2 + [SEEDED_AT])
+        # Include billable units fields only if feature flag is enabled
+        use_billable_units = current_app.config.get("FF_USE_BILLABLE_UNITS", False)
+        fields_to_delete = NOTIFICATION_FIELDS_V2 + [SEEDED_AT]
+        if use_billable_units:
+            fields_to_delete += BILLABLE_UNITS_FIELDS
+
+        self._redis_client.delete_hash_fields(hashes=hashes, fields=fields_to_delete)
 
     def seed_annual_limit_notifications(self, service_id: str, mapping: dict):
         """Seeds annual limit notifications for a service.
@@ -179,6 +214,9 @@ class RedisAnnualLimit:
                     "email_failed_today": int,
                     "total_sms_fiscal_year_to_yesterday": int,
                     "total_email_fiscal_year_to_yesterday": int,
+                    "sms_billable_units_delivered_today": int,
+                    "sms_billable_units_failed_today": int,
+                    "total_sms_billable_units_fiscal_year_to_yesterday": int,
                 }
         """
         if not mapping or all(notification_count == 0 for notification_count in mapping.values()):
@@ -187,13 +225,18 @@ class RedisAnnualLimit:
             )
             return
 
-        # Extract only V2 fields that exist in the mapping
-        v2_mapping = {k: mapping[k] for k in NOTIFICATION_FIELDS_V2 if k in mapping}
+        # Only include billable units fields if feature flag is enabled
+        use_billable_units = current_app.config.get("FF_USE_BILLABLE_UNITS", False)
+        fields_to_save = NOTIFICATION_FIELDS_V2.copy()
+        if use_billable_units:
+            fields_to_save += BILLABLE_UNITS_FIELDS
 
-        # Log if we're missing any V2 fields
-        if set(v2_mapping.keys()) != set(NOTIFICATION_FIELDS_V2):
-            missing_fields = set(NOTIFICATION_FIELDS_V2) - set(v2_mapping.keys())
-            current_app.logger.warning(f"Missing V2 fields when seeding annual limit for service {service_id}: {missing_fields}")
+        v2_mapping = {k: mapping[k] for k in fields_to_save if k in mapping}
+
+        # Log if we're missing any expected fields
+        if set(v2_mapping.keys()) != set(fields_to_save):
+            missing_fields = set(fields_to_save) - set(v2_mapping.keys())
+            current_app.logger.warning(f"Missing fields when seeding annual limit for service {service_id}: {missing_fields}")
 
         # Store V2 fields
         current_app.logger.info(
@@ -286,6 +329,15 @@ class RedisAnnualLimit:
     def increment_email_failed(self, service_id: str):
         self.increment_notification_count(service_id, EMAIL_FAILED_TODAY)
 
+    # Helper methods for billable units tracking
+    def increment_sms_billable_units_delivered(self, service_id: str, billable_units: int = 1):
+        if current_app.config.get("FF_USE_BILLABLE_UNITS", False):
+            self.increment_notification_count(service_id, SMS_BILLABLE_UNITS_DELIVERED_TODAY, billable_units)
+
+    def increment_sms_billable_units_failed(self, service_id: str, billable_units: int = 1):
+        if current_app.config.get("FF_USE_BILLABLE_UNITS", False):
+            self.increment_notification_count(service_id, SMS_BILLABLE_UNITS_FAILED_TODAY, billable_units)
+
     # Helper methods for annual limits statuses
     def set_nearing_sms_limit(self, service_id: str):
         self.set_annual_limit_status(service_id, NEAR_SMS_LIMIT, datetime.utcnow())
@@ -299,6 +351,12 @@ class RedisAnnualLimit:
     def set_over_email_limit(self, service_id: str):
         self.set_annual_limit_status(service_id, OVER_EMAIL_LIMIT, datetime.utcnow())
 
+    def set_nearing_sms_billable_units_limit(self, service_id: str):
+        self.set_annual_limit_status(service_id, NEAR_SMS_BILLABLE_UNITS_LIMIT, datetime.utcnow())
+
+    def set_over_sms_billable_units_limit(self, service_id: str):
+        self.set_annual_limit_status(service_id, OVER_SMS_BILLABLE_UNITS_LIMIT, datetime.utcnow())
+
     def check_has_warning_been_sent(self, service_id: str, message_type: str):
         """
         Check if an annual limit warning email has been sent to the service.
@@ -309,6 +367,18 @@ class RedisAnnualLimit:
         field_to_fetch = NEAR_SMS_LIMIT if message_type == "sms" else NEAR_EMAIL_LIMIT
         return self.get_annual_limit_status(service_id, field_to_fetch)
 
+    def check_has_warning_been_sent_with_billable_units(self, service_id: str, message_type: str):
+        """
+        Check if an annual limit warning email for nearing SMS billable units limit has been sent to the service.
+        Returns None if no warning has been sent, otherwise returns the date the
+        last warning was issued.
+        When a service's annual limit is increased this value is reset.
+        """
+        field_to_fetch = NEAR_SMS_BILLABLE_UNITS_LIMIT if message_type == "sms" else NEAR_EMAIL_LIMIT
+        if not field_to_fetch:
+            return None
+        return self.get_annual_limit_status(service_id, field_to_fetch)
+
     def check_has_over_limit_been_sent(self, service_id: str, message_type: str):
         """
         Check if an annual limit exceeded email has been sent to the service.
@@ -317,6 +387,18 @@ class RedisAnnualLimit:
         When a service's annual limit is increased this value is reset.
         """
         field_to_fetch = OVER_SMS_LIMIT if message_type == "sms" else OVER_EMAIL_LIMIT
+        return self.get_annual_limit_status(service_id, field_to_fetch)
+
+    def check_has_over_limit_been_sent_with_billable_units(self, service_id: str, message_type: str):
+        """
+        Check if an annual limit exceeded email for SMS billable units has been sent to the service.
+        Returns None if no exceeded email has been sent, otherwise returns the date the
+        last exceeded email was issued.
+        When a service's annual limit is increased this value is reset.
+        """
+        field_to_fetch = OVER_SMS_BILLABLE_UNITS_LIMIT if message_type == "sms" else OVER_EMAIL_LIMIT
+        if not field_to_fetch:
+            return None
         return self.get_annual_limit_status(service_id, field_to_fetch)
 
     def delete_all_annual_limit_hashes(self, service_ids=None):

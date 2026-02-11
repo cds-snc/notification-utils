@@ -300,8 +300,12 @@ class RedisClient:
 
         return None
 
-    def decrement_hash_value(self, key, value, raise_exception=False):
-        return self.increment_hash_value(key, value, raise_exception, incr_by=-1)
+    def decrement_hash_value(self, key, value, raise_exception=False, decr_by=-1):
+        """
+        Decrement a hash value by the specified amount. By default, it decrements by 1,
+        but you can specify a different amount by passing a negative number to decr_by.
+        """
+        return self.increment_hash_value(key, value, raise_exception, incr_by=decr_by)
 
     def increment_hash_value(self, key, value, raise_exception=False, incr_by=1):
         key = prepare_value(key)
