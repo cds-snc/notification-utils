@@ -819,6 +819,7 @@ def get_html_email_body(template_content, template_values, redact_missing_person
                 html=html,
                 markdown_lists=True,
                 redact_missing_personalisation=redact_missing_personalisation,
+                markdown_renderer=_render_conditional_email_markdown,
             )
         )
         .then(unlink_govuk_escaped)
@@ -832,6 +833,22 @@ def get_html_email_body(template_content, template_values, redact_missing_person
         .then(add_rtl_divs)
         .then(do_nice_typography)
     )
+
+
+def _render_conditional_email_markdown(content):
+    """Render markdown for multiline conditional preview content.
+
+    Conditionals are pre-rendered, so we need to mirror the parsing pipeline in get_html_email_body
+    to ensure that language tags, RTL, lists, etc. that are inside conditionals are also pre-rendered
+    else the main markdown rendering pass in get_html_email_body breaks them apart and mangles formatting.
+    """
+    result = escape_lang_tags(content)
+    result = escape_rtl_tags(result)
+    result = notify_email_markdown(result)
+    result = remove_nested_list_padding(result)
+    result = add_language_divs(result)
+    result = add_rtl_divs(result)
+    return result
 
 
 def do_nice_typography(value):
