@@ -1,0 +1,258 @@
+ISO Country,Country Name,CarrierName,Number Type,Price ($USD)
+AC,Ascension Island,All Networks,All number types,0.18784
+AD,Andorra,All Networks,All number types,0.1138
+AE,United Arab Emirates,All Networks,All number types,0.10809
+AF,Afghanistan,All Networks,All number types,0.37321
+AG,Antigua and Barbuda,All Networks,All number types,0.12544
+AI,Anguilla,All Networks,All number types,0.0506
+AL,Albania,All Networks,All number types,0.09029
+AM,Armenia,All Networks,All number types,0.18163
+AO,Angola,All Networks,All number types,0.08983
+AQ,Antarctica,All Networks,All number types,0.13659
+AR,Argentina,All Networks,All number types,0.09059
+AS,American Samoa,All Networks,All number types,0.05867
+AT,Austria,All Networks,All number types,0.10526
+AU,Australia,All Networks,All number types,0.04
+AW,Aruba,All Networks,All number types,0.12756
+AX,Aland Islands,All Networks,All number types,0.13407
+AZ,Azerbaijan,All Networks,All number types,0.3691
+BA,Bosnia and Herzegovina,All Networks,All number types,0.07463
+BB,Barbados,All Networks,All number types,0.21978
+BD,Bangladesh,All Networks,All number types,0.31355
+BE,Belgium,All Networks,All number types,0.09582
+BF,Burkina Faso,All Networks,All number types,0.20147
+BG,Bulgaria,All Networks,All number types,0.136
+BH,Bahrain,All Networks,All number types,0.03549
+BI,Burundi,All Networks,All number types,0.42996
+BJ,Benin,All Networks,All number types,0.22453
+BL,Saint Barthelemy,All Networks,All number types,0.13659
+BM,Bermuda,All Networks,All number types,0.21114
+BN,Brunei,All Networks,All number types,0.01289
+BO,Bolivia,All Networks,All number types,0.17266
+BQ,"Bonaire, Sint Eustatius and Saba",All Networks,All number types,0.04396
+BR,Brazil,All Networks,All number types,0.03
+BS,Bahamas,All Networks,All number types,0.07011
+BT,Bhutan,All Networks,All number types,0.39102
+BV,Bouvet Island,All Networks,All number types,0.13659
+BW,Botswana,All Networks,All number types,0.03831
+BY,Belarus,All Networks,All number types,0.24
+BZ,Belize,All Networks,All number types,0.26502
+CA,Canada,All Networks,Long code,0.007
+CA,Canada,All Networks,Long code carrier fee,0.00767
+CA,Canada,All Networks,Short code,0.02183
+CA,Canada,All Networks,Short code carrier fee,0.005
+CC,Cocos Islands,All Networks,All number types,0.13659
+CD,Democratic Republic of the Congo,All Networks,All number types,0.21839
+CF,Central African Republic,All Networks,All number types,0.39813
+CG,Republic of the Congo,All Networks,All number types,0.10255
+CH,Switzerland,All Networks,All number types,0.05124
+CI,Ivory Coast,All Networks,All number types,0.34992
+CK,Cook Islands,All Networks,All number types,0.11
+CL,Chile,All Networks,All number types,0.05178
+CM,Cameroon,All Networks,All number types,0.18892
+CN,China,All Networks,All number types,0.0395
+CO,Colombia,All Networks,All number types,0.05087
+CR,Costa Rica,All Networks,All number types,0.04678
+CV,Cape Verde,All Networks,All number types,0.1374
+CW,Curacao,All Networks,All number types,0.12667
+CX,Christmas Island,All Networks,All number types,0.13659
+CY,Cyprus,All Networks,All number types,0.02995
+CZ,Czech Republic,All Networks,All number types,0.06609
+DE,Germany,All Networks,All number types,0.10719
+DJ,Djibouti,All Networks,All number types,0.1118
+DK,Denmark,All Networks,All number types,0.06206
+DM,Dominica,All Networks,All number types,0.13002
+DO,Dominican Republic,All Networks,All number types,0.07409
+DZ,Algeria,All Networks,All number types,0.25213
+EC,Ecuador,All Networks,All number types,0.31206
+EE,Estonia,All Networks,All number types,0.07687
+EG,Egypt,All Networks,All number types,0.31384
+EH,Western Sahara,All Networks,All number types,0.19024
+ER,Eritrea,All Networks,All number types,0.1073
+ES,Spain,All Networks,All number types,0.07
+ET,Ethiopia,All Networks,All number types,0.33422
+FI,Finland,All Networks,All number types,0.10009
+FJ,Fiji,All Networks,All number types,0.20911
+FK,Falkland Islands,All Networks,All number types,0.01912
+FM,Micronesia,All Networks,All number types,0.13769
+FO,Faroe Islands,All Networks,All number types,0.04369
+FR,France,All Networks,All number types,0.073
+GA,Gabon,All Networks,All number types,0.22464
+GB,United Kingdom,All Networks,All number types,0.05
+GD,Grenada,All Networks,All number types,0.22127
+GE,Georgia,All Networks,All number types,0.17028
+GF,French Guiana,All Networks,All number types,0.17181
+GG,Guernsey,All Networks,All number types,0.066
+GH,Ghana,All Networks,All number types,0.35063
+GI,Gibraltar,All Networks,All number types,0.07611
+GL,Greenland,All Networks,All number types,0.01511
+GM,Gambia,All Networks,All number types,0.08444
+GN,Guinea,All Networks,All number types,0.1426
+GP,Guadeloupe,All Networks,All number types,0.16302
+GQ,Equatorial Guinea,All Networks,All number types,0.1306
+GR,Greece,All Networks,All number types,0.08621
+GS,South Georgia and the South Sandwich Islands,All Networks,All number types,0.13659
+GT,Guatemala,All Networks,All number types,0.21689
+GU,Guam,All Networks,All number types,0.0656
+GW,Guinea-Bissau,All Networks,All number types,0.20156
+GY,Guyana,All Networks,All number types,0.18991
+HK,Hong Kong,All Networks,All number types,0.07656
+HM,Heard Island and McDonald Islands,All Networks,All number types,0.13659
+HN,Honduras,All Networks,All number types,0.23785
+HR,Croatia,All Networks,All number types,0.08741
+HT,Haiti,All Networks,All number types,0.26037
+HU,Hungary,All Networks,All number types,0.10824
+ID,Indonesia,All Networks,All number types,0.42831
+IE,Ireland,All Networks,All number types,0.09556
+IL,Israel,All Networks,All number types,0.21747
+IM,Isle of Man,All Networks,All number types,0.06886
+IN,India,All Networks,India local,0.004
+IN,India,All Networks,India international,0.071
+IO,British Indian Ocean Territory,All Networks,All number types,0.18699
+IQ,Iraq,All Networks,All number types,0.30566
+IS,Iceland,All Networks,All number types,0.0964
+IT,Italy,All Networks,All number types,0.08
+JE,Jersey,All Networks,All number types,0.07709
+JM,Jamaica,All Networks,All number types,0.16714
+JO,Jordan,All Networks,All number types,0.31333
+JP,Japan,All Networks,All number types,0.07451
+KE,Kenya,All Networks,All number types,0.17918
+KG,Kyrgyzstan,All Networks,All number types,0.31012
+KH,Cambodia,All Networks,All number types,0.36452
+KI,Kiribati,All Networks,All number types,0.16031
+KM,Comoros,All Networks,All number types,0.40263
+KN,Saint Kitts and Nevis,All Networks,All number types,0.15867
+KR,South Korea,All Networks,All number types,0.02414
+KW,Kuwait,All Networks,All number types,0.1494
+KY,Cayman Islands,All Networks,All number types,0.17511
+KZ,Kazakhstan,All Networks,All number types,0.27771
+LA,Laos,All Networks,All number types,0.21794
+LB,Lebanon,All Networks,All number types,0.34985
+LC,Saint Lucia,All Networks,All number types,0.18998
+LI,Liechtenstein,All Networks,All number types,0.02929
+LK,Sri Lanka,All Networks,All number types,0.39316
+LR,Liberia,All Networks,All number types,0.22548
+LS,Lesotho,All Networks,All number types,0.3673
+LT,Lithuania,All Networks,All number types,0.04358
+LU,Luxembourg,All Networks,All number types,0.08412
+LV,Latvia,All Networks,All number types,0.06848
+LY,Libya,All Networks,All number types,0.32141
+MA,Morocco,All Networks,All number types,0.21043
+MC,Monaco,All Networks,All number types,0.1246
+MD,Moldova,All Networks,All number types,0.0752
+ME,Montenegro,All Networks,All number types,0.11095
+MF,Saint Martin,All Networks,All number types,0.13659
+MG,Madagascar,All Networks,All number types,0.49604
+MH,Marshall Islands,All Networks,All number types,0.14304
+MK,Macedonia,All Networks,All number types,0.0274
+ML,Mali,All Networks,All number types,0.27733
+MM,Myanmar,All Networks,All number types,0.33769
+MN,Mongolia,All Networks,All number types,0.27226
+MO,Macau,All Networks,All number types,0.05959
+MP,Northern Mariana Islands,All Networks,All number types,0.02
+MQ,Martinique,All Networks,All number types,0.11541
+MR,Mauritania,All Networks,All number types,0.209
+MS,Montserrat,All Networks,All number types,0.0586
+MT,Malta,All Networks,All number types,0.0698
+MU,Mauritius,All Networks,All number types,0.15744
+MV,Maldives,All Networks,All number types,0.32404
+MW,Malawi,All Networks,All number types,0.31969
+MX,Mexico,All Networks,All number types,0.1
+MY,Malaysia,All Networks,All number types,0.25286
+MZ,Mozambique,All Networks,All number types,0.298
+NA,Namibia,All Networks,All number types,0.08284
+NC,New Caledonia,All Networks,All number types,0.15256
+NE,Niger,All Networks,All number types,0.29455
+NF,Norfolk Island,All Networks,All number types,0.06707
+NG,Nigeria,All Networks,All number types,0.22809
+NI,Nicaragua,All Networks,All number types,0.11142
+NL,Netherlands,All Networks,All number types,0.1189
+NO,Norway,All Networks,All number types,0.08675
+NP,Nepal,All Networks,All number types,0.2327
+NR,Nauru,All Networks,All number types,0.18182
+NU,Niue,All Networks,All number types,0.1867
+NZ,New Zealand,All Networks,All number types,0.09416
+OM,Oman,All Networks,All number types,0.13783
+PA,Panama,All Networks,All number types,0.14111
+PE,Peru,All Networks,All number types,0.14578
+PF,French Polynesia,All Networks,All number types,0.1286
+PG,Papua New Guinea,All Networks,All number types,0.29702
+PH,Philippines,All Networks,All number types,0.20357
+PK,Pakistan,All Networks,All number types,0.45243
+PL,Poland,All Networks,All number types,0.03222
+PM,Saint Pierre and Miquelon,All Networks,All number types,0.16342
+PN,Pitcairn,All Networks,All number types,0.13659
+PR,Puerto Rico,All Networks,All number types,0.01356
+PS,Palestine,All Networks,All number types,0.32031
+PT,Portugal,All Networks,All number types,0.03031
+PW,Palau,All Networks,All number types,0.06631
+PY,Paraguay,All Networks,All number types,0.08378
+QA,Qatar,All Networks,All number types,0.21502
+RE,Reunion,All Networks,All number types,0.17186
+RO,Romania,All Networks,All number types,0.07804
+RS,Serbia,All Networks,All number types,0.34611
+RU,Russia,All Networks,All number types,0.40178
+RW,Rwanda,All Networks,All number types,0.1801
+SA,Saudi Arabia,All Networks,All number types,0.19501
+SB,Solomon Islands,All Networks,All number types,0.0368
+SC,Seychelles,All Networks,All number types,0.04272
+SE,Sweden,All Networks,All number types,0.07256
+SG,Singapore,All Networks,All number types,0.03918
+SH,Saint Helena,All Networks,All number types,0.29563
+SI,Slovenia,All Networks,All number types,0.14522
+SJ,Svalbard and Jan Mayen,All Networks,All number types,0.08663
+SK,Slovakia,All Networks,All number types,0.08212
+SL,Sierra Leone,All Networks,All number types,0.30929
+SM,San Marino,All Networks,All number types,0.1032
+SN,Senegal,All Networks,All number types,0.37522
+SO,Somalia,All Networks,All number types,0.25178
+SR,Suriname,All Networks,All number types,0.19054
+SS,South Sudan,All Networks,All number types,0.2311
+ST,Sao Tome and Principe,All Networks,All number types,0.10269
+SV,El Salvador,All Networks,All number types,0.12747
+SX,Sint Maarten,All Networks,All number types,0.09231
+SZ,Swaziland,All Networks,All number types,0.08031
+TC,Turks and Caicos Islands,All Networks,All number types,0.1719
+TD,Chad,All Networks,All number types,0.2827
+TF,French Southern Territories,All Networks,All number types,0.13659
+TG,Togo,All Networks,All number types,0.36244
+TH,Thailand,All Networks,All number types,0.01272
+TJ,Tajikistan,All Networks,All number types,0.44377
+TK,Tokelau,All Networks,All number types,0.12355
+TL,Timor-Leste,All Networks,All number types,0.1978
+TM,Turkmenistan,All Networks,All number types,0.31341
+TN,Tunisia,All Networks,All number types,0.40204
+TO,Tonga,All Networks,All number types,0.12774
+TR,Turkey,All Networks,All number types,0.03
+TT,Trinidad and Tobago,All Networks,All number types,0.2341
+TV,Tuvalu,All Networks,All number types,0.05556
+TW,Taiwan,All Networks,All number types,0.08
+TZ,Tanzania,All Networks,All number types,0.39901
+UA,Ukraine,All Networks,All number types,0.16154
+UG,Uganda,All Networks,All number types,0.20449
+UM,United States Minor Outlying Islands,All Networks,All number types,0.13659
+US,United States,All Networks,Long code,0.007
+US,United States,All Networks,Long code carrier fee,0.00302
+US,United States,All Networks,Short code,0.007
+US,United States,All Networks,Short code carrier fee,0.00289
+US,United States,All Networks,Toll free,0.007
+US,United States,All Networks,Toll free carrier fee,0.003
+US,United States,All Networks,10DLC,0.007
+US,United States,All Networks,10DLC carrier fee,0.00302
+UY,Uruguay,All Networks,All number types,0.07317
+UZ,Uzbekistan,All Networks,All number types,0.44189
+VA,Vatican,All Networks,All number types,0.02
+VC,Saint Vincent and the Grenadines,All Networks,All number types,0.13192
+VE,Venezuela,All Networks,All number types,0.11724
+VG,British Virgin Islands,All Networks,All number types,0.18022
+VI,U.S. Virgin Islands,All Networks,All number types,0.02064
+VN,Vietnam,All Networks,All number types,0.13989
+VU,Vanuatu,All Networks,All number types,0.12511
+WF,Wallis and Futuna,All Networks,All number types,0.20695
+WS,Samoa,All Networks,All number types,0.15394
+XK,Kosovo,All Networks,All number types,0.2168
+YE,Yemen,All Networks,All number types,0.23368
+YT,Mayotte,All Networks,All number types,0.20409
+ZA,South Africa,All Networks,All number types,0.1
+ZM,Zambia,All Networks,All number types,0.36961
+ZW,Zimbabwe,All Networks,All number types,0.25091
