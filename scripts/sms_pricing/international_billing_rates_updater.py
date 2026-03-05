@@ -3,12 +3,13 @@ import math
 import re
 import unicodedata
 from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_ALLOW_LIST_PATH = REPO_ROOT / "scripts/sms_pricing/country_list.txt"
 DEFAULT_PRICES_PATH = REPO_ROOT / "scripts/sms_pricing/aws_prices_sms.csv"
 DEFAULT_PREFIX_FEATURES_PATH = REPO_ROOT / "scripts/sms_pricing/country_prefixes.csv"
@@ -67,7 +68,7 @@ def load_allowed_countries(allow_list_path: Path) -> list[str]:
     return countries
 
 
-def _get_csv_column_name(fieldnames: list[str], supported_names: tuple[str, ...], label: str) -> str:
+def _get_csv_column_name(fieldnames: Sequence[str], supported_names: tuple[str, ...], label: str) -> str:
     normalized_to_original = {_normalize_name(name): name for name in fieldnames}
     for supported_name in supported_names:
         normalized_supported = _normalize_name(supported_name)
