@@ -19,7 +19,6 @@ DEFAULT_OUTPUT_PATH = REPO_ROOT / "notifications_utils/international_billing_rat
 
 DEFAULT_BASE_RATE = 0.01507  # NOTE: This is in USD because the rates from AWS are in USD. Rate initially calculated here: https://docs.google.com/document/d/1f4QdbkKuOEF0unomxdGGDTsgzpWTaqDfIJBmSwimsIc/edit?usp=sharing
 DEFAULT_DLR = "YES"
-DEFAULT_SHARED_PREFIX_STRATEGY = "max"
 
 
 @dataclass(frozen=True)
@@ -178,7 +177,6 @@ def build_international_rates(
     dlr_snapshot: dict[str, str | None],
     base_rate: float,
     default_dlr: str | None,
-    shared_prefix_strategy: str,
 ) -> dict[str, dict]:
     entries_by_prefix: dict[str, dict] = {}
     names_by_prefix: dict[str, set[str]] = defaultdict(set)
@@ -198,13 +196,7 @@ def build_international_rates(
             existing_entry = entries_by_prefix.get(prefix)
 
             if existing_entry and existing_entry["billable_units"] != billable_units:
-                if shared_prefix_strategy == "max":
-                    billable_units = max(existing_entry["billable_units"], billable_units)
-                else:
-                    raise ValueError(
-                        f"Conflicting billable_units for prefix {prefix}: "
-                        f"{existing_entry['billable_units']} vs {billable_units}"
-                    )
+                billable_units = max(existing_entry["billable_units"], billable_units)
 
             entries_by_prefix[prefix] = {
                 "attributes": {
@@ -232,7 +224,6 @@ def update_international_billing_rates(
     output_path: Path,
     base_rate: float,
     default_dlr: str | None,
-    shared_prefix_strategy: str = "max",
 ) -> dict[str, dict]:
     allowed_countries = load_allowed_countries(allow_list_path)
     max_price_by_iso = load_price_by_iso(price_csv_path)
@@ -246,7 +237,6 @@ def update_international_billing_rates(
         dlr_snapshot=dlr_snapshot,
         base_rate=base_rate,
         default_dlr=default_dlr,
-        shared_prefix_strategy=shared_prefix_strategy,
     )
     write_yaml_file(updated_rates, output_path)
     return updated_rates
@@ -272,7 +262,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         output_path=DEFAULT_OUTPUT_PATH,
         base_rate=DEFAULT_BASE_RATE,
         default_dlr=DEFAULT_DLR,
-        shared_prefix_strategy=DEFAULT_SHARED_PREFIX_STRATEGY,
     )
     return 0
 
