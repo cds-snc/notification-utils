@@ -1,3 +1,4 @@
+import argparse
 import csv
 import math
 import re
@@ -11,12 +12,12 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_ALLOW_LIST_PATH = REPO_ROOT / "scripts/sms_pricing/country_list.txt"
-DEFAULT_PRICES_PATH = REPO_ROOT / "scripts/sms_pricing/aws_prices_sms.csv"
+DEFAULT_PRICES_PATH = REPO_ROOT / "scripts/sms_pricing/aws_prices_sms_mar_2026.csv"
 DEFAULT_PREFIX_FEATURES_PATH = REPO_ROOT / "scripts/sms_pricing/country_prefixes.csv"
 DEFAULT_DLR_SNAPSHOT_PATH = REPO_ROOT / "scripts/sms_pricing/dlr_snapshot.yml"
 DEFAULT_OUTPUT_PATH = REPO_ROOT / "notifications_utils/international_billing_rates.yml"
 
-DEFAULT_BASE_RATE = 0.02065
+DEFAULT_BASE_RATE = 0.02065  # Rate initially calculated here: https://docs.google.com/document/d/1f4QdbkKuOEF0unomxdGGDTsgzpWTaqDfIJBmSwimsIc/edit?usp=sharing
 DEFAULT_DLR = "YES"
 DEFAULT_SHARED_PREFIX_STRATEGY = "max"
 
@@ -231,7 +232,7 @@ def update_international_billing_rates(
     output_path: Path,
     base_rate: float,
     default_dlr: str | None,
-    shared_prefix_strategy: str = "fail",
+    shared_prefix_strategy: str = "max",
 ) -> dict[str, dict]:
     allowed_countries = load_allowed_countries(allow_list_path)
     max_price_by_iso = load_price_by_iso(price_csv_path)
@@ -251,10 +252,21 @@ def update_international_billing_rates(
     return updated_rates
 
 
-def main() -> int:
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Update international billing rates from AWS CSVs")
+    parser.add_argument(
+        "--price-file",
+        "-p",
+        type=Path,
+        default=DEFAULT_PRICES_PATH,
+        help="Path to the AWS prices CSV file",
+    )
+
+    args = parser.parse_args(argv)
+
     update_international_billing_rates(
         allow_list_path=DEFAULT_ALLOW_LIST_PATH,
-        price_csv_path=DEFAULT_PRICES_PATH,
+        price_csv_path=args.price_file,
         feature_csv_path=DEFAULT_PREFIX_FEATURES_PATH,
         dlr_snapshot_path=DEFAULT_DLR_SNAPSHOT_PATH,
         output_path=DEFAULT_OUTPUT_PATH,
