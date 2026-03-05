@@ -1,5 +1,5 @@
 import pytest
-from notifications_utils.international_billing_rates_updater import (
+from scripts.sms_pricing.international_billing_rates_updater import (
     DEFAULT_ALLOW_LIST_PATH,
     DEFAULT_DLR_SNAPSHOT_PATH,
     DEFAULT_OUTPUT_PATH,

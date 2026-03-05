@@ -2,7 +2,7 @@
 
 This folder contains source files and tooling to regenerate:
 
-- `notifications_utils/international_billing_rates.yml`
+- `/international_billing_rates.yml`
 
 from:
 
@@ -27,10 +27,10 @@ from:
 From repo root:
 
 ```bash
-/home/vscode/.venv/workspace/bin/python notifications_utils/international_billing_rates_updater.py
+/home/vscode/.venv/workspace/bin/python scripts/sms_pricing/international_billing_rates_updater.py
 ```
 
-This command now uses sensible defaults for all input/output file paths.
+This command uses defaults for all input/output file paths.
 
 If defaults ever need to change, edit the constants at the top of:
 
