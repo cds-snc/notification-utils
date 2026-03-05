@@ -69,3 +69,8 @@ format:
 
 clean:
 	rm -rf cache venv
+
+.PHONY: update-rates
+update-rates: ## Regenerate `notifications_utils/international_billing_rates.yml`. `PRICE_FILE` must be provided.
+	@/bin/bash -c 'if [ -z """$(PRICE_FILE)""" ]; then echo "ERROR: PRICE_FILE is required. Example: make update-rates PRICE_FILE=scripts/sms_pricing/aws_prices_sms_mar_2026.csv"; exit 1; fi'
+	python3 scripts/sms_pricing/international_billing_rates_updater.py --price-file $(PRICE_FILE)

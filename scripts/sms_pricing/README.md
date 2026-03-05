@@ -24,13 +24,13 @@ from:
 
 ## Run updater
 
-From repo root:
+From repo root, run the Makefile target and provide the price CSV to track the source file:
 
 ```bash
-/home/vscode/.venv/workspace/bin/python scripts/sms_pricing/international_billing_rates_updater.py
+make update-rates PRICE_FILE=scripts/sms_pricing/aws_prices_sms_mar_2026.csv
 ```
 
-This command uses defaults for all input/output file paths.
+The `PRICE_FILE` variable is required so you can keep the AWS export you used for the run. The target will invoke the updater script with the provided CSV.
 
 If defaults ever need to change, edit the constants at the top of:
 
