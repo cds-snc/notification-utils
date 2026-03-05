@@ -46,7 +46,7 @@ When AWS rates change, use this quick process:
 3. Confirm the CSV header still matches exactly:
   - `ISO Country,Country Name,CarrierName,Number Type,Price ($USD)`
   - If it does not, massage/normalize the CSV to this format first.
-4. Run the updater script
+4. Run the updater script using `make update-rates`
 
 ## Shared-prefix conflicts
 
@@ -55,19 +55,10 @@ the updater uses the maximum multiplier.
 
 ## Refreshing DLR snapshot
 
-If you need to rebuild `dlr_snapshot.yml`, run this one-off Python snippet from repo root:
+If you need to rebuild `dlr_snapshot.yml`, run the Makefile target from the repo root:
 
 ```bash
-python3 - <<'PY'
-from scripts.sms_pricing.international_billing_rates_updater import (
-    DEFAULT_DLR_SNAPSHOT_PATH,
-    DEFAULT_OUTPUT_PATH,
-    build_dlr_snapshot,
-    write_yaml_file,
-)
-
-write_yaml_file(build_dlr_snapshot(DEFAULT_OUTPUT_PATH), DEFAULT_DLR_SNAPSHOT_PATH)
-PY
+make refresh-dlr-snapshot
 ```
 
 ## Validation checklist

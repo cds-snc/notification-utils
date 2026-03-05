@@ -74,3 +74,7 @@ clean:
 update-rates: ## Regenerate `notifications_utils/international_billing_rates.yml`. `PRICE_FILE` must be provided.
 	@/bin/bash -c 'if [ -z """$(PRICE_FILE)""" ]; then echo "ERROR: PRICE_FILE is required. Example: make update-rates PRICE_FILE=scripts/sms_pricing/aws_prices_sms_mar_2026.csv"; exit 1; fi'
 	python3 scripts/sms_pricing/international_billing_rates_updater.py --price-file $(PRICE_FILE)
+
+.PHONY: refresh-dlr-snapshot
+refresh-dlr-snapshot: ## Rebuild `scripts/sms_pricing/dlr_snapshot.yml` from current output YAML
+	python3 -c 'from scripts.sms_pricing.international_billing_rates_updater import DEFAULT_DLR_SNAPSHOT_PATH, DEFAULT_OUTPUT_PATH, build_dlr_snapshot, write_yaml_file; write_yaml_file(build_dlr_snapshot(DEFAULT_OUTPUT_PATH), DEFAULT_DLR_SNAPSHOT_PATH)'
