@@ -17,7 +17,7 @@ DEFAULT_PREFIX_FEATURES_PATH = REPO_ROOT / "scripts/sms_pricing/country_prefixes
 DEFAULT_DLR_SNAPSHOT_PATH = REPO_ROOT / "scripts/sms_pricing/dlr_snapshot.yml"
 DEFAULT_OUTPUT_PATH = REPO_ROOT / "notifications_utils/international_billing_rates.yml"
 
-DEFAULT_BASE_RATE = 0.02065  # Rate initially calculated here: https://docs.google.com/document/d/1f4QdbkKuOEF0unomxdGGDTsgzpWTaqDfIJBmSwimsIc/edit?usp=sharing
+DEFAULT_BASE_RATE = 0.01507  # NOTE: This is in USD because the rates from AWS are in USD. Rate initially calculated here: https://docs.google.com/document/d/1f4QdbkKuOEF0unomxdGGDTsgzpWTaqDfIJBmSwimsIc/edit?usp=sharing
 DEFAULT_DLR = "YES"
 DEFAULT_SHARED_PREFIX_STRATEGY = "max"
 
