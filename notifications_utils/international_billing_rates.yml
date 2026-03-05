@@ -8,115 +8,115 @@
 '27':
   attributes:
     dlr: 'YES'
-  billable_units: 5
+  billable_units: 7
   names:
   - South Africa
 '30':
   attributes:
     dlr: 'YES'
-  billable_units: 5
+  billable_units: 6
   names:
   - Greece
 '31':
   attributes:
     dlr: 'YES'
-  billable_units: 6
+  billable_units: 8
   names:
   - Netherlands
 '32':
   attributes:
     dlr: 'YES'
-  billable_units: 5
+  billable_units: 7
   names:
   - Belgium
 '33':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 5
   names:
   - France
 '34':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 5
   names:
   - Spain
 '36':
   attributes:
     dlr: 'YES'
-  billable_units: 6
+  billable_units: 8
   names:
   - Hungary
 '39':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 6
   names:
   - Italy
 '40':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 6
   names:
   - Romania
 '41':
   attributes:
     dlr: 'YES'
-  billable_units: 3
+  billable_units: 4
   names:
   - Switzerland
 '43':
   attributes:
     dlr: 'YES'
-  billable_units: 6
+  billable_units: 7
   names:
   - Austria
 '45':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 5
   names:
   - Denmark
 '46':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 5
   names:
   - Sweden
 '47':
   attributes:
     dlr: 'YES'
-  billable_units: 5
+  billable_units: 6
   names:
   - Norway
 '48':
   attributes:
     dlr: 'YES'
-  billable_units: 2
+  billable_units: 3
   names:
   - Poland
 '49':
   attributes:
     dlr: 'YES'
-  billable_units: 6
+  billable_units: 8
   names:
   - Germany
 '51':
   attributes:
     dlr: 'YES'
-  billable_units: 8
+  billable_units: 10
   names:
   - Peru
 '52':
   attributes:
     dlr: Carrier DLR
-  billable_units: 5
+  billable_units: 7
   names:
   - Mexico
 '54':
   attributes:
     dlr: 'NO'
-  billable_units: 5
+  billable_units: 7
   names:
   - Argentina
 '55':
@@ -128,37 +128,37 @@
 '56':
   attributes:
     dlr: Carrier DLR
-  billable_units: 3
+  billable_units: 4
   names:
   - Chile
 '57':
   attributes:
     dlr: 'NO'
-  billable_units: 3
+  billable_units: 4
   names:
   - Colombia
 '58':
   attributes:
     dlr: 'YES'
-  billable_units: 6
+  billable_units: 8
   names:
   - Venezuela
 '60':
   attributes:
     dlr: 'YES'
-  billable_units: 13
+  billable_units: 17
   names:
   - Malaysia
 '64':
   attributes:
     dlr: 'YES'
-  billable_units: 5
+  billable_units: 7
   names:
   - New Zealand
 '81':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 5
   names:
   - Japan
 '82':
@@ -170,205 +170,205 @@
 '92':
   attributes:
     dlr: 'YES'
-  billable_units: 22
+  billable_units: 31
   names:
   - Pakistan
 '93':
   attributes:
     dlr: 'YES'
-  billable_units: 19
+  billable_units: 25
   names:
   - Afghanistan
 '95':
   attributes:
     dlr: 'YES'
-  billable_units: 17
+  billable_units: 23
   names:
   - Myanmar
 '211':
   attributes:
     dlr: null
-  billable_units: 12
+  billable_units: 16
   names:
   - South Sudan
 '212':
   attributes:
     dlr: 'YES'
-  billable_units: 11
+  billable_units: 14
   names:
   - Morocco
 '213':
   attributes:
     dlr: 'YES'
-  billable_units: 13
+  billable_units: 17
   names:
   - Algeria
 '216':
   attributes:
     dlr: 'YES'
-  billable_units: 20
+  billable_units: 27
   names:
   - Tunisia
 '218':
   attributes:
     dlr: 'YES'
-  billable_units: 16
+  billable_units: 22
   names:
   - Libya
 '220':
   attributes:
     dlr: 'YES'
-  billable_units: 5
+  billable_units: 6
   names:
   - Gambia
 '221':
   attributes:
     dlr: 'YES'
-  billable_units: 19
+  billable_units: 25
   names:
   - Senegal
 '222':
   attributes:
     dlr: null
-  billable_units: 11
+  billable_units: 14
   names:
   - Mauritania
 '223':
   attributes:
     dlr: 'YES'
-  billable_units: 14
+  billable_units: 19
   names:
   - Mali
 '224':
   attributes:
     dlr: 'YES'
-  billable_units: 7
+  billable_units: 10
   names:
   - Guinea
 '225':
   attributes:
     dlr: 'YES'
-  billable_units: 17
+  billable_units: 24
   names:
   - Ivory Coast
 '226':
   attributes:
     dlr: 'YES'
-  billable_units: 10
+  billable_units: 14
   names:
   - Burkina Faso
 '227':
   attributes:
     dlr: 'YES'
-  billable_units: 15
+  billable_units: 20
   names:
   - Niger
 '228':
   attributes:
     dlr: null
-  billable_units: 18
+  billable_units: 25
   names:
   - Togo
 '229':
   attributes:
     dlr: null
-  billable_units: 11
+  billable_units: 15
   names:
   - Benin
 '230':
   attributes:
     dlr: 'YES'
-  billable_units: 8
+  billable_units: 11
   names:
   - Mauritius
 '231':
   attributes:
     dlr: null
-  billable_units: 11
+  billable_units: 15
   names:
   - Liberia
 '232':
   attributes:
     dlr: 'YES'
-  billable_units: 15
+  billable_units: 21
   names:
   - Sierra Leone
 '233':
   attributes:
     dlr: 'YES'
-  billable_units: 17
+  billable_units: 24
   names:
   - Ghana
 '234':
   attributes:
     dlr: 'YES'
-  billable_units: 12
+  billable_units: 16
   names:
   - Nigeria
 '235':
   attributes:
     dlr: 'YES'
-  billable_units: 14
+  billable_units: 19
   names:
   - Chad
 '236':
   attributes:
     dlr: null
-  billable_units: 20
+  billable_units: 27
   names:
   - Central African Republic
 '237':
   attributes:
     dlr: 'YES'
-  billable_units: 10
+  billable_units: 13
   names:
   - Cameroon
 '238':
   attributes:
     dlr: null
-  billable_units: 7
+  billable_units: 10
   names:
   - Cape Verde
 '239':
   attributes:
     dlr: null
-  billable_units: 5
+  billable_units: 7
   names:
   - São Tomé and Príncipe
 '240':
   attributes:
     dlr: null
-  billable_units: 7
+  billable_units: 9
   names:
   - Equatorial Guinea
 '241':
   attributes:
     dlr: 'YES'
-  billable_units: 11
+  billable_units: 15
   names:
   - Gabon
 '242':
   attributes:
     dlr: 'YES'
-  billable_units: 5
+  billable_units: 7
   names:
   - Republic of Congo
 '243':
   attributes:
     dlr: 'YES'
-  billable_units: 11
+  billable_units: 15
   names:
   - Democratic Republic of Congo
 '244':
   attributes:
     dlr: 'YES'
-  billable_units: 5
+  billable_units: 6
   names:
   - Angola
 '245':
   attributes:
     dlr: null
-  billable_units: 10
+  billable_units: 14
   names:
   - Guinea-Bissau
 '248':
@@ -380,127 +380,127 @@
 '250':
   attributes:
     dlr: 'YES'
-  billable_units: 9
+  billable_units: 12
   names:
   - Rwanda
 '251':
   attributes:
     dlr: 'YES'
-  billable_units: 17
+  billable_units: 23
   names:
   - Ethiopia
 '252':
   attributes:
     dlr: null
-  billable_units: 13
+  billable_units: 17
   names:
   - Somalia
 '253':
   attributes:
     dlr: null
-  billable_units: 6
+  billable_units: 8
   names:
   - Djibouti
 '255':
   attributes:
     dlr: 'YES'
-  billable_units: 20
+  billable_units: 27
   names:
   - Tanzania
 '256':
   attributes:
     dlr: 'YES'
-  billable_units: 10
+  billable_units: 14
   names:
   - Uganda
 '257':
   attributes:
     dlr: null
-  billable_units: 21
+  billable_units: 29
   names:
   - Burundi
 '258':
   attributes:
     dlr: 'YES'
-  billable_units: 15
+  billable_units: 20
   names:
   - Mozambique
 '261':
   attributes:
     dlr: 'YES'
-  billable_units: 25
+  billable_units: 33
   names:
   - Madagascar
 '263':
   attributes:
     dlr: Carrier DLR
-  billable_units: 13
+  billable_units: 17
   names:
   - Zimbabwe
 '264':
   attributes:
     dlr: 'YES'
-  billable_units: 5
+  billable_units: 6
   names:
   - Namibia
 '265':
   attributes:
     dlr: 'YES'
-  billable_units: 16
+  billable_units: 22
   names:
   - Malawi
 '266':
   attributes:
     dlr: null
-  billable_units: 18
+  billable_units: 25
   names:
   - Lesotho
 '267':
   attributes:
     dlr: 'YES'
-  billable_units: 2
+  billable_units: 3
   names:
   - Botswana
 '268':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 6
   names:
   - Swaziland
 '269':
   attributes:
     dlr: null
-  billable_units: 20
+  billable_units: 27
   names:
   - Comoros
 '291':
   attributes:
     dlr: 'YES'
-  billable_units: 6
+  billable_units: 8
   names:
   - Eritrea
 '351':
   attributes:
     dlr: 'YES'
-  billable_units: 2
+  billable_units: 3
   names:
   - Portugal
 '352':
   attributes:
     dlr: 'YES'
-  billable_units: 5
+  billable_units: 6
   names:
   - Luxembourg
 '354':
   attributes:
     dlr: 'YES'
-  billable_units: 5
+  billable_units: 7
   names:
   - Iceland
 '356':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 5
   names:
   - Malta
 '357':
@@ -512,13 +512,13 @@
 '358':
   attributes:
     dlr: 'YES'
-  billable_units: 5
+  billable_units: 7
   names:
   - Finland
 '359':
   attributes:
     dlr: 'YES'
-  billable_units: 7
+  billable_units: 10
   names:
   - Bulgaria
 '370':
@@ -530,145 +530,145 @@
 '371':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 5
   names:
   - Latvia
 '372':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 6
   names:
   - Estonia
 '373':
   attributes:
     dlr: Carrier DLR
-  billable_units: 4
+  billable_units: 5
   names:
   - Moldova
 '374':
   attributes:
     dlr: 'YES'
-  billable_units: 9
+  billable_units: 13
   names:
   - Armenia
 '377':
   attributes:
     dlr: 'YES'
-  billable_units: 7
+  billable_units: 9
   names:
   - Monaco
 '380':
   attributes:
     dlr: 'YES'
-  billable_units: 8
+  billable_units: 11
   names:
   - Ukraine
 '385':
   attributes:
     dlr: 'YES'
-  billable_units: 5
+  billable_units: 6
   names:
   - Croatia
 '386':
   attributes:
     dlr: 'YES'
-  billable_units: 8
+  billable_units: 10
   names:
   - Slovenia
 '420':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 5
   names:
   - Czech Republic
 '421':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 6
   names:
   - Slovakia
 '502':
   attributes:
     dlr: 'YES'
-  billable_units: 11
+  billable_units: 15
   names:
   - Guatemala
 '503':
   attributes:
     dlr: 'YES'
-  billable_units: 7
+  billable_units: 9
   names:
   - El Salvador
 '504':
   attributes:
     dlr: null
-  billable_units: 12
+  billable_units: 16
   names:
   - Honduras
 '505':
   attributes:
     dlr: null
-  billable_units: 6
+  billable_units: 8
   names:
   - Nicaragua
 '506':
   attributes:
     dlr: 'YES'
-  billable_units: 3
+  billable_units: 4
   names:
   - Costa Rica
 '507':
   attributes:
     dlr: 'YES'
-  billable_units: 7
+  billable_units: 10
   names:
   - Panama
 '509':
   attributes:
     dlr: null
-  billable_units: 13
+  billable_units: 18
   names:
   - Haiti
 '591':
   attributes:
     dlr: 'YES'
-  billable_units: 9
+  billable_units: 12
   names:
   - Bolivia
 '592':
   attributes:
     dlr: 'YES'
-  billable_units: 10
+  billable_units: 13
   names:
   - Guyana
 '593':
   attributes:
     dlr: ''
-  billable_units: 16
+  billable_units: 21
   names:
   - Ecuador
 '595':
   attributes:
     dlr: null
-  billable_units: 5
+  billable_units: 6
   names:
   - Paraguay
 '597':
   attributes:
     dlr: null
-  billable_units: 10
+  billable_units: 13
   names:
   - Suriname
 '598':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 5
   names:
   - Uruguay
 '670':
   attributes:
     dlr: null
-  billable_units: 10
+  billable_units: 14
   names:
   - Timor-Leste
 '673':
@@ -680,139 +680,139 @@
 '675':
   attributes:
     dlr: 'YES'
-  billable_units: 15
+  billable_units: 20
   names:
   - Papua New Guinea
 '678':
   attributes:
     dlr: null
-  billable_units: 7
+  billable_units: 9
   names:
   - Vanuatu
 '679':
   attributes:
     dlr: 'YES'
-  billable_units: 11
+  billable_units: 14
   names:
   - Fiji
 '852':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 6
   names:
   - Hong Kong
 '853':
   attributes:
     dlr: 'YES'
-  billable_units: 3
+  billable_units: 4
   names:
   - Macao
 '855':
   attributes:
     dlr: 'YES'
-  billable_units: 18
+  billable_units: 25
   names:
   - Cambodia
 '856':
   attributes:
     dlr: 'YES'
-  billable_units: 11
+  billable_units: 15
   names:
   - Laos
 '880':
   attributes:
     dlr: 'YES'
-  billable_units: 16
+  billable_units: 21
   names:
   - Bangladesh
 '886':
   attributes:
     dlr: 'NO'
-  billable_units: 4
+  billable_units: 6
   names:
   - Taiwan
 '960':
   attributes:
     dlr: null
-  billable_units: 16
+  billable_units: 22
   names:
   - Maldives
 '961':
   attributes:
     dlr: 'YES'
-  billable_units: 17
+  billable_units: 24
   names:
   - Lebanon
 '964':
   attributes:
     dlr: 'YES'
-  billable_units: 15
+  billable_units: 21
   names:
   - Iraq
 '967':
   attributes:
     dlr: null
-  billable_units: 12
+  billable_units: 16
   names:
   - Yemen
 '968':
   attributes:
     dlr: 'YES'
-  billable_units: 7
+  billable_units: 10
   names:
   - Oman
 '970':
   attributes:
     dlr: null
-  billable_units: 16
+  billable_units: 22
   names:
   - Palestine
 '972':
   attributes:
     dlr: 'YES'
-  billable_units: 11
+  billable_units: 15
   names:
   - Israel
 '973':
   attributes:
     dlr: 'YES'
-  billable_units: 2
+  billable_units: 3
   names:
   - Bahrain
 '976':
   attributes:
     dlr: 'YES'
-  billable_units: 14
+  billable_units: 19
   names:
   - Mongolia
 '977':
   attributes:
     dlr: 'YES'
-  billable_units: 12
+  billable_units: 16
   names:
   - Nepal
 '994':
   attributes:
     dlr: 'YES'
-  billable_units: 18
+  billable_units: 25
   names:
   - Azerbaijan
 '995':
   attributes:
     dlr: 'YES'
-  billable_units: 9
+  billable_units: 12
   names:
   - Georgia
 '1246':
   attributes:
     dlr: Carrier DLR
-  billable_units: 11
+  billable_units: 15
   names:
   - Barbados
 '1649':
   attributes:
     dlr: 'YES'
-  billable_units: 9
+  billable_units: 12
   names:
   - Turks and Caicos Islands
 '1787':
@@ -824,31 +824,31 @@
 '1809':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 5
   names:
   - Dominican Republic
 '1829':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 5
   names:
   - Dominican Republic
 '1849':
   attributes:
     dlr: 'YES'
-  billable_units: 4
+  billable_units: 5
   names:
   - Dominican Republic
 '1868':
   attributes:
     dlr: null
-  billable_units: 12
+  billable_units: 16
   names:
   - Trinidad and Tobago
 '1876':
   attributes:
     dlr: 'YES'
-  billable_units: 9
+  billable_units: 12
   names:
   - Jamaica
 '1939':
