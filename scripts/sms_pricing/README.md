@@ -46,8 +46,7 @@ When AWS rates change, use this quick process:
 3. Confirm the CSV header still matches exactly:
   - `ISO Country,Country Name,CarrierName,Number Type,Price ($USD)`
   - If it does not, massage/normalize the CSV to this format first.
-4. Run the updater:
-  - `/home/vscode/.venv/workspace/bin/python scripts/sms_pricing/international_billing_rates_updater.py`
+4. Run the updater script
 
 ## Shared-prefix conflicts
 
