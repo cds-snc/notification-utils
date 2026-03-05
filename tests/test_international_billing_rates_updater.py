@@ -19,7 +19,7 @@ def test_calculate_billable_units_can_exceed_three():
 
 
 def test_load_allowed_countries_deduplicates_entries(tmp_path):
-    allow_list = tmp_path / "country_list.txt"
+    allow_list = tmp_path / "allowed_country_list.txt"
     allow_list.write_text("Canada\nUnited States\nCanada\n")
 
     assert load_allowed_countries(allow_list) == ["Canada", "United States"]
