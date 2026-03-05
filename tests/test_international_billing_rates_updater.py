@@ -86,7 +86,7 @@ def test_build_international_rates_uses_max_on_shared_prefix_when_strategy_max(t
 
 def test_default_paths_point_to_expected_files():
     assert DEFAULT_ALLOW_LIST_PATH.name == "country_list.txt"
-    assert DEFAULT_PRICES_PATH.name == "aws_prices_sms.csv"
+    assert DEFAULT_PRICES_PATH.name == "aws_prices_sms_mar_2026.csv"
     assert DEFAULT_PREFIX_FEATURES_PATH.name == "country_prefixes.csv"
     assert DEFAULT_DLR_SNAPSHOT_PATH.name == "dlr_snapshot.yml"
     assert DEFAULT_OUTPUT_PATH.name == "international_billing_rates.yml"
