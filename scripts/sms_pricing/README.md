@@ -2,7 +2,7 @@
 
 This folder contains source files and tooling to regenerate:
 
-- `/international_billing_rates.yml`
+- `notifications_utils/international_billing_rates.yml`
 
 from:
 
@@ -34,7 +34,20 @@ This command uses defaults for all input/output file paths.
 
 If defaults ever need to change, edit the constants at the top of:
 
-- `notifications_utils/international_billing_rates_updater.py`
+- `scripts/sms_pricing/international_billing_rates_updater.py`
+
+## Updating rates later
+
+When AWS rates change, use this quick process:
+
+1. Download the latest rates file from AWS:
+  - `https://aws.amazon.com/end-user-messaging/pricing/`
+2. Replace `scripts/sms_pricing/aws_prices_sms.csv` with the new file.
+3. Confirm the CSV header still matches exactly:
+  - `ISO Country,Country Name,CarrierName,Number Type,Price ($USD)`
+  - If it does not, massage/normalize the CSV to this format first.
+4. Run the updater:
+  - `/home/vscode/.venv/workspace/bin/python scripts/sms_pricing/international_billing_rates_updater.py`
 
 ## Shared-prefix conflicts
 
@@ -47,7 +60,7 @@ If you need to rebuild `dlr_snapshot.yml`, run this one-off Python snippet from 
 
 ```bash
 python3 - <<'PY'
-from notifications_utils.international_billing_rates_updater import (
+from scripts.sms_pricing.international_billing_rates_updater import (
     DEFAULT_DLR_SNAPSHOT_PATH,
     DEFAULT_OUTPUT_PATH,
     build_dlr_snapshot,
@@ -67,4 +80,4 @@ PY
   - unexpected multiplier jumps
   - missing `dlr`
 - if input CSV columns change, update the column aliases in:
-  - `notifications_utils/international_billing_rates_updater.py`
+  - `scripts/sms_pricing/international_billing_rates_updater.py`
