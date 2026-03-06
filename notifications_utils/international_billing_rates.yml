@@ -15,7 +15,7 @@
   billable_units: 27
   names:
   - Kazakhstan
-  - Russian Federation
+  - Russia
 '20':
   attributes:
     dlr: 'YES'
@@ -211,7 +211,7 @@
   names:
   - Australia
   - Christmas Island
-  - Cocos (Keeling) Islands
+  - Cocos Islands
 '62':
   attributes:
     dlr: 'YES'
@@ -260,14 +260,14 @@
     can_send: false
   billable_units: 2
   names:
-  - Korea, Republic of
+  - South Korea
 '84':
   attributes:
     dlr: Carrier DLR
     can_send: false
   billable_units: 10
   names:
-  - Viet Nam
+  - Vietnam
 '86':
   attributes:
     dlr: Carrier DLR
@@ -394,7 +394,7 @@
     can_send: true
   billable_units: 24
   names:
-  - Cote d'Ivoire
+  - Ivory Coast
 '226':
   attributes:
     dlr: 'YES'
@@ -513,7 +513,7 @@
     can_send: false
   billable_units: 7
   names:
-  - Congo
+  - Republic of the Congo
 '243':
   attributes:
     dlr: 'YES'
@@ -597,7 +597,7 @@
     can_send: true
   billable_units: 27
   names:
-  - United Republic of Tanzania
+  - Tanzania
 '256':
   attributes:
     dlr: 'YES'
@@ -824,7 +824,7 @@
     can_send: true
   billable_units: 5
   names:
-  - Moldova, Republic of
+  - Moldova
 '374':
   attributes:
     dlr: 'YES'
@@ -866,7 +866,7 @@
     can_send: false
   billable_units: 2
   names:
-  - Holy See (Vatican City State)
+  - Vatican
 '380':
   attributes:
     dlr: 'YES'
@@ -922,7 +922,7 @@
     can_send: true
   billable_units: 2
   names:
-  - Macedonia, the Former Yugoslav Republic of
+  - Macedonia
 '420':
   attributes:
     dlr: 'YES'
@@ -950,7 +950,7 @@
     can_send: false
   billable_units: 10
   names:
-  - Falkland Islands (Malvinas)
+  - Falkland Islands
   - South Georgia and the South Sandwich Islands
 '501':
   attributes:
@@ -1023,7 +1023,7 @@
   names:
   - Guadeloupe
   - Saint Barthelemy
-  - Saint Martin (French part)
+  - Saint Martin
 '591':
   attributes:
     dlr: 'YES'
@@ -1086,7 +1086,7 @@
     can_send: false
   billable_units: 9
   names:
-  - Bonaire
+  - Bonaire, Sint Eustatius and Saba
   - Curacao
 '670':
   attributes:
@@ -1102,7 +1102,7 @@
   billable_units: 10
   names:
   - Antarctica
-  - Heard Island and McDonald Islands
+  - Heard Island and McDonald Islands
   - Norfolk Island
 '673':
   attributes:
@@ -1110,7 +1110,7 @@
     can_send: true
   billable_units: 1
   names:
-  - Brunei Darussalam
+  - Brunei
 '674':
   attributes:
     dlr: null
@@ -1229,7 +1229,7 @@
     can_send: false
   billable_units: 10
   names:
-  - Micronesia, Federated States of
+  - Micronesia
 '692':
   attributes:
     dlr: null
@@ -1250,7 +1250,7 @@
     can_send: true
   billable_units: 4
   names:
-  - Macao
+  - Macau
 '855':
   attributes:
     dlr: 'YES'
@@ -1264,7 +1264,7 @@
     can_send: false
   billable_units: 15
   names:
-  - Lao People's Democratic Republic
+  - Laos
 '870':
   attributes:
     dlr: 'YES'
@@ -1348,7 +1348,7 @@
     can_send: false
   billable_units: 22
   names:
-  - Palestine, State of
+  - Palestine
 '971':
   attributes:
     dlr: 'YES'
@@ -1481,7 +1481,7 @@
     can_send: false
   billable_units: 2
   names:
-  - US Virgin Islands
+  - U.S. Virgin Islands
 '1345':
   attributes:
     dlr: 'YES'
@@ -1544,7 +1544,7 @@
     can_send: false
   billable_units: 7
   names:
-  - Sint Maarten (Dutch part)
+  - Sint Maarten
 '1758':
   attributes:
     dlr: 'YES'
