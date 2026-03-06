@@ -239,10 +239,24 @@ def build_international_rates(
                 else:
                     resolved_units = max(existing_units, billable_units)
 
+            # If a prefix maps to multiple countries, merge attributes
+            # instead of letting the last country overwrite previous values.
+            existing_entry = entries_by_prefix.get(prefix)
+            existing_we_can_send = False
+            existing_dlr = None
+            if existing_entry:
+                existing_attrs = existing_entry.get("attributes", {})
+                existing_we_can_send = bool(existing_attrs.get("we_can_send"))
+                existing_dlr = existing_attrs.get("dlr")
+
+            current_we_can_send = iso_norm in allowed_set
+            merged_we_can_send = existing_we_can_send or current_we_can_send
+            merged_dlr = existing_dlr if existing_dlr is not None else dlr_snapshot.get(prefix, default_dlr)
+
             entries_by_prefix[prefix] = {
                 "attributes": {
-                    "dlr": dlr_snapshot.get(prefix, default_dlr),
-                    "we_can_send": iso_norm in allowed_set,
+                    "dlr": merged_dlr,
+                    "we_can_send": merged_we_can_send,
                 },
                 "billable_units": resolved_units,
                 "names": [],
