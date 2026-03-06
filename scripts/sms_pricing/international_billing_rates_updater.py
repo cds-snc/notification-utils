@@ -253,15 +253,15 @@ def build_international_rates(
 
             # Merge attributes for prefixes that map to multiple countries.
             existing_entry = entries_by_prefix.get(prefix)
-            existing_we_can_send = False
+            existing_can_send = False
             existing_dlr = None
             if existing_entry:
                 existing_attrs = existing_entry.get("attributes", {})
-                existing_we_can_send = bool(existing_attrs.get("we_can_send"))
+                existing_can_send = bool(existing_attrs.get("can_send"))
                 existing_dlr = existing_attrs.get("dlr")
 
-            current_we_can_send = iso_norm in allowed_set
-            merged_we_can_send = existing_we_can_send or current_we_can_send
+            current_can_send = iso_norm in allowed_set
+            merged_can_send = existing_can_send or current_can_send
             merged_dlr = existing_dlr if existing_dlr is not None else dlr_snapshot.get(prefix, default_dlr)
 
             # Only include prefixes in the output when we have a numeric
@@ -272,7 +272,7 @@ def build_international_rates(
                 entries_by_prefix[prefix] = {
                     "attributes": {
                         "dlr": merged_dlr,
-                        "we_can_send": merged_we_can_send,
+                        "can_send": merged_can_send,
                     },
                     "billable_units": resolved_units,
                     "names": [],
