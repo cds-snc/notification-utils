@@ -11,7 +11,7 @@ from pathlib import Path
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_ALLOW_LIST_PATH = REPO_ROOT / "scripts/sms_pricing/allowed_country_list.txt"
+DEFAULT_ALLOW_LIST_PATH = REPO_ROOT / "scripts/sms_pricing/allowed_country_list.csv"
 DEFAULT_PRICES_PATH = REPO_ROOT / "scripts/sms_pricing/aws_prices_sms_mar_2026.csv"
 DEFAULT_PREFIX_FEATURES_PATH = REPO_ROOT / "scripts/sms_pricing/country_prefixes.csv"
 DEFAULT_DLR_SNAPSHOT_PATH = REPO_ROOT / "scripts/sms_pricing/dlr_snapshot.yml"
@@ -57,6 +57,28 @@ def _parse_prefixes(dialing_code: str) -> tuple[str, ...]:
 
 
 def load_allowed_countries(allow_list_path: Path) -> list[str]:
+    # Expect a CSV with an ISO column (preferred). Returns a list of ISO
+    # codes (uppercased). For backwards compatibility only, a legacy
+    # newline-separated list of country names is supported but this script
+    # now requires ISO codes for the allow-list.
+    if allow_list_path.suffix.lower() == ".csv":
+        isos: list[str] = []
+        with allow_list_path.open(newline="") as csv_file:
+            reader = csv.DictReader(csv_file)
+            fieldnames = reader.fieldnames or []
+            iso_col = _get_csv_column_name(
+                fieldnames,
+                ("ISO_CODE", "ISO code", "ISO", "ISO Code", "ISO Country"),
+                "ISO",
+            )
+            for row in reader:
+                iso = (row.get(iso_col) or "").strip().upper()
+                if iso:
+                    isos.append(iso)
+        return isos
+
+    # legacy plain-text allow-list (one country name per line) — convert
+    # country names to normalized strings and return them as-is (deprecated)
     countries = []
     seen_normalized = set()
     for line in allow_list_path.read_text().splitlines():
@@ -173,7 +195,7 @@ def write_yaml_file(data: dict, output_path: Path) -> None:
 def build_international_rates(
     allowed_countries: list[str],
     max_price_by_iso: dict[str, float],
-    feature_by_norm_name: dict[str, FeatureCountry],
+    feature_by_iso: dict[str, FeatureCountry],
     dlr_snapshot: dict[str, str | None],
     base_rate: float,
     default_dlr: str | None,
@@ -181,28 +203,48 @@ def build_international_rates(
     entries_by_prefix: dict[str, dict] = {}
     names_by_prefix: dict[str, set[str]] = defaultdict(set)
 
-    for allowed_country in allowed_countries:
-        feature = resolve_allowed_country(allowed_country, feature_by_norm_name)
-        if feature.iso_code not in max_price_by_iso:
-            raise ValueError(f"Missing AWS price data for allow-list country '{allowed_country}' ({feature.iso_code})")
+    allowed_set = {iso.strip().upper() for iso in allowed_countries}
 
-        billable_units = calculate_billable_units(max_price_by_iso[feature.iso_code], base_rate)
+    # Iterate every country available in the feature set and compute
+    # billable units when price data exist. Mark whether *we* can send to
+    # the country via `we_can_send` attribute (based on allow-list).
+    for iso, feature in feature_by_iso.items():
+        iso_norm = (iso or "").strip().upper()
+        if not iso_norm:
+            continue
+
+        price = max_price_by_iso.get(iso_norm)
+        billable_units = None
+        if price is not None:
+            billable_units = calculate_billable_units(price, base_rate)
 
         for prefix in feature.prefixes:
-            if prefix == "1":
+            # preserve the special-case for North America country code
+            if prefix == "1" and billable_units is not None:
                 billable_units = 1
 
-            names_by_prefix[prefix].add(allowed_country)
+            names_by_prefix[prefix].add(feature.country_name)
             existing_entry = entries_by_prefix.get(prefix)
 
-            if existing_entry and existing_entry["billable_units"] != billable_units:
-                billable_units = max(existing_entry["billable_units"], billable_units)
+            # Resolve conflicting billable unit values by taking the max
+            # when both sides provide a numeric value; otherwise prefer
+            # whichever is numeric (None means price missing).
+            resolved_units = billable_units
+            if existing_entry:
+                existing_units = existing_entry.get("billable_units")
+                if existing_units is None:
+                    resolved_units = billable_units
+                elif billable_units is None:
+                    resolved_units = existing_units
+                else:
+                    resolved_units = max(existing_units, billable_units)
 
             entries_by_prefix[prefix] = {
                 "attributes": {
                     "dlr": dlr_snapshot.get(prefix, default_dlr),
+                    "we_can_send": iso_norm in allowed_set,
                 },
-                "billable_units": billable_units,
+                "billable_units": resolved_units,
                 "names": [],
             }
 
@@ -227,13 +269,13 @@ def update_international_billing_rates(
 ) -> dict[str, dict]:
     allowed_countries = load_allowed_countries(allow_list_path)
     max_price_by_iso = load_price_by_iso(price_csv_path)
-    feature_by_norm_name, _ = load_features_by_name(feature_csv_path)
+    _, feature_by_iso = load_features_by_name(feature_csv_path)
     dlr_snapshot = load_dlr_snapshot(dlr_snapshot_path)
 
     updated_rates = build_international_rates(
         allowed_countries=allowed_countries,
         max_price_by_iso=max_price_by_iso,
-        feature_by_norm_name=feature_by_norm_name,
+        feature_by_iso=feature_by_iso,
         dlr_snapshot=dlr_snapshot,
         base_rate=base_rate,
         default_dlr=default_dlr,
