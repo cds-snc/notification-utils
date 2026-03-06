@@ -6,7 +6,7 @@ This folder contains source files and tooling to regenerate:
 
 from:
 
-- `scripts/sms_pricing/allowed_country_list.txt` (countries we allow sending to)
+- `scripts/sms_pricing/allowed_country_list.csv` (countries we allow sending to)
 - `scripts/sms_pricing/aws_prices_sms_mar_2026.csv` (AWS SMS price export)
 - `scripts/sms_pricing/country_prefixes.csv` (country/ISO/prefix export)
 
@@ -14,9 +14,11 @@ from:
 
 - `billable_units` is a rate multiplier calculated as:
   - `ceil(price / base_rate)`
-- `base_rate` default is `0.02065`
-- YAML `attributes` is reduced to:
-  - `dlr`
+  - If prefix is '1' (North America), always set to `1`
+- `base_rate` default is `0.01507`
+- YAML `attributes` include:
+  - `dlr` — from snapshot or default
+  - `can_send` — `true` if ISO is in allow-list, `false` otherwise
 - DLR values are preserved from a snapshot file:
   - `scripts/sms_pricing/dlr_snapshot.yml`
 - If DLR is missing in snapshot for a new prefix, default is:
@@ -24,29 +26,40 @@ from:
 
 ## Run updater
 
-From repo root, run the Makefile target and provide the price CSV to track the source file:
+From repo root, run the Makefile target with the price CSV file:
 
 ```bash
 make update-rates PRICE_FILE=scripts/sms_pricing/aws_prices_sms_mar_2026.csv
 ```
 
-The `PRICE_FILE` variable is required so you can keep the AWS export you used for the run. The target will invoke the updater script with the provided CSV.
+The updater will:
+1. Load allowed ISOs from `allowed_country_list.csv`
+2. Parse prices and country names from the provided price CSV
+3. Load prefix-to-dialing-code mappings from `country_prefixes.csv`
+4. Build the YAML, mapping each ISO to its prefix(es) and setting `can_send` based on the allow-list
+5. Write to `notifications_utils/international_billing_rates.yml`
 
-If defaults ever need to change, edit the constants at the top of:
+To use a different price CSV, pass it as `PRICE_FILE`. Otherwise, the default (`aws_prices_sms_mar_2026.csv`) is used.
 
+If defaults (base rate, DLR, paths) need to change, edit the constants at the top of:
 - `scripts/sms_pricing/international_billing_rates_updater.py`
 
 ## Updating rates later
 
-When AWS rates change, use this quick process:
+When AWS rates change:
 
 1. Download the latest rates file from AWS:
   - `https://aws.amazon.com/end-user-messaging/pricing/`
-2. Replace `scripts/sms_pricing/aws_prices_sms.csv` with the new file.
-3. Confirm the CSV header still matches exactly:
-  - `ISO Country,Country Name,CarrierName,Number Type,Price ($USD)`
-  - If it does not, massage/normalize the CSV to this format first.
-4. Run the updater script using `make update-rates`
+2. Save the export. The script expects headers exactly:
+  - `ISO Country` — ISO code
+  - `Price ($USD)` — price in USD
+  - `Country Name` (optional) — country name; if present, it's used in the YAML
+  - Other columns (e.g., `CarrierName`, `Number Type`) are ignored
+3. If headers don't match, normalize the CSV first.
+4. Run:
+  ```bash
+  make update-rates PRICE_FILE=/path/to/new_prices.csv
+  ```
 
 ## Shared-prefix conflicts
 
