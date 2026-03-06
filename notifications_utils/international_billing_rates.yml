@@ -1,859 +1,1642 @@
 '1':
   attributes:
     dlr: Carrier DLR
+    we_can_send: true
   billable_units: 1
   names:
   - Canada
   - United States
+'7':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 27
+  names:
+  - Kazakhstan
+  - Russia
+'20':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 21
+  names:
+  - Egypt
 '27':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 7
   names:
   - South Africa
 '30':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 6
   names:
   - Greece
 '31':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 8
   names:
   - Netherlands
 '32':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 7
   names:
   - Belgium
 '33':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 5
   names:
   - France
 '34':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 5
   names:
   - Spain
 '36':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 8
   names:
   - Hungary
 '39':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 6
   names:
   - Italy
 '40':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 6
   names:
   - Romania
 '41':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 4
   names:
   - Switzerland
 '43':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 7
   names:
   - Austria
+'44':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 4
+  names:
+  - United Kingdom
 '45':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 5
   names:
   - Denmark
 '46':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 5
   names:
   - Sweden
 '47':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 6
   names:
   - Norway
+  - Svalbard and Jan Mayen
 '48':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 3
   names:
   - Poland
 '49':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 8
   names:
   - Germany
 '51':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 10
   names:
   - Peru
 '52':
   attributes:
     dlr: Carrier DLR
+    we_can_send: true
   billable_units: 7
   names:
   - Mexico
+'53':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: null
+  names:
+  - Cuba
 '54':
   attributes:
     dlr: 'NO'
+    we_can_send: false
   billable_units: 7
   names:
   - Argentina
 '55':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 2
   names:
   - Brazil
 '56':
   attributes:
     dlr: Carrier DLR
+    we_can_send: false
   billable_units: 4
   names:
   - Chile
 '57':
   attributes:
     dlr: 'NO'
+    we_can_send: false
   billable_units: 4
   names:
   - Colombia
 '58':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 8
   names:
   - Venezuela
 '60':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 17
   names:
   - Malaysia
+'61':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 10
+  names:
+  - Australia
+  - Christmas Island
+  - Cocos Islands
+'62':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 29
+  names:
+  - Indonesia
+'63':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 14
+  names:
+  - Philippines
 '64':
   attributes:
     dlr: 'YES'
-  billable_units: 7
+    we_can_send: false
+  billable_units: 10
   names:
   - New Zealand
+  - Pitcairn
+'65':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 3
+  names:
+  - Singapore
+'66':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 1
+  names:
+  - Thailand
 '81':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 5
   names:
   - Japan
 '82':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 2
   names:
   - South Korea
+'84':
+  attributes:
+    dlr: Carrier DLR
+    we_can_send: false
+  billable_units: 10
+  names:
+  - Vietnam
+'86':
+  attributes:
+    dlr: Carrier DLR
+    we_can_send: false
+  billable_units: 3
+  names:
+  - China
+'90':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 2
+  names:
+  - Turkey
+'91':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 5
+  names:
+  - India
 '92':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 31
   names:
   - Pakistan
 '93':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 25
   names:
   - Afghanistan
+'94':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 27
+  names:
+  - Sri Lanka
 '95':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 23
   names:
   - Myanmar
+'98':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: null
+  names:
+  - Iran
 '211':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 16
   names:
   - South Sudan
 '212':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 14
   names:
   - Morocco
+  - Western Sahara
 '213':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 17
   names:
   - Algeria
 '216':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 27
   names:
   - Tunisia
 '218':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 22
   names:
   - Libya
 '220':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 6
   names:
   - Gambia
 '221':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 25
   names:
   - Senegal
 '222':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 14
   names:
   - Mauritania
 '223':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 19
   names:
   - Mali
 '224':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 10
   names:
   - Guinea
 '225':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 24
   names:
   - Ivory Coast
 '226':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 14
   names:
   - Burkina Faso
 '227':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 20
   names:
   - Niger
 '228':
   attributes:
     dlr: null
+    we_can_send: true
   billable_units: 25
   names:
   - Togo
 '229':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 15
   names:
   - Benin
 '230':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 11
   names:
   - Mauritius
 '231':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 15
   names:
   - Liberia
 '232':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 21
   names:
   - Sierra Leone
 '233':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 24
   names:
   - Ghana
 '234':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 16
   names:
   - Nigeria
 '235':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 19
   names:
   - Chad
 '236':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 27
   names:
   - Central African Republic
 '237':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 13
   names:
   - Cameroon
 '238':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 10
   names:
   - Cape Verde
 '239':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 7
   names:
-  - São Tomé and Príncipe
+  - Sao Tome and Principe
 '240':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 9
   names:
   - Equatorial Guinea
 '241':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 15
   names:
   - Gabon
 '242':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 7
   names:
-  - Republic of Congo
+  - Republic of the Congo
 '243':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 15
   names:
-  - Democratic Republic of Congo
+  - Democratic Republic of the Congo
 '244':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 6
   names:
   - Angola
 '245':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 14
   names:
   - Guinea-Bissau
+'246':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 13
+  names:
+  - British Indian Ocean Territory
 '248':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 3
   names:
   - Seychelles
+'249':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: null
+  names:
+  - Sudan
 '250':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 12
   names:
   - Rwanda
 '251':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 23
   names:
   - Ethiopia
 '252':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 17
   names:
   - Somalia
 '253':
   attributes:
     dlr: null
+    we_can_send: true
   billable_units: 8
   names:
   - Djibouti
+'254':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 12
+  names:
+  - Kenya
 '255':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 27
   names:
   - Tanzania
 '256':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 14
   names:
   - Uganda
 '257':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 29
   names:
   - Burundi
 '258':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 20
   names:
   - Mozambique
+'260':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 25
+  names:
+  - Zambia
 '261':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 33
   names:
   - Madagascar
+'262':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 14
+  names:
+  - Mayotte
+  - Reunion
 '263':
   attributes:
     dlr: Carrier DLR
+    we_can_send: true
   billable_units: 17
   names:
   - Zimbabwe
 '264':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 6
   names:
   - Namibia
 '265':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 22
   names:
   - Malawi
 '266':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 25
   names:
   - Lesotho
 '267':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 3
   names:
   - Botswana
 '268':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 6
   names:
   - Swaziland
 '269':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 27
   names:
   - Comoros
+'290':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 20
+  names:
+  - Saint Helena
 '291':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 8
   names:
   - Eritrea
+'297':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 9
+  names:
+  - Aruba
+'298':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 3
+  names:
+  - Faroe Islands
+'299':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 2
+  names:
+  - Greenland
+'350':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 6
+  names:
+  - Gibraltar
 '351':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 3
   names:
   - Portugal
 '352':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 6
   names:
   - Luxembourg
+'353':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 7
+  names:
+  - Ireland
 '354':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 7
   names:
   - Iceland
+'355':
+  attributes:
+    dlr: 'YES'
+    we_can_send: true
+  billable_units: 6
+  names:
+  - Albania
 '356':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 5
   names:
   - Malta
 '357':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 2
   names:
   - Cyprus
 '358':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 7
   names:
   - Finland
 '359':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 10
   names:
   - Bulgaria
 '370':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 3
   names:
   - Lithuania
 '371':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 5
   names:
   - Latvia
 '372':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 6
   names:
   - Estonia
 '373':
   attributes:
     dlr: Carrier DLR
+    we_can_send: true
   billable_units: 5
   names:
   - Moldova
 '374':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 13
   names:
   - Armenia
+'375':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 16
+  names:
+  - Belarus
+'376':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 8
+  names:
+  - Andorra
 '377':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 9
   names:
   - Monaco
+'378':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 7
+  names:
+  - San Marino
+'379':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 2
+  names:
+  - Vatican
 '380':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 11
   names:
   - Ukraine
+'381':
+  attributes:
+    dlr: 'YES'
+    we_can_send: true
+  billable_units: 23
+  names:
+  - Serbia
+'382':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 8
+  names:
+  - Montenegro
+'383':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 15
+  names:
+  - Kosovo
 '385':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 6
   names:
   - Croatia
 '386':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 10
   names:
   - Slovenia
+'387':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 5
+  names:
+  - Bosnia and Herzegovina
+'389':
+  attributes:
+    dlr: 'YES'
+    we_can_send: true
+  billable_units: 2
+  names:
+  - Macedonia
 '420':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 5
   names:
   - Czech Republic
 '421':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 6
   names:
   - Slovakia
+'423':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 2
+  names:
+  - Liechtenstein
+'500':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 2
+  names:
+  - Falkland Islands
+'501':
+  attributes:
+    dlr: 'YES'
+    we_can_send: true
+  billable_units: 18
+  names:
+  - Belize
 '502':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 15
   names:
   - Guatemala
 '503':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 9
   names:
   - El Salvador
 '504':
   attributes:
     dlr: null
+    we_can_send: true
   billable_units: 16
   names:
   - Honduras
 '505':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 8
   names:
   - Nicaragua
 '506':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 4
   names:
   - Costa Rica
 '507':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 10
   names:
   - Panama
+'508':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 11
+  names:
+  - Saint Pierre and Miquelon
 '509':
   attributes:
     dlr: null
+    we_can_send: true
   billable_units: 18
   names:
   - Haiti
+'590':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 11
+  names:
+  - Guadeloupe
+  - Saint Barthelemy
+  - Saint Martin
 '591':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 12
   names:
   - Bolivia
 '592':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 13
   names:
   - Guyana
 '593':
   attributes:
     dlr: ''
+    we_can_send: false
   billable_units: 21
   names:
   - Ecuador
 '595':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 6
   names:
   - Paraguay
 '597':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 13
   names:
   - Suriname
 '598':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 5
   names:
   - Uruguay
+'599':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 9
+  names:
+  - Curacao
+  - Netherlands Antilles
 '670':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 14
   names:
-  - Timor-Leste
+  - East Timor
+'672':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 10
+  names:
+  - Antarctica
 '673':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 1
   names:
   - Brunei
+'674':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 13
+  names:
+  - Nauru
 '675':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 20
   names:
   - Papua New Guinea
+'676':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 9
+  names:
+  - Tonga
+'677':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 3
+  names:
+  - Solomon Islands
 '678':
   attributes:
     dlr: null
+    we_can_send: true
   billable_units: 9
   names:
   - Vanuatu
 '679':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 14
   names:
   - Fiji
+'680':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 5
+  names:
+  - Palau
+'681':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 14
+  names:
+  - Wallis and Futuna
+'682':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 8
+  names:
+  - Cook Islands
+'683':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 13
+  names:
+  - Niue
+'685':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 11
+  names:
+  - Samoa
+'686':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 11
+  names:
+  - Kiribati
+'687':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 11
+  names:
+  - New Caledonia
+'688':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 4
+  names:
+  - Tuvalu
+'689':
+  attributes:
+    dlr: 'YES'
+    we_can_send: true
+  billable_units: 9
+  names:
+  - French Polynesia
+'690':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 9
+  names:
+  - Tokelau
+'691':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 10
+  names:
+  - Micronesia
+'692':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 10
+  names:
+  - Marshall Islands
+'850':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: null
+  names:
+  - North Korea
 '852':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 6
   names:
   - Hong Kong
 '853':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 4
   names:
-  - Macao
+  - Macau
 '855':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 25
   names:
   - Cambodia
 '856':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 15
   names:
   - Laos
 '880':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 21
   names:
   - Bangladesh
 '886':
   attributes:
     dlr: 'NO'
+    we_can_send: false
   billable_units: 6
   names:
   - Taiwan
 '960':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 22
   names:
   - Maldives
 '961':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 24
   names:
   - Lebanon
+'962':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 21
+  names:
+  - Jordan
+'963':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: null
+  names:
+  - Syria
 '964':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 21
   names:
   - Iraq
+'965':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 10
+  names:
+  - Kuwait
+'966':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 13
+  names:
+  - Saudi Arabia
 '967':
   attributes:
     dlr: null
+    we_can_send: true
   billable_units: 16
   names:
   - Yemen
 '968':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 10
   names:
   - Oman
 '970':
   attributes:
     dlr: null
+    we_can_send: false
   billable_units: 22
   names:
   - Palestine
+'971':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 8
+  names:
+  - United Arab Emirates
 '972':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 15
   names:
   - Israel
 '973':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 3
   names:
   - Bahrain
+'974':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 15
+  names:
+  - Qatar
+'975':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 26
+  names:
+  - Bhutan
 '976':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 19
   names:
   - Mongolia
 '977':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 16
   names:
   - Nepal
+'992':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 30
+  names:
+  - Tajikistan
+'993':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 21
+  names:
+  - Turkmenistan
 '994':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 25
   names:
   - Azerbaijan
 '995':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 12
   names:
   - Georgia
+'996':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 21
+  names:
+  - Kyrgyzstan
+'998':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 30
+  names:
+  - Uzbekistan
+'1242':
+  attributes:
+    dlr: Carrier DLR
+    we_can_send: false
+  billable_units: 5
+  names:
+  - Bahamas
 '1246':
   attributes:
     dlr: Carrier DLR
+    we_can_send: true
   billable_units: 15
   names:
   - Barbados
+'1264':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 4
+  names:
+  - Anguilla
+'1268':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 9
+  names:
+  - Antigua and Barbuda
+'1284':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 12
+  names:
+  - British Virgin Islands
+'1340':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 2
+  names:
+  - U.S. Virgin Islands
+'1345':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 12
+  names:
+  - Cayman Islands
+'1441':
+  attributes:
+    dlr: null
+    we_can_send: true
+  billable_units: 15
+  names:
+  - Bermuda
+'1473':
+  attributes:
+    dlr: 'YES'
+    we_can_send: true
+  billable_units: 15
+  names:
+  - Grenada
 '1649':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 12
   names:
   - Turks and Caicos Islands
+'1664':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 4
+  names:
+  - Montserrat
+'1670':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 2
+  names:
+  - Northern Mariana Islands
+'1671':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 5
+  names:
+  - Guam
+'1684':
+  attributes:
+    dlr: Carrier DLR
+    we_can_send: false
+  billable_units: 4
+  names:
+  - American Samoa
+'1721':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 7
+  names:
+  - Sint Maarten
+'1758':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 13
+  names:
+  - Saint Lucia
+'1767':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 9
+  names:
+  - Dominica
+'1784':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 9
+  names:
+  - Saint Vincent and the Grenadines
 '1787':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 1
   names:
   - Puerto Rico
 '1809':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 5
   names:
   - Dominican Republic
 '1829':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 5
   names:
   - Dominican Republic
 '1849':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 5
   names:
   - Dominican Republic
 '1868':
   attributes:
     dlr: null
+    we_can_send: true
   billable_units: 16
   names:
   - Trinidad and Tobago
+'1869':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 11
+  names:
+  - Saint Kitts and Nevis
 '1876':
   attributes:
     dlr: 'YES'
+    we_can_send: true
   billable_units: 12
   names:
   - Jamaica
 '1939':
   attributes:
     dlr: 'YES'
+    we_can_send: false
   billable_units: 1
   names:
   - Puerto Rico
+'441481':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 5
+  names:
+  - Guernsey
+'441534':
+  attributes:
+    dlr: 'YES'
+    we_can_send: true
+  billable_units: 6
+  names:
+  - Jersey
+'441624':
+  attributes:
+    dlr: 'YES'
+    we_can_send: true
+  billable_units: 5
+  names:
+  - Isle of Man
