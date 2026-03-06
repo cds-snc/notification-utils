@@ -6,7 +6,7 @@ This folder contains source files and tooling to regenerate:
 
 from:
 
-- `scripts/sms_pricing/country_list.txt` (countries we allow sending to)
+- `scripts/sms_pricing/allowed_country_list.txt` (countries we allow sending to)
 - `scripts/sms_pricing/aws_prices_sms_mar_2026.csv` (AWS SMS price export)
 - `scripts/sms_pricing/country_prefixes.csv` (country/ISO/prefix export)
 
