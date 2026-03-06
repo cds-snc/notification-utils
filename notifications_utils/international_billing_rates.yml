@@ -5,7 +5,9 @@
   billable_units: 1
   names:
   - Canada
+  - Puerto Rico
   - United States
+  - United States Minor Outlying Islands
 '7':
   attributes:
     dlr: 'YES'
@@ -13,7 +15,7 @@
   billable_units: 27
   names:
   - Kazakhstan
-  - Russia
+  - Russian Federation
 '20':
   attributes:
     dlr: 'YES'
@@ -101,9 +103,12 @@
 '44':
   attributes:
     dlr: 'YES'
-    we_can_send: false
-  billable_units: 4
+    we_can_send: true
+  billable_units: 6
   names:
+  - Guernsey
+  - Isle of Man
+  - Jersey
   - United Kingdom
 '45':
   attributes:
@@ -123,8 +128,9 @@
   attributes:
     dlr: 'YES'
     we_can_send: true
-  billable_units: 6
+  billable_units: 10
   names:
+  - Bouvet Island
   - Norway
   - Svalbard and Jan Mayen
 '48':
@@ -155,13 +161,6 @@
   billable_units: 7
   names:
   - Mexico
-'53':
-  attributes:
-    dlr: 'YES'
-    we_can_send: false
-  billable_units: null
-  names:
-  - Cuba
 '54':
   attributes:
     dlr: 'NO'
@@ -212,7 +211,7 @@
   names:
   - Australia
   - Christmas Island
-  - Cocos Islands
+  - Cocos (Keeling) Islands
 '62':
   attributes:
     dlr: 'YES'
@@ -231,10 +230,9 @@
   attributes:
     dlr: 'YES'
     we_can_send: false
-  billable_units: 10
+  billable_units: 7
   names:
   - New Zealand
-  - Pitcairn
 '65':
   attributes:
     dlr: 'YES'
@@ -262,14 +260,14 @@
     we_can_send: false
   billable_units: 2
   names:
-  - South Korea
+  - Korea, Republic of
 '84':
   attributes:
     dlr: Carrier DLR
     we_can_send: false
   billable_units: 10
   names:
-  - Vietnam
+  - Viet Nam
 '86':
   attributes:
     dlr: Carrier DLR
@@ -319,13 +317,6 @@
   billable_units: 23
   names:
   - Myanmar
-'98':
-  attributes:
-    dlr: 'YES'
-    we_can_send: false
-  billable_units: null
-  names:
-  - Iran
 '211':
   attributes:
     dlr: null
@@ -403,7 +394,7 @@
     we_can_send: true
   billable_units: 24
   names:
-  - Ivory Coast
+  - Cote d'Ivoire
 '226':
   attributes:
     dlr: 'YES'
@@ -522,7 +513,7 @@
     we_can_send: false
   billable_units: 7
   names:
-  - Republic of the Congo
+  - Congo
 '243':
   attributes:
     dlr: 'YES'
@@ -551,6 +542,13 @@
   billable_units: 13
   names:
   - British Indian Ocean Territory
+'247':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 13
+  names:
+  - Ascension Island
 '248':
   attributes:
     dlr: 'YES'
@@ -558,13 +556,6 @@
   billable_units: 3
   names:
   - Seychelles
-'249':
-  attributes:
-    dlr: null
-    we_can_send: false
-  billable_units: null
-  names:
-  - Sudan
 '250':
   attributes:
     dlr: 'YES'
@@ -606,7 +597,7 @@
     we_can_send: true
   billable_units: 27
   names:
-  - Tanzania
+  - United Republic of Tanzania
 '256':
   attributes:
     dlr: 'YES'
@@ -648,6 +639,7 @@
     we_can_send: false
   billable_units: 14
   names:
+  - French Southern Territories
   - Mayotte
   - Reunion
 '263':
@@ -794,8 +786,9 @@
   attributes:
     dlr: 'YES'
     we_can_send: true
-  billable_units: 7
+  billable_units: 9
   names:
+  - Aland Islands
   - Finland
 '359':
   attributes:
@@ -831,7 +824,7 @@
     we_can_send: true
   billable_units: 5
   names:
-  - Moldova
+  - Moldova, Republic of
 '374':
   attributes:
     dlr: 'YES'
@@ -873,7 +866,7 @@
     we_can_send: false
   billable_units: 2
   names:
-  - Vatican
+  - Holy See (Vatican City State)
 '380':
   attributes:
     dlr: 'YES'
@@ -929,7 +922,7 @@
     we_can_send: true
   billable_units: 2
   names:
-  - Macedonia
+  - Macedonia, the Former Yugoslav Republic of
 '420':
   attributes:
     dlr: 'YES'
@@ -955,9 +948,10 @@
   attributes:
     dlr: 'YES'
     we_can_send: false
-  billable_units: 2
+  billable_units: 10
   names:
-  - Falkland Islands
+  - Falkland Islands (Malvinas)
+  - South Georgia and the South Sandwich Islands
 '501':
   attributes:
     dlr: 'YES'
@@ -1029,7 +1023,7 @@
   names:
   - Guadeloupe
   - Saint Barthelemy
-  - Saint Martin
+  - Saint Martin (French part)
 '591':
   attributes:
     dlr: 'YES'
@@ -1051,6 +1045,13 @@
   billable_units: 21
   names:
   - Ecuador
+'594':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 12
+  names:
+  - French Guiana
 '595':
   attributes:
     dlr: null
@@ -1058,6 +1059,13 @@
   billable_units: 6
   names:
   - Paraguay
+'596':
+  attributes:
+    dlr: null
+    we_can_send: false
+  billable_units: 8
+  names:
+  - Martinique
 '597':
   attributes:
     dlr: null
@@ -1078,15 +1086,15 @@
     we_can_send: false
   billable_units: 9
   names:
+  - Bonaire
   - Curacao
-  - Netherlands Antilles
 '670':
   attributes:
     dlr: null
     we_can_send: false
   billable_units: 14
   names:
-  - East Timor
+  - Timor-Leste
 '672':
   attributes:
     dlr: null
@@ -1094,13 +1102,15 @@
   billable_units: 10
   names:
   - Antarctica
+  - Heard Island and McDonald Islands
+  - Norfolk Island
 '673':
   attributes:
     dlr: 'YES'
     we_can_send: true
   billable_units: 1
   names:
-  - Brunei
+  - Brunei Darussalam
 '674':
   attributes:
     dlr: null
@@ -1219,7 +1229,7 @@
     we_can_send: false
   billable_units: 10
   names:
-  - Micronesia
+  - Micronesia, Federated States of
 '692':
   attributes:
     dlr: null
@@ -1227,13 +1237,6 @@
   billable_units: 10
   names:
   - Marshall Islands
-'850':
-  attributes:
-    dlr: 'YES'
-    we_can_send: false
-  billable_units: null
-  names:
-  - North Korea
 '852':
   attributes:
     dlr: 'YES'
@@ -1247,7 +1250,7 @@
     we_can_send: true
   billable_units: 4
   names:
-  - Macau
+  - Macao
 '855':
   attributes:
     dlr: 'YES'
@@ -1261,7 +1264,14 @@
     we_can_send: false
   billable_units: 15
   names:
-  - Laos
+  - Lao People's Democratic Republic
+'870':
+  attributes:
+    dlr: 'YES'
+    we_can_send: false
+  billable_units: 10
+  names:
+  - Pitcairn
 '880':
   attributes:
     dlr: 'YES'
@@ -1297,13 +1307,6 @@
   billable_units: 21
   names:
   - Jordan
-'963':
-  attributes:
-    dlr: 'YES'
-    we_can_send: false
-  billable_units: null
-  names:
-  - Syria
 '964':
   attributes:
     dlr: 'YES'
@@ -1345,7 +1348,7 @@
     we_can_send: false
   billable_units: 22
   names:
-  - Palestine
+  - Palestine, State of
 '971':
   attributes:
     dlr: 'YES'
@@ -1478,7 +1481,7 @@
     we_can_send: false
   billable_units: 2
   names:
-  - U.S. Virgin Islands
+  - US Virgin Islands
 '1345':
   attributes:
     dlr: 'YES'
@@ -1541,7 +1544,7 @@
     we_can_send: false
   billable_units: 7
   names:
-  - Sint Maarten
+  - Sint Maarten (Dutch part)
 '1758':
   attributes:
     dlr: 'YES'
@@ -1563,13 +1566,6 @@
   billable_units: 9
   names:
   - Saint Vincent and the Grenadines
-'1787':
-  attributes:
-    dlr: 'YES'
-    we_can_send: false
-  billable_units: 1
-  names:
-  - Puerto Rico
 '1809':
   attributes:
     dlr: 'YES'
@@ -1612,31 +1608,3 @@
   billable_units: 12
   names:
   - Jamaica
-'1939':
-  attributes:
-    dlr: 'YES'
-    we_can_send: false
-  billable_units: 1
-  names:
-  - Puerto Rico
-'441481':
-  attributes:
-    dlr: 'YES'
-    we_can_send: false
-  billable_units: 5
-  names:
-  - Guernsey
-'441534':
-  attributes:
-    dlr: 'YES'
-    we_can_send: true
-  billable_units: 6
-  names:
-  - Jersey
-'441624':
-  attributes:
-    dlr: 'YES'
-    we_can_send: true
-  billable_units: 5
-  names:
-  - Isle of Man
