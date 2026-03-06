@@ -100,18 +100,47 @@ def _get_csv_column_name(fieldnames: Sequence[str], supported_names: tuple[str, 
     raise ValueError(f"Missing {label} column. Found columns: {fieldnames}")
 
 
-def load_price_by_iso(price_csv_path: Path) -> dict[str, float]:
+def load_price_and_names(price_csv_path: Path) -> tuple[dict[str, float], dict[str, str]]:
+    """Return (max_price_by_iso, name_by_iso).
+
+    `name_by_iso` is taken from the prices CSV (prefer this as the authoritative
+    country name source). If the prices CSV doesn't include a country name
+    column, names will be omitted and callers may fall back to the prefixes
+    CSV.
+    """
     max_price_by_iso: dict[str, float] = {}
+    name_by_iso: dict[str, str] = {}
+    # Expect the AWS prices CSV with headers like:
+    # 'ISO Country','Country Name',...,'Price ($USD)'. Use 'ISO Country' and
+    # 'Price ($USD)' as the required columns. 'Country Name' is optional and
+    # will be used as the authoritative country name when present.
     with price_csv_path.open(newline="") as csv_file:
         reader = csv.DictReader(csv_file)
         fieldnames = reader.fieldnames or []
-        iso_column = _get_csv_column_name(fieldnames, ("ISO Country", "ISO code", "ISO", "Country ISO"), "ISO")
-        price_column = _get_csv_column_name(fieldnames, ("Price ($USD)", "Price", "Rate", "SMS Price"), "price")
+        if "ISO Country" not in fieldnames or "Price ($USD)" not in fieldnames:
+            raise ValueError("prices CSV must contain headers: 'ISO Country' and 'Price ($USD)' (Country Name optional)")
+        name_column = "Country Name" if "Country Name" in fieldnames else None
+
         for row in reader:
-            iso_code = row[iso_column].strip()
-            price = float(row[price_column])
-            max_price_by_iso[iso_code] = max(max_price_by_iso.get(iso_code, 0.0), price)
-    return max_price_by_iso
+            iso_code = (row.get("ISO Country") or "").strip()
+            raw_price = row.get("Price ($USD)")
+            try:
+                price = float((raw_price or "0").strip())
+            except Exception:
+                price = 0.0
+            if iso_code:
+                max_price_by_iso[iso_code] = max(max_price_by_iso.get(iso_code, 0.0), price)
+                if name_column:
+                    country_name = (row.get(name_column) or "").strip()
+                    if country_name:
+                        name_by_iso[iso_code] = country_name
+    return max_price_by_iso, name_by_iso
+
+
+def load_price_by_iso(price_csv_path: Path) -> dict[str, float]:
+    """Backward-compatible wrapper that returns only the max price mapping."""
+    prices, _names = load_price_and_names(price_csv_path)
+    return prices
 
 
 def load_prefixes_by_name(prefix_csv_path: Path) -> tuple[dict[str, CountryPrefix], dict[str, CountryPrefix]]:
@@ -196,15 +225,19 @@ def write_yaml_file(data: dict, output_path: Path) -> None:
 def build_international_rates(
     allowed_countries: list[str],
     max_price_by_iso: dict[str, float],
-    prefix_by_iso: dict[str, CountryPrefix],
-    dlr_snapshot: dict[str, str | None],
-    base_rate: float,
-    default_dlr: str | None,
+    name_by_iso: dict[str, str] | None = None,
+    prefix_by_iso: dict[str, CountryPrefix] | None = None,
+    dlr_snapshot: dict[str, str | None] | None = None,
+    base_rate: float = DEFAULT_BASE_RATE,
+    default_dlr: str | None = DEFAULT_DLR,
 ) -> dict[str, dict]:
     entries_by_prefix: dict[str, dict] = {}
     names_by_prefix: dict[str, set[str]] = defaultdict(set)
 
     allowed_set = {iso.strip().upper() for iso in allowed_countries}
+
+    # Ensure callers that didn't supply names remain compatible.
+    name_by_iso = name_by_iso or {}
 
     # Normalize dlr_snapshot
     dlr_snapshot = dlr_snapshot or {}
@@ -249,7 +282,11 @@ def build_international_rates(
                 else:
                     resolved_units = billable_units
 
-            names_by_prefix[prefix].add(country_prefix.country_name)
+            # Prefer the country name found in the prices CSV; fall back to
+            # the name from the prefixes CSV if the prices CSV lacks a name
+            # for this ISO.
+            preferred_name = name_by_iso.get(iso_norm) or country_prefix.country_name
+            names_by_prefix[prefix].add(preferred_name)
 
             # Merge attributes for prefixes that map to multiple countries.
             existing_entry = entries_by_prefix.get(prefix)
@@ -298,7 +335,7 @@ def update_international_billing_rates(
     default_dlr: str | None,
 ) -> dict[str, dict]:
     allowed_countries = load_allowed_countries(allow_list_path)
-    max_price_by_iso = load_price_by_iso(price_csv_path)
+    max_price_by_iso, name_by_iso = load_price_and_names(price_csv_path)
     _, prefix_by_iso = load_prefixes_by_name(prefix_csv_path)
     # Warn about any price ISOs that have no prefix row (no dialing-prefix mapping).
     missing_prefix_isos = [iso for iso in sorted(max_price_by_iso.keys()) if iso.strip().upper() not in prefix_by_iso]
@@ -308,10 +345,10 @@ def update_international_billing_rates(
             file=sys.stderr,
         )
     dlr_snapshot = load_dlr_snapshot(dlr_snapshot_path)
-
     updated_rates = build_international_rates(
         allowed_countries=allowed_countries,
         max_price_by_iso=max_price_by_iso,
+        name_by_iso=name_by_iso,
         prefix_by_iso=prefix_by_iso,
         dlr_snapshot=dlr_snapshot,
         base_rate=base_rate,
