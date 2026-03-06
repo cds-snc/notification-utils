@@ -122,7 +122,7 @@
 '47':
   attributes:
     dlr: 'YES'
-    we_can_send: false
+    we_can_send: true
   billable_units: 6
   names:
   - Norway
@@ -336,7 +336,7 @@
 '212':
   attributes:
     dlr: 'YES'
-    we_can_send: false
+    we_can_send: true
   billable_units: 14
   names:
   - Morocco
@@ -1024,7 +1024,7 @@
 '590':
   attributes:
     dlr: 'YES'
-    we_can_send: false
+    we_can_send: true
   billable_units: 11
   names:
   - Guadeloupe
