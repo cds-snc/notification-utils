@@ -1,4 +1,3 @@
-import pytest
 from scripts.sms_pricing.international_billing_rates_updater import (
     DEFAULT_ALLOW_LIST_PATH,
     DEFAULT_DLR_SNAPSHOT_PATH,
@@ -40,47 +39,54 @@ def test_loaders_support_changed_column_names(tmp_path):
     assert "united states" in feature_by_name
 
 
-def test_build_international_rates_fails_on_conflicting_shared_prefix_when_strategy_fail(tmp_path):
-    allowed_countries = ["Guernsey", "Jersey"]
+def test_shared_prefix_max_resolution_guernsey_jersey(tmp_path):
+    # With ISO-only allow-list and iso-indexed features, conflicting
+    # numeric billable units should be resolved by taking the max.
+    allowed_countries = ["GG", "JE"]
     max_price_by_iso = {"GG": 0.08, "JE": 0.2}
-    feature_by_name = {
-        "guernsey": FeatureCountry(country_name="Guernsey", iso_code="GG", prefixes=("44",)),
-        "jersey": FeatureCountry(country_name="Jersey", iso_code="JE", prefixes=("44",)),
+    feature_by_iso = {
+        "GG": FeatureCountry(country_name="Guernsey", iso_code="GG", prefixes=("44",)),
+        "JE": FeatureCountry(country_name="Jersey", iso_code="JE", prefixes=("44",)),
     }
-
-    with pytest.raises(ValueError, match="Conflicting billable_units"):
-        build_international_rates(
-            allowed_countries=allowed_countries,
-            max_price_by_iso=max_price_by_iso,
-            feature_by_norm_name=feature_by_name,
-            dlr_snapshot={"1": "Carrier DLR"},
-            base_rate=0.02065,
-            default_dlr="YES",
-            shared_prefix_strategy="fail",
-        )
-
-
-def test_build_international_rates_uses_max_on_shared_prefix_when_strategy_max(tmp_path):
-    allowed_countries = ["Canada", "United States"]
-    max_price_by_iso = {"CA": 0.02183, "US": 0.007}
-
-    prefixes_csv = tmp_path / "prefixes.csv"
-    prefixes_csv.write_text("Country or region,ISO code,Dialing code\n" "Canada,CA,1\n" "United States,US,1\n")
-    feature_by_name, _ = load_features_by_name(prefixes_csv)
 
     rates = build_international_rates(
         allowed_countries=allowed_countries,
         max_price_by_iso=max_price_by_iso,
-        feature_by_norm_name=feature_by_name,
+        feature_by_iso=feature_by_iso,
         dlr_snapshot={"1": "Carrier DLR"},
         base_rate=0.02065,
         default_dlr="YES",
-        shared_prefix_strategy="max",
+    )
+
+    assert set(rates.keys()) == {"44"}
+    # GG -> ceil(0.08/0.02065)=4, JE -> ceil(0.2/0.02065)=10 -> max=10
+    assert rates["44"]["billable_units"] == 10
+    # No explicit dlr snapshot for prefix '44' was provided, so expect
+    # the default DLR value to be used.
+    assert rates["44"]["attributes"] == {"dlr": "YES", "we_can_send": True}
+    assert rates["44"]["names"] == ["Guernsey", "Jersey"]
+
+
+def test_build_international_rates_uses_max_on_shared_prefix_when_strategy_max(tmp_path):
+    allowed_countries = ["CA", "US"]
+    max_price_by_iso = {"CA": 0.02183, "US": 0.007}
+
+    prefixes_csv = tmp_path / "prefixes.csv"
+    prefixes_csv.write_text("Country or region,ISO code,Dialing code\n" "Canada,CA,1\n" "United States,US,1\n")
+    feature_by_name, feature_by_iso = load_features_by_name(prefixes_csv)
+
+    rates = build_international_rates(
+        allowed_countries=allowed_countries,
+        max_price_by_iso=max_price_by_iso,
+        feature_by_iso=feature_by_iso,
+        dlr_snapshot={"1": "Carrier DLR"},
+        base_rate=0.02065,
+        default_dlr="YES",
     )
 
     assert set(rates.keys()) == {"1"}
     assert rates["1"]["billable_units"] == 1
-    assert rates["1"]["attributes"] == {"dlr": "Carrier DLR"}
+    assert rates["1"]["attributes"] == {"dlr": "Carrier DLR", "we_can_send": True}
     assert rates["1"]["names"] == ["Canada", "United States"]
 
 

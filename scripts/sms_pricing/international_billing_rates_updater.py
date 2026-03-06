@@ -208,6 +208,9 @@ def build_international_rates(
     # Iterate every country available in the feature set and compute
     # billable units when price data exist. Mark whether *we* can send to
     # the country via `we_can_send` attribute (based on allow-list).
+    # Normalize dlr_snapshot
+    dlr_snapshot = dlr_snapshot or {}
+
     for iso, feature in feature_by_iso.items():
         iso_norm = (iso or "").strip().upper()
         if not iso_norm:
@@ -226,9 +229,8 @@ def build_international_rates(
             names_by_prefix[prefix].add(feature.country_name)
             existing_entry = entries_by_prefix.get(prefix)
 
-            # Resolve conflicting billable unit values by taking the max
-            # when both sides provide a numeric value; otherwise prefer
-            # whichever is numeric (None means price missing).
+            # Resolve conflicting billable unit values according to the
+            # requested strategy.
             resolved_units = billable_units
             if existing_entry:
                 existing_units = existing_entry.get("billable_units")
@@ -237,11 +239,11 @@ def build_international_rates(
                 elif billable_units is None:
                     resolved_units = existing_units
                 else:
+                    # Always use the max strategy for conflicting numeric
+                    # billable unit values.
                     resolved_units = max(existing_units, billable_units)
 
-            # If a prefix maps to multiple countries, merge attributes
-            # instead of letting the last country overwrite previous values.
-            existing_entry = entries_by_prefix.get(prefix)
+            # Merge attributes for prefixes that map to multiple countries.
             existing_we_can_send = False
             existing_dlr = None
             if existing_entry:
