@@ -236,10 +236,9 @@ def build_international_rates(
 
     allowed_set = {iso.strip().upper() for iso in allowed_countries}
 
-    # Ensure callers that didn't supply names remain compatible.
+    # Ensure callers that didn't supply optional parameters remain compatible.
     name_by_iso = name_by_iso or {}
-
-    # Normalize dlr_snapshot
+    prefix_by_iso = prefix_by_iso or {}
     dlr_snapshot = dlr_snapshot or {}
 
     # Iterate every ISO present in the prices list so that every priced
