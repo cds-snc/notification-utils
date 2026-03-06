@@ -2,13 +2,13 @@ from scripts.sms_pricing.international_billing_rates_updater import (
     DEFAULT_ALLOW_LIST_PATH,
     DEFAULT_DLR_SNAPSHOT_PATH,
     DEFAULT_OUTPUT_PATH,
-    DEFAULT_PREFIX_FEATURES_PATH,
+    DEFAULT_PREFIXES_PATH,
     DEFAULT_PRICES_PATH,
-    FeatureCountry,
+    CountryPrefix,
     build_international_rates,
     calculate_billable_units,
     load_allowed_countries,
-    load_features_by_name,
+    load_prefixes_by_name,
     load_price_by_iso,
 )
 
@@ -29,14 +29,14 @@ def test_loaders_support_changed_column_names(tmp_path):
     prices_csv.write_text("ISO,Country Name,Rate\n" "CA,Canada,0.007\n" "US,United States,0.008\n")
 
     prefixes_csv = tmp_path / "prefixes.csv"
-    prefixes_csv.write_text("Country,ISO,Dial code\n" "Canada,CA,1\n" "United States,US,1\n")
+    prefixes_csv.write_text("COUNTRY,ISO_CODE,DIALING_CODE\n" "Canada,CA,1\n" "United States,US,1\n")
 
     max_price_by_iso = load_price_by_iso(prices_csv)
-    feature_by_name, _ = load_features_by_name(prefixes_csv)
+    prefix_by_name, _ = load_prefixes_by_name(prefixes_csv)
 
     assert max_price_by_iso == {"CA": 0.007, "US": 0.008}
-    assert "canada" in feature_by_name
-    assert "united states" in feature_by_name
+    assert "canada" in prefix_by_name
+    assert "united states" in prefix_by_name
 
 
 def test_shared_prefix_max_resolution_guernsey_jersey(tmp_path):
@@ -45,14 +45,14 @@ def test_shared_prefix_max_resolution_guernsey_jersey(tmp_path):
     allowed_countries = ["GG", "JE"]
     max_price_by_iso = {"GG": 0.08, "JE": 0.2}
     feature_by_iso = {
-        "GG": FeatureCountry(country_name="Guernsey", iso_code="GG", prefixes=("44",)),
-        "JE": FeatureCountry(country_name="Jersey", iso_code="JE", prefixes=("44",)),
+        "GG": CountryPrefix(country_name="Guernsey", iso_code="GG", prefixes=("44",)),
+        "JE": CountryPrefix(country_name="Jersey", iso_code="JE", prefixes=("44",)),
     }
 
     rates = build_international_rates(
         allowed_countries=allowed_countries,
         max_price_by_iso=max_price_by_iso,
-        feature_by_iso=feature_by_iso,
+        prefix_by_iso=feature_by_iso,
         dlr_snapshot={"1": "Carrier DLR"},
         base_rate=0.02065,
         default_dlr="YES",
@@ -72,13 +72,13 @@ def test_build_international_rates_uses_max_on_shared_prefix_when_strategy_max(t
     max_price_by_iso = {"CA": 0.02183, "US": 0.007}
 
     prefixes_csv = tmp_path / "prefixes.csv"
-    prefixes_csv.write_text("Country or region,ISO code,Dialing code\n" "Canada,CA,1\n" "United States,US,1\n")
-    feature_by_name, feature_by_iso = load_features_by_name(prefixes_csv)
+    prefixes_csv.write_text("COUNTRY,ISO_CODE,DIALING_CODE\n" "Canada,CA,1\n" "United States,US,1\n")
+    prefix_by_name, feature_by_iso = load_prefixes_by_name(prefixes_csv)
 
     rates = build_international_rates(
         allowed_countries=allowed_countries,
         max_price_by_iso=max_price_by_iso,
-        feature_by_iso=feature_by_iso,
+        prefix_by_iso=feature_by_iso,
         dlr_snapshot={"1": "Carrier DLR"},
         base_rate=0.02065,
         default_dlr="YES",
@@ -91,8 +91,8 @@ def test_build_international_rates_uses_max_on_shared_prefix_when_strategy_max(t
 
 
 def test_default_paths_point_to_expected_files():
-    assert DEFAULT_ALLOW_LIST_PATH.name == "country_list.txt"
+    assert DEFAULT_ALLOW_LIST_PATH.name == "allowed_country_list.csv"
     assert DEFAULT_PRICES_PATH.name == "aws_prices_sms_mar_2026.csv"
-    assert DEFAULT_PREFIX_FEATURES_PATH.name == "country_prefixes.csv"
+    assert DEFAULT_PREFIXES_PATH.name == "country_prefixes.csv"
     assert DEFAULT_DLR_SNAPSHOT_PATH.name == "dlr_snapshot.yml"
     assert DEFAULT_OUTPUT_PATH.name == "international_billing_rates.yml"

@@ -2,6 +2,7 @@ import argparse
 import csv
 import math
 import re
+import sys
 import unicodedata
 from collections import defaultdict
 from collections.abc import Sequence
@@ -13,7 +14,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_ALLOW_LIST_PATH = REPO_ROOT / "scripts/sms_pricing/allowed_country_list.csv"
 DEFAULT_PRICES_PATH = REPO_ROOT / "scripts/sms_pricing/aws_prices_sms_mar_2026.csv"
-DEFAULT_PREFIX_FEATURES_PATH = REPO_ROOT / "scripts/sms_pricing/country_prefixes.csv"
+DEFAULT_PREFIXES_PATH = REPO_ROOT / "scripts/sms_pricing/country_prefixes.csv"
 DEFAULT_DLR_SNAPSHOT_PATH = REPO_ROOT / "scripts/sms_pricing/dlr_snapshot.yml"
 DEFAULT_OUTPUT_PATH = REPO_ROOT / "notifications_utils/international_billing_rates.yml"
 
@@ -22,7 +23,7 @@ DEFAULT_DLR = "YES"
 
 
 @dataclass(frozen=True)
-class FeatureCountry:
+class CountryPrefix:
     country_name: str
     iso_code: str
     prefixes: tuple[str, ...]
@@ -113,52 +114,52 @@ def load_price_by_iso(price_csv_path: Path) -> dict[str, float]:
     return max_price_by_iso
 
 
-def load_features_by_name(feature_csv_path: Path) -> tuple[dict[str, FeatureCountry], dict[str, FeatureCountry]]:
-    feature_by_norm_name: dict[str, FeatureCountry] = {}
-    feature_by_iso: dict[str, FeatureCountry] = {}
+def load_prefixes_by_name(prefix_csv_path: Path) -> tuple[dict[str, CountryPrefix], dict[str, CountryPrefix]]:
+    """Load a simple prefixes CSV with exact columns: COUNTRY, ISO_CODE, DIALING_CODE.
 
-    with feature_csv_path.open(newline="") as csv_file:
+    Column names are matched case-insensitively but must be present.
+    """
+    prefix_by_norm_name: dict[str, CountryPrefix] = {}
+    prefix_by_iso: dict[str, CountryPrefix] = {}
+
+    with prefix_csv_path.open(newline="") as csv_file:
         reader = csv.DictReader(csv_file)
         fieldnames = reader.fieldnames or []
-        iso_column = _get_csv_column_name(
-            fieldnames,
-            ("ISO code", "ISO Country", "ISO", "Country ISO", "ISO CODES", "ISO Codes"),
-            "ISO",
-        )
-        country_column = _get_csv_column_name(
-            fieldnames,
-            ("Country or region", "Country", "Country Name", "Country or Region"),
-            "country",
-        )
-        dialing_code_column = _get_csv_column_name(
-            fieldnames,
-            ("Dialing code", "Dial code", "Dialing prefix", "Country code", "COUNTRY CODE", "Prefix"),
-            "dialing code",
-        )
-        for row in reader:
-            iso_code = row[iso_column].strip()
-            country_name = re.sub(r"\d+$", "", row[country_column]).strip()
-            prefixes = _parse_prefixes(row[dialing_code_column])
-            feature = FeatureCountry(country_name=country_name, iso_code=iso_code, prefixes=prefixes)
-            feature_by_norm_name[_normalize_name(country_name)] = feature
-            feature_by_iso[iso_code] = feature
+        # Build a simple uppercased map of column names to their original
+        # header so we can accept either `Country` or `COUNTRY` but still
+        # require the exact logical columns.
+        upper_to_original = {name.upper(): name for name in fieldnames}
+        try:
+            iso_column = upper_to_original["ISO_CODE"]
+            country_column = upper_to_original["COUNTRY"]
+            dialing_code_column = upper_to_original["DIALING_CODE"]
+        except KeyError as exc:
+            raise ValueError("prefix CSV must contain headers: COUNTRY, ISO_CODE, DIALING_CODE") from exc
 
-    return feature_by_norm_name, feature_by_iso
+        for row in reader:
+            iso_code = (row[iso_column] or "").strip()
+            country_name = re.sub(r"\d+$", "", (row[country_column] or "")).strip()
+            prefixes = _parse_prefixes(row[dialing_code_column] or "")
+            country_prefix = CountryPrefix(country_name=country_name, iso_code=iso_code, prefixes=prefixes)
+            prefix_by_norm_name[_normalize_name(country_name)] = country_prefix
+            prefix_by_iso[iso_code] = country_prefix
+
+    return prefix_by_norm_name, prefix_by_iso
 
 
 def resolve_allowed_country(
     allowed_country: str,
-    feature_by_norm_name: dict[str, FeatureCountry],
-) -> FeatureCountry:
+    prefix_by_norm_name: dict[str, CountryPrefix],
+) -> CountryPrefix:
     normalized_allowed = _normalize_name(allowed_country)
-    if normalized_allowed in feature_by_norm_name:
-        return feature_by_norm_name[normalized_allowed]
+    if normalized_allowed in prefix_by_norm_name:
+        return prefix_by_norm_name[normalized_allowed]
 
     alias_name = ALLOW_NAME_ALIASES.get(normalized_allowed)
-    if alias_name and alias_name in feature_by_norm_name:
-        return feature_by_norm_name[alias_name]
+    if alias_name and alias_name in prefix_by_norm_name:
+        return prefix_by_norm_name[alias_name]
 
-    raise ValueError(f"Unable to map allow-list country '{allowed_country}' to AWS country prefix features")
+    raise ValueError(f"Unable to map allow-list country '{allowed_country}' to prefix list")
 
 
 def calculate_billable_units(price_usd: float, base_rate: float) -> int:
@@ -195,7 +196,7 @@ def write_yaml_file(data: dict, output_path: Path) -> None:
 def build_international_rates(
     allowed_countries: list[str],
     max_price_by_iso: dict[str, float],
-    feature_by_iso: dict[str, FeatureCountry],
+    prefix_by_iso: dict[str, CountryPrefix],
     dlr_snapshot: dict[str, str | None],
     base_rate: float,
     default_dlr: str | None,
@@ -205,45 +206,53 @@ def build_international_rates(
 
     allowed_set = {iso.strip().upper() for iso in allowed_countries}
 
-    # Iterate every country available in the feature set and compute
-    # billable units when price data exist. Mark whether *we* can send to
-    # the country via `we_can_send` attribute (based on allow-list).
     # Normalize dlr_snapshot
     dlr_snapshot = dlr_snapshot or {}
 
-    for iso, feature in feature_by_iso.items():
+    # Iterate every ISO present in the prices list so that every priced
+    # country is considered. Map to prefix rows when available; if a
+    # price ISO has no prefix row it will be reported by the caller.
+    for iso in sorted(max_price_by_iso.keys()):
         iso_norm = (iso or "").strip().upper()
         if not iso_norm:
             continue
 
+        country_prefix = prefix_by_iso.get(iso_norm)
         price = max_price_by_iso.get(iso_norm)
         billable_units = None
         if price is not None:
             billable_units = calculate_billable_units(price, base_rate)
 
-        for prefix in feature.prefixes:
+        # If there is no prefix row we can't map to a dialing prefix;
+        # the caller will log/emit a warning for missing mappings.
+        if not country_prefix:
+            continue
+
+        for prefix in country_prefix.prefixes:
+            resolved_units: int | None = None
             # preserve the special-case for North America country code
             if prefix == "1" and billable_units is not None:
-                billable_units = 1
-
-            names_by_prefix[prefix].add(feature.country_name)
-            existing_entry = entries_by_prefix.get(prefix)
-
-            # Resolve conflicting billable unit values according to the
-            # requested strategy.
-            resolved_units = billable_units
-            if existing_entry:
-                existing_units = existing_entry.get("billable_units")
-                if existing_units is None:
-                    resolved_units = billable_units
-                elif billable_units is None:
-                    resolved_units = existing_units
+                resolved_units = 1
+            else:
+                # Resolve conflicting billable unit values by taking
+                # the maximum across all ISOs that map to the same
+                # prefix (existing numeric vs. current numeric).
+                existing_entry = entries_by_prefix.get(prefix)
+                if existing_entry:
+                    existing_units = existing_entry.get("billable_units")
+                    if existing_units is None:
+                        resolved_units = billable_units
+                    elif billable_units is None:
+                        resolved_units = existing_units
+                    else:
+                        resolved_units = max(existing_units, billable_units)
                 else:
-                    # Always use the max strategy for conflicting numeric
-                    # billable unit values.
-                    resolved_units = max(existing_units, billable_units)
+                    resolved_units = billable_units
+
+            names_by_prefix[prefix].add(country_prefix.country_name)
 
             # Merge attributes for prefixes that map to multiple countries.
+            existing_entry = entries_by_prefix.get(prefix)
             existing_we_can_send = False
             existing_dlr = None
             if existing_entry:
@@ -255,14 +264,19 @@ def build_international_rates(
             merged_we_can_send = existing_we_can_send or current_we_can_send
             merged_dlr = existing_dlr if existing_dlr is not None else dlr_snapshot.get(prefix, default_dlr)
 
-            entries_by_prefix[prefix] = {
-                "attributes": {
-                    "dlr": merged_dlr,
-                    "we_can_send": merged_we_can_send,
-                },
-                "billable_units": resolved_units,
-                "names": [],
-            }
+            # Only include prefixes in the output when we have a numeric
+            # billable unit value (i.e. price data exists for at least one
+            # country that maps to this prefix). Prefixes without price
+            # information are omitted from the generated YAML.
+            if resolved_units is not None:
+                entries_by_prefix[prefix] = {
+                    "attributes": {
+                        "dlr": merged_dlr,
+                        "we_can_send": merged_we_can_send,
+                    },
+                    "billable_units": resolved_units,
+                    "names": [],
+                }
 
     ordered_prefixes = sorted(entries_by_prefix.keys(), key=lambda prefix: (int(prefix), prefix))
     output_data: dict[str, dict] = {}
@@ -277,7 +291,7 @@ def build_international_rates(
 def update_international_billing_rates(
     allow_list_path: Path,
     price_csv_path: Path,
-    feature_csv_path: Path,
+    prefix_csv_path: Path,
     dlr_snapshot_path: Path,
     output_path: Path,
     base_rate: float,
@@ -285,13 +299,20 @@ def update_international_billing_rates(
 ) -> dict[str, dict]:
     allowed_countries = load_allowed_countries(allow_list_path)
     max_price_by_iso = load_price_by_iso(price_csv_path)
-    _, feature_by_iso = load_features_by_name(feature_csv_path)
+    _, prefix_by_iso = load_prefixes_by_name(prefix_csv_path)
+    # Warn about any price ISOs that have no prefix row (no dialing-prefix mapping).
+    missing_prefix_isos = [iso for iso in sorted(max_price_by_iso.keys()) if iso.strip().upper() not in prefix_by_iso]
+    if missing_prefix_isos:
+        print(
+            f"Warning: {len(missing_prefix_isos)} price ISOs have no prefix mapping: {', '.join(missing_prefix_isos)}",
+            file=sys.stderr,
+        )
     dlr_snapshot = load_dlr_snapshot(dlr_snapshot_path)
 
     updated_rates = build_international_rates(
         allowed_countries=allowed_countries,
         max_price_by_iso=max_price_by_iso,
-        feature_by_iso=feature_by_iso,
+        prefix_by_iso=prefix_by_iso,
         dlr_snapshot=dlr_snapshot,
         base_rate=base_rate,
         default_dlr=default_dlr,
@@ -315,7 +336,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     update_international_billing_rates(
         allow_list_path=DEFAULT_ALLOW_LIST_PATH,
         price_csv_path=args.price_file,
-        feature_csv_path=DEFAULT_PREFIX_FEATURES_PATH,
+        prefix_csv_path=DEFAULT_PREFIXES_PATH,
         dlr_snapshot_path=DEFAULT_DLR_SNAPSHOT_PATH,
         output_path=DEFAULT_OUTPUT_PATH,
         base_rate=DEFAULT_BASE_RATE,
