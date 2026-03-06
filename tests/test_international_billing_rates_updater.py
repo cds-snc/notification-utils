@@ -9,7 +9,6 @@ from scripts.sms_pricing.international_billing_rates_updater import (
     calculate_billable_units,
     load_allowed_countries,
     load_prefixes_by_name,
-    load_price_by_iso,
 )
 
 
@@ -22,21 +21,6 @@ def test_load_allowed_countries_deduplicates_entries(tmp_path):
     allow_list.write_text("Canada\nUnited States\nCanada\n")
 
     assert load_allowed_countries(allow_list) == ["Canada", "United States"]
-
-
-def test_loaders_support_changed_column_names(tmp_path):
-    prices_csv = tmp_path / "prices.csv"
-    prices_csv.write_text("ISO,Country Name,Rate\n" "CA,Canada,0.007\n" "US,United States,0.008\n")
-
-    prefixes_csv = tmp_path / "prefixes.csv"
-    prefixes_csv.write_text("COUNTRY,ISO_CODE,DIALING_CODE\n" "Canada,CA,1\n" "United States,US,1\n")
-
-    max_price_by_iso = load_price_by_iso(prices_csv)
-    prefix_by_name, _ = load_prefixes_by_name(prefixes_csv)
-
-    assert max_price_by_iso == {"CA": 0.007, "US": 0.008}
-    assert "canada" in prefix_by_name
-    assert "united states" in prefix_by_name
 
 
 def test_shared_prefix_max_resolution_guernsey_jersey(tmp_path):
@@ -96,3 +80,32 @@ def test_default_paths_point_to_expected_files():
     assert DEFAULT_PREFIXES_PATH.name == "country_prefixes.csv"
     assert DEFAULT_DLR_SNAPSHOT_PATH.name == "dlr_snapshot.yml"
     assert DEFAULT_OUTPUT_PATH.name == "international_billing_rates.yml"
+
+
+def test_allowed_countries_reflected_in_can_send():
+    # Verify that each allowed ISO has its dialing prefix in the YAML with
+    # `can_send: true`. This ensures the generated YAML correctly reflects
+    # the allow-list.
+    import yaml
+
+    rates = yaml.safe_load(DEFAULT_OUTPUT_PATH.read_text()) or {}
+
+    allowed_isos = load_allowed_countries(DEFAULT_ALLOW_LIST_PATH)
+    _, prefix_by_iso = load_prefixes_by_name(DEFAULT_PREFIXES_PATH)
+
+    missing = []
+    for iso in allowed_isos:
+        iso_u = iso.strip().upper()
+        prefix_entry = prefix_by_iso.get(iso_u)
+        if not prefix_entry:
+            missing.append(f"{iso_u} (no prefix mapping)")
+            continue
+
+        # Check each prefix for this ISO
+        for prefix in prefix_entry.prefixes:
+            if prefix not in rates:
+                missing.append(f"{iso_u} (prefix {prefix} missing from YAML)")
+            elif not rates[prefix].get("attributes", {}).get("can_send"):
+                missing.append(f"{iso_u} (prefix {prefix} has can_send=false)")
+
+    assert missing == [], f"Allowed ISOs not correctly marked in YAML: {missing}"
