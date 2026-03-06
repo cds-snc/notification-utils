@@ -63,7 +63,7 @@ def test_shared_prefix_max_resolution_guernsey_jersey(tmp_path):
     assert rates["44"]["billable_units"] == 10
     # No explicit dlr snapshot for prefix '44' was provided, so expect
     # the default DLR value to be used.
-    assert rates["44"]["attributes"] == {"dlr": "YES", "we_can_send": True}
+    assert rates["44"]["attributes"] == {"dlr": "YES", "can_send": True}
     assert rates["44"]["names"] == ["Guernsey", "Jersey"]
 
 
@@ -86,7 +86,7 @@ def test_build_international_rates_uses_max_on_shared_prefix_when_strategy_max(t
 
     assert set(rates.keys()) == {"1"}
     assert rates["1"]["billable_units"] == 1
-    assert rates["1"]["attributes"] == {"dlr": "Carrier DLR", "we_can_send": True}
+    assert rates["1"]["attributes"] == {"dlr": "Carrier DLR", "can_send": True}
     assert rates["1"]["names"] == ["Canada", "United States"]
 
 
