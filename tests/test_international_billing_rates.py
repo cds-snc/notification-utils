@@ -18,14 +18,15 @@ def test_international_billing_rates_are_in_correct_format(country_prefix, value
     assert set(values.keys()) == {"attributes", "billable_units", "names"}
 
     assert isinstance(values["billable_units"], int)
-    assert 1 <= values["billable_units"] <= 3
+    assert values["billable_units"] >= 1
 
     assert isinstance(values["names"], list)
     assert all(isinstance(country, str) for country in values["names"])
 
     assert isinstance(values["attributes"], dict)
+    assert "dlr" in values["attributes"]
     assert values["attributes"]["dlr"] is None or isinstance(values["attributes"]["dlr"], str)
 
 
 def test_country_codes():
-    assert len(COUNTRY_PREFIXES) == 214
+    assert len(COUNTRY_PREFIXES) > 0

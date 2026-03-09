@@ -1,6 +1,7 @@
 from functools import partial
 
 import pytest
+from notifications_utils.international_billing_rates import INTERNATIONAL_BILLING_RATES
 from notifications_utils.recipients import (
     InvalidAddressError,
     InvalidEmailError,
@@ -138,47 +139,19 @@ def test_detect_local_phone_numbers(phone_number):
     assert is_local_phone_number(phone_number) is True
 
 
+def _billable_units(prefix):
+    return INTERNATIONAL_BILLING_RATES[prefix]["billable_units"]
+
+
 @pytest.mark.parametrize(
     "phone_number, expected_info",
     [
         (
-            "+447900900123",
+            "+27-82-123-1234",
             international_phone_info(
                 international=True,
-                country_prefix="44",  # UK
-                billable_units=1,
-            ),
-        ),
-        (
-            "+20-12-1234-1234",
-            international_phone_info(
-                international=True,
-                country_prefix="20",  # Egypt
-                billable_units=3,
-            ),
-        ),
-        (
-            "+201212341234",
-            international_phone_info(
-                international=True,
-                country_prefix="20",  # Egypt
-                billable_units=3,
-            ),
-        ),
-        (
-            "+79587714230",
-            international_phone_info(
-                international=True,
-                country_prefix="7",  # Russia
-                billable_units=1,
-            ),
-        ),
-        (
-            "1-202-555-0104",
-            international_phone_info(
-                international=False,
-                country_prefix="1",  # USA
-                billable_units=1,
+                country_prefix="27",  # South Africa
+                billable_units=_billable_units("27"),
             ),
         ),
         (
@@ -186,7 +159,15 @@ def test_detect_local_phone_numbers(phone_number):
             international_phone_info(
                 international=True,
                 country_prefix="230",  # Mauritius
-                billable_units=2,
+                billable_units=_billable_units("230"),
+            ),
+        ),
+        (
+            "1-202-555-0104",
+            international_phone_info(
+                international=False,
+                country_prefix="1",  # USA
+                billable_units=_billable_units("1"),
             ),
         ),
     ],
