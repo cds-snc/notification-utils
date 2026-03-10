@@ -211,7 +211,7 @@ class SMSMessageTemplate(Template):
             (
                 # we always want to call SMSMessageTemplate.__str__ regardless of subclass, to avoid any html formatting
                 SMSMessageTemplate.__str__(self) if self._values else sms_encode(add_prefix(self.content.strip(), self.prefix))
-            ).encode(self.encoding)
+            )
         )
 
     @property
@@ -803,7 +803,14 @@ def get_sms_fragment_count(character_count, is_unicode):
 
 
 def is_unicode(content):
-    return set(content) & set(SanitiseSMS.WELSH_NON_GSM_CHARACTERS)
+    non_gsm_allowed = (
+        SanitiseSMS.WELSH_NON_GSM_CHARACTERS
+        | SanitiseSMS.FRENCH_NON_GSM_CHARACTESR
+        | SanitiseSMS.INUKTITUK_CHARACTERS
+        | SanitiseSMS.CREE_CHARACTERS
+        | SanitiseSMS.OJIBWE_CHARACTERS
+    )
+    return set(content) & non_gsm_allowed
 
 
 def get_html_email_body(template_content, template_values, redact_missing_personalisation=False, html="escape"):
