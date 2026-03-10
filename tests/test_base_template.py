@@ -1,4 +1,5 @@
 import csv
+import io
 from importlib.resources import files
 from unittest.mock import patch
 
@@ -96,7 +97,7 @@ def test_get_character_count_of_content(content, prefix, template_cls, expected_
 
 def _load_sms_fragment_test_cases():
     csv_file = files("notifications_utils").joinpath("sms_fragment_count_cases.csv")
-    with csv_file.open(newline="") as f:
+    with io.StringIO(csv_file.read_text()) as f:
         return [(row["sms_content"], int(row["expected_fragments"])) for row in csv.DictReader(f)]
 
 
