@@ -207,12 +207,11 @@ class SMSMessageTemplate(Template):
 
     @property
     def content_count(self):
-        return len(
-            (
-                # we always want to call SMSMessageTemplate.__str__ regardless of subclass, to avoid any html formatting
-                SMSMessageTemplate.__str__(self) if self._values else sms_encode(add_prefix(self.content.strip(), self.prefix))
-            )
+        content = (
+            # we always want to call SMSMessageTemplate.__str__ regardless of subclass, to avoid any html formatting
+            SMSMessageTemplate.__str__(self) if self._values else sms_encode(add_prefix(self.content.strip(), self.prefix))
         )
+        return count_sms_character_units(content)
 
     @property
     def fragment_count(self):
@@ -811,6 +810,22 @@ def is_unicode(content):
         | SanitiseSMS.OJIBWE_CHARACTERS
     )
     return set(content) & non_gsm_allowed
+
+
+# GSM 03.38 extension characters — each occupies 2 units (basic char + escape prefix)
+_GSM_EXTENDED_CHARS = set("^{}\\[~]|\u20ac")
+
+
+def count_sms_character_units(content):
+    """Return the number of GSM character units in *content*.
+
+    In GSM-7 mode, extension characters (^, {, }, \\, [, ~, ], |, €) each cost
+    2 units due to the required escape byte. All other GSM characters cost 1
+    unit. In Unicode (UCS-2) mode every character costs 1 unit.
+    """
+    if is_unicode(content):
+        return len(content)
+    return sum(2 if c in _GSM_EXTENDED_CHARS else 1 for c in content)
 
 
 def get_html_email_body(template_content, template_values, redact_missing_personalisation=False, html="escape"):

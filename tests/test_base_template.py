@@ -1,4 +1,7 @@
-from unittest.mock import PropertyMock, patch
+import csv
+import io
+from importlib.resources import files
+from unittest.mock import patch
 
 import pytest
 from notifications_utils.template import SMSMessageTemplate, SMSPreviewTemplate, Template, WithSubjectTemplate, is_unicode
@@ -92,48 +95,16 @@ def test_get_character_count_of_content(content, prefix, template_cls, expected_
     assert template.content_count == expected_replaced_length
 
 
-@pytest.mark.parametrize(
-    "char_count, expected_sms_fragment_count",
-    [
-        (159, 1),
-        (160, 1),
-        (161, 2),
-        (306, 2),
-        (307, 3),
-        (459, 3),
-        (460, 4),
-        (461, 4),
-        (612, 4),
-        (613, 5),
-    ],
-)
-def test_sms_fragment_count_sms_encoding(char_count, expected_sms_fragment_count):
-    with patch("notifications_utils.template.SMSMessageTemplate.content_count", new_callable=PropertyMock) as mocked:
-        mocked.return_value = char_count
-        template = SMSMessageTemplate({"content": "faked", "template_type": "sms"})
-        assert template.fragment_count == expected_sms_fragment_count
+def _load_sms_fragment_test_cases():
+    csv_file = files("notifications_utils").joinpath("sms_fragment_count_cases.csv")
+    with io.StringIO(csv_file.read_text()) as f:
+        return [(row["sms_content"], int(row["expected_fragments"])) for row in csv.DictReader(f)]
 
 
-@pytest.mark.parametrize(
-    "char_count, expected_sms_fragment_count",
-    [
-        (69, 1),
-        (70, 1),
-        (71, 2),
-        (134, 2),
-        (135, 3),
-        (201, 3),
-        (202, 4),
-        (203, 4),
-        (268, 4),
-        (269, 5),
-    ],
-)
-def test_sms_fragment_count_unicode_encoding(char_count, expected_sms_fragment_count):
-    with patch("notifications_utils.template.SMSMessageTemplate.content_count", new_callable=PropertyMock) as mocked:
-        mocked.return_value = char_count
-        template = SMSMessageTemplate({"content": "This is â mêssâgê with Ŵêlsh chârâctêrs", "template_type": "sms"})
-        assert template.fragment_count == expected_sms_fragment_count
+@pytest.mark.parametrize("sms_content, expected_fragments", _load_sms_fragment_test_cases())
+def test_sms_fragment_count(sms_content, expected_fragments):
+    template = SMSMessageTemplate({"content": sms_content, "template_type": "sms"})
+    assert template.fragment_count == expected_fragments
 
 
 @pytest.mark.parametrize(
