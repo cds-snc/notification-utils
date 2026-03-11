@@ -79,8 +79,9 @@ def test_extracting_placeholders(template_content, template_subject, expected):
         ("深", None, 1, 1),
         ("'First line.\n", None, 12, 12),
         ("\t\n\r", None, 0, 0),
-        ("((placeholder))", None, 15, 3),
-        ("((placeholder))", "Service name", 29, 17),
+        # variables do not count towards the character count for sms, since they will be replaced
+        ("((placeholder))", None, 0, 3),
+        ("((placeholder))", "Service name", 14, 17),
         ("Foo", "((placeholder))", 20, 20),  # placeholder doesn’t work in service name
     ],
 )

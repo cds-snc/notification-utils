@@ -209,7 +209,9 @@ class SMSMessageTemplate(Template):
     def content_count(self):
         content = (
             # we always want to call SMSMessageTemplate.__str__ regardless of subclass, to avoid any html formatting
-            SMSMessageTemplate.__str__(self) if self._values else sms_encode(add_prefix(self.content.strip(), self.prefix))
+            SMSMessageTemplate.__str__(self)
+            if self._values
+            else sms_encode(add_prefix(Field.placeholder_pattern.sub("", self.content.strip()), self.prefix))
         )
         return count_sms_character_units(content)
 
