@@ -205,20 +205,26 @@ class SMSMessageTemplate(Template):
     def prefix(self, value):
         self._prefix = value
 
+    def _encoded_content(self):
+        """Return the SMS-encoded content used for both character counting and Unicode detection.
+
+        When values are set, placeholders are already replaced via __str__. When no values are
+        set, placeholder syntax is stripped before encoding so that placeholder names don't
+        inflate the character count or skew Unicode detection.
+        """
+        if self._values:
+            # we always want to call SMSMessageTemplate.__str__ regardless of subclass, to avoid any html formatting
+            return SMSMessageTemplate.__str__(self)
+        return sms_encode(add_prefix(Field.placeholder_pattern.sub("", self.content.strip()), self.prefix))
+
     @property
     def content_count(self):
-        content = (
-            # we always want to call SMSMessageTemplate.__str__ regardless of subclass, to avoid any html formatting
-            SMSMessageTemplate.__str__(self)
-            if self._values
-            else sms_encode(add_prefix(Field.placeholder_pattern.sub("", self.content.strip()), self.prefix))
-        )
-        return count_sms_character_units(content)
+        return count_sms_character_units(self._encoded_content())
 
     @property
     def fragment_count(self):
-        content_with_placeholders = str(self)
-        return get_sms_fragment_count(self.content_count, is_unicode(content_with_placeholders))
+        content = self._encoded_content()
+        return get_sms_fragment_count(count_sms_character_units(content), is_unicode(content))
 
     def is_message_too_long(self):
         return self.content_count > self.CHAR_COUNT_LIMIT
