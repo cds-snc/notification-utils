@@ -397,7 +397,21 @@ class TestRedisHashes:
         key = "12345"
         value = "template-1111"
 
-        mocked_redis_client.decrement_hash_value(key, value, -1)
+        mocked_redis_client.decrement_hash_value(key, value, decr_by=-1)
+        mocked_redis_client.redis_store.hincrby.assert_called_with(key, value, -1)
+
+    def test_decrement_hash_value_should_decrement_value_by_200_for_key(self, mocked_redis_client):
+        key = "12345"
+        value = "template-1111"
+
+        mocked_redis_client.decrement_hash_value(key, value, decr_by=-200)
+        mocked_redis_client.redis_store.hincrby.assert_called_with(key, value, -200)
+
+    def test_decrement_hash_value_should_decrement_by_default(self, mocked_redis_client):
+        key = "12345"
+        value = "template-1111"
+
+        mocked_redis_client.decrement_hash_value(key, value)
         mocked_redis_client.redis_store.hincrby.assert_called_with(key, value, -1)
 
     def test_incr_hash_value_should_increment_value_by_one_for_key(self, mocked_redis_client):

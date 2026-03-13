@@ -1,7 +1,10 @@
-from unittest.mock import PropertyMock, patch
+import csv
+import io
+from importlib.resources import files
+from unittest.mock import patch
 
 import pytest
-from notifications_utils.template import SMSMessageTemplate, SMSPreviewTemplate, Template, WithSubjectTemplate
+from notifications_utils.template import SMSMessageTemplate, SMSPreviewTemplate, Template, WithSubjectTemplate, is_unicode
 
 
 def test_class():
@@ -76,8 +79,9 @@ def test_extracting_placeholders(template_content, template_subject, expected):
         ("深", None, 1, 1),
         ("'First line.\n", None, 12, 12),
         ("\t\n\r", None, 0, 0),
-        ("((placeholder))", None, 15, 3),
-        ("((placeholder))", "Service name", 29, 17),
+        # variables do not count towards the character count for sms, since they will be replaced
+        ("((placeholder))", None, 0, 3),
+        ("((placeholder))", "Service name", 14, 17),
         ("Foo", "((placeholder))", 20, 20),  # placeholder doesn’t work in service name
     ],
 )
@@ -92,48 +96,76 @@ def test_get_character_count_of_content(content, prefix, template_cls, expected_
     assert template.content_count == expected_replaced_length
 
 
-@pytest.mark.parametrize(
-    "char_count, expected_sms_fragment_count",
-    [
-        (159, 1),
-        (160, 1),
-        (161, 2),
-        (306, 2),
-        (307, 3),
-        (459, 3),
-        (460, 4),
-        (461, 4),
-        (612, 4),
-        (613, 5),
-    ],
-)
-def test_sms_fragment_count_sms_encoding(char_count, expected_sms_fragment_count):
-    with patch("notifications_utils.template.SMSMessageTemplate.content_count", new_callable=PropertyMock) as mocked:
-        mocked.return_value = char_count
-        template = SMSMessageTemplate({"content": "faked", "template_type": "sms"})
-        assert template.fragment_count == expected_sms_fragment_count
+def _load_sms_fragment_test_cases():
+    csv_file = files("notifications_utils").joinpath("sms_fragment_count_cases.csv")
+    with io.StringIO(csv_file.read_text()) as f:
+        return [(row["sms_content"], int(row["expected_fragments"])) for row in csv.DictReader(f)]
+
+
+@pytest.mark.parametrize("sms_content, expected_fragments", _load_sms_fragment_test_cases())
+def test_sms_fragment_count(sms_content, expected_fragments):
+    template = SMSMessageTemplate({"content": sms_content, "template_type": "sms"})
+    assert template.fragment_count == expected_fragments
 
 
 @pytest.mark.parametrize(
-    "char_count, expected_sms_fragment_count",
+    "content, expected",
     [
-        (69, 1),
-        (70, 1),
-        (71, 2),
-        (134, 2),
-        (135, 3),
-        (201, 3),
-        (202, 4),
-        (203, 4),
-        (268, 4),
-        (269, 5),
+        # Pure GSM content — not unicode
+        ("Hello world", False),
+        # Welsh characters — detected before and after fix
+        ("ŵ", True),
+        ("This is â Welsh message", True),
+        # French non-GSM characters not in Welsh set — only detected after fix
+        ("À", True),
+        ("ç", True),
+        ("Œ", True),
+        ("Message en français: À noël", True),
+        # Inuktituk characters — only detected after fix
+        ("ᐁ", True),
+        # Cree characters — only detected after fix
+        ("ᐊ", True),
     ],
 )
-def test_sms_fragment_count_unicode_encoding(char_count, expected_sms_fragment_count):
-    with patch("notifications_utils.template.SMSMessageTemplate.content_count", new_callable=PropertyMock) as mocked:
-        mocked.return_value = char_count
-        template = SMSMessageTemplate({"content": "This is â mêssâgê with Ŵêlsh chârâctêrs", "template_type": "sms"})
-        assert template.fragment_count == expected_sms_fragment_count
+def test_is_unicode(content, expected):
+    assert bool(is_unicode(content)) == expected
+
+
+@pytest.mark.parametrize(
+    "content, expected_count",
+    [
+        # Multibyte UTF-8 characters must be counted as one character each,
+        # not by byte length. Old code used .encode('utf-8') which inflated counts.
+        ("â", 1),  # Welsh: U+00E2 = 2 bytes in UTF-8, but 1 SMS character
+        ("ŵ", 1),  # Welsh: U+0175 = 2 bytes in UTF-8, but 1 SMS character
+        ("âê", 2),  # Two Welsh chars: 4 bytes but 2 SMS characters
+        ("À", 1),  # French: U+00C0 = 2 bytes in UTF-8, but 1 SMS character
+        ("ç", 1),  # French: U+00E7 = 2 bytes in UTF-8, but 1 SMS character
+    ],
+)
+def test_content_count_uses_character_count_not_byte_count(content, expected_count):
+    template = SMSMessageTemplate({"content": content, "template_type": "sms"})
+    assert template.content_count == expected_count
+
+
+@pytest.mark.parametrize(
+    "content, expected_fragments",
+    [
+        # 70 French non-GSM chars (unicode mode): exactly 1 fragment (≤70 chars)
+        ("À" * 70, 1),
+        # 71 French non-GSM chars (unicode mode): 2 fragments (ceil(71/67) = 2)
+        ("À" * 71, 2),
+        # 134 French non-GSM chars (unicode mode): 2 fragments (ceil(134/67) = 2)
+        ("À" * 134, 2),
+        # 135 French non-GSM chars (unicode mode): 3 fragments (ceil(135/67) = 3)
+        ("À" * 135, 3),
+    ],
+)
+def test_sms_fragment_count_french_uses_unicode_encoding(content, expected_fragments):
+    # French non-GSM characters (e.g. "À") were not detected by is_unicode() before the fix.
+    # They should trigger unicode fragment counting rules (70/67 chars), not GSM (160/153).
+    template = SMSMessageTemplate({"content": content, "template_type": "sms"})
+    assert template.fragment_count == expected_fragments
 
 
 def test_random_variable_retrieve():

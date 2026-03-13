@@ -20,6 +20,7 @@ from notifications_utils.template import (
     SMSPreviewTemplate,
     Template,
     WithSubjectTemplate,
+    _render_conditional_email_markdown,
 )
 
 
@@ -943,7 +944,14 @@ def test_subject_line_gets_replaced():
             {},
             [
                 mock.call("subject", {}, html="escape", redact_missing_personalisation=False),
-                mock.call("content", {}, html="escape", markdown_lists=True, redact_missing_personalisation=False),
+                mock.call(
+                    "content",
+                    {},
+                    html="escape",
+                    markdown_lists=True,
+                    redact_missing_personalisation=False,
+                    markdown_renderer=_render_conditional_email_markdown,
+                ),
                 mock.call("content", {}, html="escape", markdown_lists=True),
             ],
         ),
@@ -951,7 +959,14 @@ def test_subject_line_gets_replaced():
             EmailPreviewTemplate,
             {},
             [
-                mock.call("content", {}, html="escape", markdown_lists=True, redact_missing_personalisation=False),
+                mock.call(
+                    "content",
+                    {},
+                    html="escape",
+                    markdown_lists=True,
+                    redact_missing_personalisation=False,
+                    markdown_renderer=_render_conditional_email_markdown,
+                ),
                 mock.call("subject", {}, html="escape", redact_missing_personalisation=False),
                 mock.call("((email address))", {}),
             ],
@@ -1035,7 +1050,14 @@ def test_subject_line_gets_replaced():
             EmailPreviewTemplate,
             {"redact_missing_personalisation": True},
             [
-                mock.call("content", {}, html="escape", markdown_lists=True, redact_missing_personalisation=True),
+                mock.call(
+                    "content",
+                    {},
+                    html="escape",
+                    markdown_lists=True,
+                    redact_missing_personalisation=True,
+                    markdown_renderer=_render_conditional_email_markdown,
+                ),
                 mock.call("subject", {}, html="escape", redact_missing_personalisation=True),
                 mock.call("((email address))", {}),
             ],

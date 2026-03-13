@@ -211,19 +211,26 @@ class SMSMessageTemplate(Template):
     def prefix(self, value):
         self._prefix = value
 
+    def _encoded_content(self):
+        """Return the SMS-encoded content used for both character counting and Unicode detection.
+
+        When values are set, placeholders are already replaced via __str__. When no values are
+        set, placeholder syntax is stripped before encoding so that placeholder names don't
+        inflate the character count or skew Unicode detection.
+        """
+        if self._values:
+            # we always want to call SMSMessageTemplate.__str__ regardless of subclass, to avoid any html formatting
+            return SMSMessageTemplate.__str__(self)
+        return sms_encode(add_prefix(Field.placeholder_pattern.sub("", self.content.strip()), self.prefix))
+
     @property
     def content_count(self):
-        return len(
-            (
-                # we always want to call SMSMessageTemplate.__str__ regardless of subclass, to avoid any html formatting
-                SMSMessageTemplate.__str__(self) if self._values else sms_encode(add_prefix(self.content.strip(), self.prefix))
-            ).encode(self.encoding)
-        )
+        return count_sms_character_units(self._encoded_content())
 
     @property
     def fragment_count(self):
-        content_with_placeholders = str(self)
-        return get_sms_fragment_count(self.content_count, is_unicode(content_with_placeholders))
+        content = self._encoded_content()
+        return get_sms_fragment_count(count_sms_character_units(content), is_unicode(content))
 
     def is_message_too_long(self):
         return self.content_count > self.CHAR_COUNT_LIMIT
@@ -811,7 +818,30 @@ def get_sms_fragment_count(character_count, is_unicode):
 
 
 def is_unicode(content):
-    return set(content) & set(SanitiseSMS.WELSH_NON_GSM_CHARACTERS)
+    non_gsm_allowed = (
+        SanitiseSMS.WELSH_NON_GSM_CHARACTERS
+        | SanitiseSMS.FRENCH_NON_GSM_CHARACTESR
+        | SanitiseSMS.INUKTITUK_CHARACTERS
+        | SanitiseSMS.CREE_CHARACTERS
+        | SanitiseSMS.OJIBWE_CHARACTERS
+    )
+    return set(content) & non_gsm_allowed
+
+
+# GSM 03.38 extension characters — each occupies 2 units (basic char + escape prefix)
+_GSM_EXTENDED_CHARS = set("^{}\\[~]|\u20ac")
+
+
+def count_sms_character_units(content):
+    """Return the number of GSM character units in *content*.
+
+    In GSM-7 mode, extension characters (^, {, }, \\, [, ~, ], |, €) each cost
+    2 units due to the required escape byte. All other GSM characters cost 1
+    unit. In Unicode (UCS-2) mode every character costs 1 unit.
+    """
+    if is_unicode(content):
+        return len(content)
+    return sum(2 if c in _GSM_EXTENDED_CHARS else 1 for c in content)
 
 
 def get_html_email_body(template_content, template_values, redact_missing_personalisation=False, html="escape"):
@@ -827,6 +857,7 @@ def get_html_email_body(template_content, template_values, redact_missing_person
                 html=html,
                 markdown_lists=True,
                 redact_missing_personalisation=redact_missing_personalisation,
+                markdown_renderer=_render_conditional_email_markdown,
             )
         )
         .then(unlink_govuk_escaped)
@@ -844,6 +875,22 @@ def get_html_email_body(template_content, template_values, redact_missing_person
         .then(add_cta_buttons)
         .then(do_nice_typography)
     )
+
+
+def _render_conditional_email_markdown(content):
+    """Render markdown for multiline conditional preview content.
+
+    Conditionals are pre-rendered, so we need to mirror the parsing pipeline in get_html_email_body
+    to ensure that language tags, RTL, lists, etc. that are inside conditionals are also pre-rendered
+    else the main markdown rendering pass in get_html_email_body breaks them apart and mangles formatting.
+    """
+    result = escape_lang_tags(content)
+    result = escape_rtl_tags(result)
+    result = notify_email_markdown(result)
+    result = remove_nested_list_padding(result)
+    result = add_language_divs(result)
+    result = add_rtl_divs(result)
+    return result
 
 
 def do_nice_typography(value):
