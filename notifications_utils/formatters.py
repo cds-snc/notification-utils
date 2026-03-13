@@ -509,7 +509,11 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
 
     def table_cell(self, content, **flags):
         if flags.get("header"):
-            return '<th style="text-align: left; border: 1px solid #BFC1C3; padding: 8px; font-weight: bold;"' f">{content}</th>"
+            return (
+                '<th style="text-align: left; border: 1px solid #BFC1C3; '
+                'padding: 8px; font-weight: bold; background: #fffdf5;"'
+                f">{content}</th>"
+            )
 
         align = flags.get("align")
         align_style = f"text-align: {align}; " if align else ""

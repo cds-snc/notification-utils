@@ -566,6 +566,7 @@ def test_table():
     assert "<table" in email_result
     assert "<th" in email_result
     assert "<td" in email_result
+    assert "background: #fffdf5" in email_result
     assert "col" in email_result
     assert "val" in email_result
 
