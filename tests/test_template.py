@@ -357,3 +357,17 @@ class TestCTATags:
         html = get_html_email_body(bad_content, {})
         # Malformed tags should not be processed
         assert "background: #213045" not in html
+
+
+class TestTableTags:
+    def test_markdown_tables_render_in_html(self):
+        content = "| Syntax | Description |\n| ----------- | ----------- |\n| Header | Title |\n| Paragraph | Text |"
+        html = get_html_email_body(content, {})
+
+        assert "<table" in html
+        assert "<th" in html
+        assert "<td" in html
+        assert "Syntax" in html
+        assert "Description" in html
+        assert "Header" in html
+        assert "Paragraph" in html

@@ -496,8 +496,31 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
     def emphasis(self, text):
         return f"<em>{text}</em>"
 
+    def table(self, header, body):
+        return (
+            '<table style="Margin: 0 0 20px 0; border-collapse: collapse; width: 100%; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+            f"<thead>{header}</thead>"
+            f"<tbody>{body}</tbody>"
+            "</table>"
+        )
+
+    def table_row(self, content):
+        return f"<tr>{content}</tr>"
+
+    def table_cell(self, content, **flags):
+        if flags.get("header"):
+            return '<th style="text-align: left; border: 1px solid #BFC1C3; padding: 8px; font-weight: bold;"' f">{content}</th>"
+
+        align = flags.get("align")
+        align_style = f"text-align: {align}; " if align else ""
+        return f'<td style="{align_style}border: 1px solid #BFC1C3; padding: 8px;">' f"{content}</td>"
+
 
 class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
+    _TABLE_CELL_SEPARATOR = "\u241f"
+    _TABLE_HEADER_PREFIX = "__TABLE_HEADER__:"
+    _TABLE_CELL_PREFIX = "__TABLE_CELL__:"
+
     COLUMN_WIDTH = 65
 
     def header(self, text, level, raw=None):
@@ -577,6 +600,30 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
 
     def emphasis(self, text):
         return f"_{text}_"
+
+    def table(self, header, body):
+        return "".join((self.linebreak() * 2, header, body.rstrip("\n")))
+
+    def table_row(self, content):
+        cells_with_markers = [cell for cell in content.split(self._TABLE_CELL_SEPARATOR) if cell]
+        if not cells_with_markers:
+            return ""
+
+        is_header = all(cell.startswith(self._TABLE_HEADER_PREFIX) for cell in cells_with_markers)
+        cells = [
+            cell.replace(self._TABLE_HEADER_PREFIX, "", 1).replace(self._TABLE_CELL_PREFIX, "", 1) for cell in cells_with_markers
+        ]
+
+        row = f"| {' | '.join(cells)} |"
+        if is_header:
+            separator = f"| {' | '.join(['---'] * len(cells))} |"
+            return f"{row}\n{separator}\n"
+
+        return f"{row}\n"
+
+    def table_cell(self, content, **flags):
+        prefix = self._TABLE_HEADER_PREFIX if flags.get("header") else self._TABLE_CELL_PREFIX
+        return f"{prefix}{content}{self._TABLE_CELL_SEPARATOR}"
 
 
 class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer):
