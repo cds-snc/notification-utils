@@ -46,9 +46,9 @@ def export_multipliers_csv(output_path=None):
             for country in entry.get("names", []):
                 rows.append({"country": country, "country_code": prefix, "rate_multiplier": multiplier})
 
-    rows.sort(key=lambda r: r["country"])
+    rows.sort(key=lambda r: (r["country"], r["country_code"]))
 
-    with open(output_path, "w", newline="") as f:
+    with open(output_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["country", "country_code", "rate_multiplier"])
         writer.writeheader()
         writer.writerows(rows)
