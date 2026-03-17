@@ -1,0 +1,97 @@
+country,country_code,rate_multiplier
+Afghanistan,93,25
+Aland Islands,358,9
+Albania,355,6
+Algeria,213,17
+Austria,43,7
+Azerbaijan,994,25
+Bahrain,973,3
+Bangladesh,880,21
+Barbados,1246,15
+Belize,501,18
+Bermuda,1441,15
+Bouvet Island,47,10
+Brunei,673,1
+Bulgaria,359,10
+Burkina Faso,226,14
+Cambodia,855,25
+Cameroon,237,13
+Canada,1,1
+Croatia,385,6
+Cyprus,357,2
+Czech Republic,420,5
+Democratic Republic of the Congo,243,15
+Denmark,45,5
+Djibouti,253,8
+Estonia,372,6
+Ethiopia,251,23
+Fiji,679,14
+Finland,358,9
+France,33,5
+French Polynesia,689,9
+Gabon,241,15
+Georgia,995,12
+Germany,49,8
+Ghana,233,24
+Greece,30,6
+Grenada,1473,15
+Guadeloupe,590,11
+Guernsey,44,6
+Haiti,509,18
+Honduras,504,16
+Hong Kong,852,6
+Iceland,354,7
+Iraq,964,21
+Isle of Man,44,6
+Israel,972,15
+Italy,39,6
+Ivory Coast,225,24
+Jamaica,1876,12
+Japan,81,5
+Jersey,44,6
+Latvia,371,5
+Lebanon,961,24
+Libya,218,22
+Lithuania,370,3
+Luxembourg,352,6
+Macau,853,4
+Macedonia,389,2
+Madagascar,261,33
+Malta,356,5
+Mauritius,230,11
+Mexico,52,7
+Moldova,373,5
+Morocco,212,14
+Netherlands,31,8
+Nigeria,234,16
+Norway,47,10
+Pakistan,92,31
+Panama,507,10
+Poland,48,3
+Portugal,351,3
+Puerto Rico,1,1
+Romania,40,6
+Rwanda,250,12
+Saint Barthelemy,590,11
+Saint Martin,590,11
+Senegal,221,25
+Serbia,381,23
+Slovakia,421,6
+Slovenia,386,10
+Spain,34,5
+Svalbard and Jan Mayen,47,10
+Sweden,46,5
+Switzerland,41,4
+Tanzania,255,27
+Togo,228,25
+Trinidad and Tobago,1868,16
+Tunisia,216,27
+Uganda,256,14
+Ukraine,380,11
+United Kingdom,44,6
+United States,1,1
+United States Minor Outlying Islands,1,1
+Vanuatu,678,9
+Western Sahara,212,14
+Yemen,967,16
+Zimbabwe,263,17
