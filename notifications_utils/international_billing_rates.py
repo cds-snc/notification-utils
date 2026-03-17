@@ -30,13 +30,15 @@ with open("{}/international_billing_rates.yml".format(dir_path)) as f:
     COUNTRY_PREFIXES = list(reversed(sorted(INTERNATIONAL_BILLING_RATES.keys(), key=len)))
 
 
-def export_multipliers_csv(output_path="international_billing_rates_multipliers.csv"):
+def export_multipliers_csv(output_path=None):
     """
     Write a CSV file containing the billing multipliers for all countries
     that can be sent to (i.e. where can_send is true).
 
     Columns: country, country_code, rate_multiplier
     """
+    if output_path is None:
+        output_path = os.path.join(dir_path, "international_billing_rates.csv")
     rows = []
     for prefix, entry in INTERNATIONAL_BILLING_RATES.items():
         if entry.get("attributes", {}).get("can_send"):
