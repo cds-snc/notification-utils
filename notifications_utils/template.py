@@ -230,7 +230,7 @@ class SMSMessageTemplate(Template):
         return self.content_count > self.CHAR_COUNT_LIMIT
 
     def is_name_too_long(self):
-        return len(self.name) > self.NAME_CHAR_LIMIT
+        return len(self.name) > self.NAME_CHAR_LIMIT if self.name else False
 
 
 class SMSPreviewTemplate(SMSMessageTemplate):
@@ -461,7 +461,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         return self.content_count > self.CHAR_COUNT_LIMIT
 
     def is_name_too_long(self):
-        return len(self.name) > self.NAME_CHAR_LIMIT
+        return len(self.name) > self.NAME_CHAR_LIMIT if self.name else False
 
 
 class EmailPreviewTemplate(WithSubjectTemplate):
@@ -574,7 +574,7 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         return self.content_count > self.CHAR_COUNT_LIMIT
 
     def is_name_too_long(self):
-        return len(self.name) > self.NAME_CHAR_LIMIT
+        return len(self.name) > self.NAME_CHAR_LIMIT if self.name else False
 
 
 class LetterPreviewTemplate(WithSubjectTemplate):
