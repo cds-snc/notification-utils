@@ -14,7 +14,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.dependencies]
 python = "~3.12.7"
 # required by both api and admin
-awscli = "1.33.35"
+awscli = "1.44.38"
 bleach = "6.1.0"
 boto3 = "1.34.153"
 cachetools = "4.2.4"
