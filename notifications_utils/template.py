@@ -333,19 +333,9 @@ class WithSubjectTemplate(Template):
 
 
 class PlainTextEmailTemplate(WithSubjectTemplate):
-    def __init__(self, template, values=None, unsubscribe_link=None, **kwargs):
-        self.unsubscribe_link = unsubscribe_link
-        super().__init__(template, values, **kwargs)
-
-    @property
-    def content_with_unsubscribe_link(self):
-        if self.unsubscribe_link:
-            return f"{self.content}\n\n---\n\n[Unsubscribe from these emails]({self.unsubscribe_link})"
-        return self.content
-
     def __str__(self):
         return (
-            Take(Field(self.content_with_unsubscribe_link, self.values, html="passthrough", markdown_lists=True))
+            Take(Field(self.content, self.values, html="passthrough", markdown_lists=True))
             .then(unlink_govuk_escaped)
             .then(strip_unsupported_characters)
             .then(add_trailing_newline)
@@ -396,9 +386,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         allow_html=False,
         alt_text_en=None,
         alt_text_fr=None,
-        unsubscribe_link=None,
     ):
-        self.unsubscribe_link = unsubscribe_link
         super().__init__(template, values, jinja_path=jinja_path)
         self.fip_banner_english = fip_banner_english
         self.fip_banner_french = fip_banner_french
@@ -439,19 +427,11 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             .split()
         )[: self.PREHEADER_LENGTH_IN_CHARACTERS].strip()
 
-    @property
-    def content_with_unsubscribe_link(self):
-        if self.unsubscribe_link:
-            return f"{self.content}\n\n---\n\n[Unsubscribe from these emails]({self.unsubscribe_link})"
-        return self.content
-
     def __str__(self):
         return self.jinja_template.render(
             {
                 "subject": self.subject,
-                "body": get_html_email_body(
-                    self.content_with_unsubscribe_link, self.values, html="passthrough" if self.allow_html else "escape"
-                ),
+                "body": get_html_email_body(self.content, self.values, html="passthrough" if self.allow_html else "escape"),
                 "preheader": self.preheader,
                 "fip_banner_english": self.fip_banner_english,
                 "fip_banner_french": self.fip_banner_french,
@@ -510,7 +490,9 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         alt_text_en=None,
         alt_text_fr=None,
         user_language="en",
+        unsubscribe_link=None,
     ):
+        self.unsubscribe_link = unsubscribe_link
         super().__init__(
             template,
             values,
@@ -535,12 +517,18 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         self.user_language = user_language
         self.text_direction_rtl = template.get("text_direction_rtl", False)
 
+    @property
+    def content_with_unsubscribe_link(self):
+        if self.unsubscribe_link:
+            return f"{self.content}\n\n---\n\n[Unsubscribe from these emails]({self.unsubscribe_link})"
+        return self.content
+
     def __str__(self):
         return Markup(
             self.jinja_template.render(
                 {
                     "body": get_html_email_body(
-                        self.content,
+                        self.content_with_unsubscribe_link,
                         self.values,
                         redact_missing_personalisation=self.redact_missing_personalisation,
                         html="passthrough" if self.allow_html else "escape",
