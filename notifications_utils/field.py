@@ -60,6 +60,10 @@ class Field:
     # * body of placeholder - potentially standard or conditional,
     # * closing ))
     placeholder_pattern = re.compile(r"\({2}" r"(?!\()" r"([\s\S]+?)" r"\){2}")
+    # Matches multi-line conditional blocks where the closing )) is on its own line.
+    # Group 1: condition name, Group 2: conditional body content.
+    # Example: ((show_section??\n((variable_1))\n((variable_2))\n))
+    multiline_conditional_pattern = re.compile(r"\(\(([^?\n)(]+)\?\?\n([\s\S]*?)\n[ \t]*\)\)")
     placeholder_pattern_for_link_url = re.compile(
         r"(?<=\]\()"  # Lookbehind for markdown link URL pattern
         r"\({2}"  # Match opening double parentheses
@@ -119,6 +123,30 @@ class Field:
     @values.setter
     def values(self, value):
         self._values = Columns(value) if value else {}
+
+    def _replace_multiline_conditional_match(self, match):
+        """Replacement callback for multi-line conditional blocks in the `replaced` pass."""
+        name = match.group(1).strip()
+        body = match.group(2)
+        replacement = self.values.get(name)
+
+        if replacement is None:
+            # Value not provided — format as a placeholder block
+            body_formatted = re.sub(self.placeholder_pattern, self.format_match, body)
+            return self.conditional_placeholder_tag_block.format(self.sanitizer(name), body_formatted) + "\n"
+
+        if str2bool(replacement):
+            return re.sub(self.placeholder_pattern, self.replace_match, body)
+        return ""
+
+    def _format_multiline_conditional_match(self, match):
+        """Replacement callback for multi-line conditional blocks in the `formatted` pass."""
+        name = match.group(1).strip()
+        body = match.group(2)
+        if self.redact_missing_personalisation:
+            return self.placeholder_tag_redacted
+        body_formatted = re.sub(self.placeholder_pattern, self.format_match, body)
+        return self.conditional_placeholder_tag_block.format(self.sanitizer(name), body_formatted) + "\n"
 
     def format_match_in_link_url(self, match):
         placeholder = Placeholder.from_match(match)
@@ -184,7 +212,8 @@ class Field:
     def _raw_formatted(self):
         _sanitized_content = self.sanitizer(self.content)
         sanitized_content = re.sub(self.placeholder_pattern_for_link_url, self.format_match_in_link_url, _sanitized_content)
-        return re.sub(self.placeholder_pattern, self.format_match, sanitized_content)
+        content = re.sub(self.multiline_conditional_pattern, self._format_multiline_conditional_match, sanitized_content)
+        return re.sub(self.placeholder_pattern, self.format_match, content)
 
     @property
     def formatted(self):
@@ -192,16 +221,40 @@ class Field:
 
     @property
     def placeholders(self):
-        return OrderedSet(Placeholder(body).name for body in re.findall(self.placeholder_pattern, self.content))
+        result = OrderedSet()
+        # Collect condition names and inner variables from multi-line conditional blocks
+        for mc_match in self.multiline_conditional_pattern.finditer(self.content):
+            result.add(mc_match.group(1).strip())
+            for body in re.findall(self.placeholder_pattern, mc_match.group(2)):
+                result.add(Placeholder(body).name)
+        # Collect placeholders from content outside multi-line conditional blocks
+        remaining = re.sub(self.multiline_conditional_pattern, "", self.content)
+        for body in re.findall(self.placeholder_pattern, remaining):
+            result.add(Placeholder(body).name)
+        return result
 
     @property
     def placeholders_meta(self):
         meta = {}
 
+        # Handle multi-line conditional blocks: the condition name is conditional (boolean),
+        # and variables inside the body are regular (non-conditional) placeholders.
+        for mc_match in self.multiline_conditional_pattern.finditer(self.content):
+            name = mc_match.group(1).strip()
+            if name not in meta:
+                meta[name] = {"is_conditional": True}
+            for body in re.findall(self.placeholder_pattern, mc_match.group(2)):
+                inner_name = Placeholder(body).name
+                if inner_name not in meta:
+                    meta[inner_name] = {"is_conditional": False}
+                if Placeholder(body).is_conditional():
+                    meta[inner_name] = {"is_conditional": True}
+
         # This loop iterates over each instance in the template where a variable is used.
         # The same variable will be hit multiple times if it appears more than
         # once.
-        for body in re.findall(self.placeholder_pattern, self.content):
+        remaining = re.sub(self.multiline_conditional_pattern, "", self.content)
+        for body in re.findall(self.placeholder_pattern, remaining):
             if Placeholder(body).name not in meta:
                 # never let a False overwrite a True
                 meta[Placeholder(body).name] = {"is_conditional": False}
@@ -216,7 +269,9 @@ class Field:
 
     @property
     def replaced(self):
-        return re.sub(self.placeholder_pattern, self.replace_match, self.sanitizer(self.content))
+        content = self.sanitizer(self.content)
+        content = re.sub(self.multiline_conditional_pattern, self._replace_multiline_conditional_match, content)
+        return re.sub(self.placeholder_pattern, self.replace_match, content)
 
 
 def str2bool(value):

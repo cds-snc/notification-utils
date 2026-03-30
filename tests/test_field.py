@@ -296,3 +296,64 @@ def test_field_renders_lists_as_strings(values, expected, expected_as_markdown):
 )
 def test_placeholder_meta(template_str: str, result: bool):
     assert Field(template_str).placeholders_meta["var"]["is_conditional"] == result
+
+
+@pytest.mark.parametrize(
+    "template_content, data, expected",
+    [
+        # Variables inside a multi-line conditional block are resolved when the condition is truthy
+        (
+            "((show_section??\n((variable_1))\n((variable_2))\n))",
+            {"show_section": True, "variable_1": "val1", "variable_2": "val2"},
+            "val1\nval2",
+        ),
+        # Nothing is output when the condition is falsy
+        (
+            "((show_section??\n((variable_1))\n((variable_2))\n))",
+            {"show_section": False, "variable_1": "val1", "variable_2": "val2"},
+            "",
+        ),
+        # Surrounding content is preserved
+        (
+            "before\n((show_section??\n((variable_1))\n))\nafter",
+            {"show_section": True, "variable_1": "hello"},
+            "before\nhello\nafter",
+        ),
+        (
+            "before\n((show_section??\n((variable_1))\n))\nafter",
+            {"show_section": False, "variable_1": "hello"},
+            "before\n\nafter",
+        ),
+    ],
+)
+def test_multiline_conditional_block_resolves_inner_variables(template_content: str, data: Dict[str, Any], expected: str):
+    assert str(Field(template_content, data)) == expected
+
+
+@pytest.mark.parametrize(
+    "template_content, expected_placeholders",
+    [
+        # Both the condition name and inner variables are detected
+        (
+            "((show_section??\n((variable_1))\n((variable_2))\n))",
+            {"show_section", "variable_1", "variable_2"},
+        ),
+        # Works alongside regular placeholders outside the block
+        (
+            "((name))\n((show_section??\n((variable_1))\n))",
+            {"name", "show_section", "variable_1"},
+        ),
+    ],
+)
+def test_multiline_conditional_block_placeholders_are_detected(template_content: str, expected_placeholders):
+    assert set(Field(template_content).placeholders) == expected_placeholders
+
+
+def test_multiline_conditional_block_placeholders_meta():
+    template = "((show_section??\n((variable_1))\n((variable_2))\n))"
+    meta = Field(template).placeholders_meta
+    # The condition gate variable should be marked as conditional (boolean)
+    assert meta["show_section"]["is_conditional"] is True
+    # The inner variables are regular (non-conditional) placeholders
+    assert meta["variable_1"]["is_conditional"] is False
+    assert meta["variable_2"]["is_conditional"] is False
