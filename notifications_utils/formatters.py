@@ -827,7 +827,7 @@ def add_cta_buttons(_content: str) -> str:
     # If the feature flag is off, return the content with the tags unprocessed. This allows us to add CTA tags to
     # content without them being rendered as CTA buttons until we're ready to turn the feature flag on
     try:
-        if not current_app.config.get("FF_EMAIL__CTA", False):
+        if not current_app.config.get("FF_EMAIL_CTA", False):
             return _content
     except RuntimeError:
         return _content

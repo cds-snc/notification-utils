@@ -302,7 +302,7 @@ class TestCalloutTags:
 
 class TestCTATags:
     def test_cta_with_single_link(self, app):
-        app.config["FF_EMAIL__CTA"] = True
+        app.config["FF_EMAIL_CTA"] = True
         content = "[[cta]][Sign up now](https://example.com)[[/cta]]"
         html = get_html_email_body(content, {})
         assert "background: #213045" in html
@@ -310,7 +310,7 @@ class TestCTATags:
         assert "https://example.com" in html
 
     def test_cta_with_no_links_unprocessed(self, app):
-        app.config["FF_EMAIL__CTA"] = True
+        app.config["FF_EMAIL_CTA"] = True
         content = "[[cta]]Click here[[/cta]]"
         html = get_html_email_body(content, {})
         # CTA tags should remain unprocessed (no link inside)
@@ -318,7 +318,7 @@ class TestCTATags:
         assert "[[cta]]" in html
 
     def test_cta_with_multiple_links_unprocessed(self, app):
-        app.config["FF_EMAIL__CTA"] = True
+        app.config["FF_EMAIL_CTA"] = True
         content = "[[cta]][Link 1](https://example.com) and [Link 2](https://example.com)[[/cta]]"
         html = get_html_email_body(content, {})
         # CTA tags should remain unprocessed (multiple links)
@@ -326,7 +326,7 @@ class TestCTATags:
         assert "[[cta]]" in html
 
     def test_cta_with_link_and_text(self, app):
-        app.config["FF_EMAIL__CTA"] = True
+        app.config["FF_EMAIL_CTA"] = True
         content = "[[cta]]Click **here** to [sign up](https://example.com)[[/cta]]"
         html = get_html_email_body(content, {})
         assert "background: #213045" in html
@@ -334,14 +334,14 @@ class TestCTATags:
         assert "https://example.com" in html
 
     def test_multiple_valid_ctas(self, app):
-        app.config["FF_EMAIL__CTA"] = True
+        app.config["FF_EMAIL_CTA"] = True
         content = "[[cta]][First](https://example.com)[[/cta]]\n\n[[cta]][Second](https://example.com)[[/cta]]"
         html = get_html_email_body(content, {})
         # Both should be processed
         assert html.count("background: #213045") == 2
 
     def test_cta_with_language_tags(self, app):
-        app.config["FF_EMAIL__CTA"] = True
+        app.config["FF_EMAIL_CTA"] = True
         content = "[[cta]][[en]][Sign up](https://example.com)[[/en]][[/cta]]"
         html = get_html_email_body(content, {})
         assert "background: #213045" in html
@@ -349,7 +349,7 @@ class TestCTATags:
         assert "https://example.com" in html
 
     def test_cta_with_rtl(self, app):
-        app.config["FF_EMAIL__CTA"] = True
+        app.config["FF_EMAIL_CTA"] = True
         content = "[[cta]][[rtl]][Click](https://example.com)[[/rtl]][[/cta]]"
         html = get_html_email_body(content, {})
         assert "background: #213045" in html
@@ -357,7 +357,7 @@ class TestCTATags:
 
     def test_cta_inside_callout(self, app):
         app.config["FF_EMAIL_CALLOUTS"] = True
-        app.config["FF_EMAIL__CTA"] = True
+        app.config["FF_EMAIL_CTA"] = True
         content = "[[callout]]\n[[cta]][Learn more](https://example.com)[[/cta]]\n[[/callout]]"
         html = get_html_email_body(content, {})
         assert "box-shadow" in html  # callout styling
@@ -379,7 +379,7 @@ class TestCTATags:
         assert "background: #213045" not in html
 
     def test_cta_not_rendered_when_feature_off(self, app):
-        app.config["FF_EMAIL__CTA"] = False
+        app.config["FF_EMAIL_CTA"] = False
         content = "[[cta]][Sign up now](https://example.com)[[/cta]]"
         html = get_html_email_body(content, {})
         assert "background: #213045" not in html
