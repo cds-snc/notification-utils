@@ -7,7 +7,7 @@ from typing import List
 import bleach
 import mistune
 import smartypants
-from flask import Markup
+from flask import Markup, current_app
 
 from notifications_utils.sanitise_text import SanitiseSMS
 
@@ -497,6 +497,13 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         return f"<em>{text}</em>"
 
     def table(self, header, body):
+        # If the feature flag is off, return the content with the tags unprocessed. This allows us to add table tags to
+        # content without them being rendered as tables until we're ready to turn the feature flag on
+        try:
+            if not current_app.config.get("FF_EMAIL_TABLES", False):
+                return ""
+        except RuntimeError:
+            return ""
         return (
             '<table style="Margin: 0 0 20px 0; border-collapse: collapse; width: 100%; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
             f"<thead>{header}</thead>"
@@ -606,6 +613,13 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
         return f"_{text}_"
 
     def table(self, header, body):
+        # If the feature flag is off, return the content with the tags unprocessed. This allows us to add table tags to
+        # content without them being rendered as tables until we're ready to turn the feature flag on
+        try:
+            if not current_app.config.get("FF_EMAIL_TABLES", False):
+                return ""
+        except RuntimeError:
+            return ""
         return "".join((self.linebreak() * 2, header, body.rstrip("\n")))
 
     def table_row(self, content):
@@ -764,6 +778,13 @@ def add_callout_divs(_content: str) -> str:
 
     String replace callout tags in-place with styled div elements.
     """
+    # If the feature flag is off, return the content with the tags unprocessed. This allows us to add callout tags to
+    # content without them being rendered as callout divs until we're ready to turn the feature flag on.
+    try:
+        if not current_app.config.get("FF_EMAIL_CALLOUTS", False):
+            return _content
+    except RuntimeError:
+        return _content
 
     # check to ensure we have the same number of opening and closing tags before replacing tags
     if _content.count(CALLOUT_OPEN_LITERAL) == _content.count(CALLOUT_CLOSE_LITERAL):
@@ -803,6 +824,13 @@ def add_cta_buttons(_content: str) -> str:
     String replace CTA tags in-place with styled div elements, but only if the content
     contains exactly one link (<a> tag). If zero or multiple links, leave tags unprocessed.
     """
+    # If the feature flag is off, return the content with the tags unprocessed. This allows us to add CTA tags to
+    # content without them being rendered as CTA buttons until we're ready to turn the feature flag on
+    try:
+        if not current_app.config.get("FF_EMAIL__CTA", False):
+            return _content
+    except RuntimeError:
+        return _content
 
     # check to ensure we have the same number of opening and closing tags before replacing tags
     if _content.count(CTA_OPEN_LITERAL) == _content.count(CTA_CLOSE_LITERAL):
