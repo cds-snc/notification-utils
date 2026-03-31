@@ -206,7 +206,7 @@ class TestCalloutTags:
         content = "[[callout]]\nCallout content\n[[/callout]]"
         html = get_html_email_body(content, {})
         assert "box-shadow: 0 1px 3px #0000000d" in html
-        assert "border: 1px solid #edeaea" in html
+        assert "border: 1px solid #dcd6d6" in html
         assert "Callout content" in html
 
     @pytest.mark.parametrize(
@@ -305,7 +305,7 @@ class TestCTATags:
         app.config["FF_EMAIL_CTA"] = True
         content = "[[cta]][Sign up now](https://example.com)[[/cta]]"
         html = get_html_email_body(content, {})
-        assert "background: #213045" in html
+        assert "background: #ffbf47" in html
         assert "Sign up now" in html
         assert "https://example.com" in html
 
@@ -314,7 +314,7 @@ class TestCTATags:
         content = "[[cta]]Click here[[/cta]]"
         html = get_html_email_body(content, {})
         # CTA tags should remain unprocessed (no link inside)
-        assert "background: #213045" not in html
+        assert "background: #ffbf47" not in html
         assert "[[cta]]" in html
 
     def test_cta_with_multiple_links_unprocessed(self, app):
@@ -322,14 +322,14 @@ class TestCTATags:
         content = "[[cta]][Link 1](https://example.com) and [Link 2](https://example.com)[[/cta]]"
         html = get_html_email_body(content, {})
         # CTA tags should remain unprocessed (multiple links)
-        assert "background: #213045" not in html
+        assert "background: #ffbf47" not in html
         assert "[[cta]]" in html
 
     def test_cta_with_link_and_text(self, app):
         app.config["FF_EMAIL_CTA"] = True
         content = "[[cta]]Click **here** to [sign up](https://example.com)[[/cta]]"
         html = get_html_email_body(content, {})
-        assert "background: #213045" in html
+        assert "background: #ffbf47" in html
         assert "<strong>here</strong>" in html
         assert "https://example.com" in html
 
@@ -338,13 +338,13 @@ class TestCTATags:
         content = "[[cta]][First](https://example.com)[[/cta]]\n\n[[cta]][Second](https://example.com)[[/cta]]"
         html = get_html_email_body(content, {})
         # Both should be processed
-        assert html.count("background: #213045") == 2
+        assert html.count("background: #ffbf47") == 2
 
     def test_cta_with_language_tags(self, app):
         app.config["FF_EMAIL_CTA"] = True
         content = "[[cta]][[en]][Sign up](https://example.com)[[/en]][[/cta]]"
         html = get_html_email_body(content, {})
-        assert "background: #213045" in html
+        assert "background: #ffbf47" in html
         assert 'lang="en-ca"' in html
         assert "https://example.com" in html
 
@@ -352,7 +352,7 @@ class TestCTATags:
         app.config["FF_EMAIL_CTA"] = True
         content = "[[cta]][[rtl]][Click](https://example.com)[[/rtl]][[/cta]]"
         html = get_html_email_body(content, {})
-        assert "background: #213045" in html
+        assert "background: #ffbf47" in html
         assert 'dir="rtl"' in html
 
     def test_cta_inside_callout(self, app):
@@ -361,7 +361,7 @@ class TestCTATags:
         content = "[[callout]]\n[[cta]][Learn more](https://example.com)[[/cta]]\n[[/callout]]"
         html = get_html_email_body(content, {})
         assert "box-shadow" in html  # callout styling
-        assert "background: #213045" in html  # CTA styling
+        assert "background: #ffbf47" in html  # CTA styling
 
     @pytest.mark.parametrize(
         "bad_content",
@@ -376,13 +376,13 @@ class TestCTATags:
     def test_cta_malformed_tags_unprocessed(self, bad_content: str):
         html = get_html_email_body(bad_content, {})
         # Malformed tags should not be processed
-        assert "background: #213045" not in html
+        assert "background: #ffbf47" not in html
 
     def test_cta_not_rendered_when_feature_off(self, app):
         app.config["FF_EMAIL_CTA"] = False
         content = "[[cta]][Sign up now](https://example.com)[[/cta]]"
         html = get_html_email_body(content, {})
-        assert "background: #213045" not in html
+        assert "background: #ffbf47" not in html
         assert "Sign up now" in html  # link text still present, just not styled
 
 
