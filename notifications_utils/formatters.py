@@ -7,7 +7,7 @@ from typing import List
 import bleach
 import mistune
 import smartypants
-from flask import Markup
+from flask import Markup, current_app
 
 from notifications_utils.sanitise_text import SanitiseSMS
 
@@ -33,12 +33,20 @@ EN_OPEN = r"\[\[en\]\]"  # matches [[en]]
 EN_CLOSE = r"\[\[/en\]\]"  # matches [[/en]]
 RTL_OPEN = r"\[\[rtl\]\]"  # matches [[rtl]]
 RTL_CLOSE = r"\[\[/rtl\]\]"  # matches [[/rtl]]
+CALLOUT_OPEN = r"\[\[callout\]\]"  # matches [[callout]]
+CALLOUT_CLOSE = r"\[\[/callout\]\]"  # matches [[/callout]]
+CTA_OPEN = r"\[\[cta\]\]"  # matches [[cta]]
+CTA_CLOSE = r"\[\[/cta\]\]"  # matches [[/cta]]
 FR_OPEN_LITERAL = "[[fr]]"
 FR_CLOSE_LITERAL = "[[/fr]]"
 EN_OPEN_LITERAL = "[[en]]"
 EN_CLOSE_LITERAL = "[[/en]]"
 RTL_OPEN_LITERAL = "[[rtl]]"
 RTL_CLOSE_LITERAL = "[[/rtl]]"
+CALLOUT_OPEN_LITERAL = "[[callout]]"
+CALLOUT_CLOSE_LITERAL = "[[/callout]]"
+CTA_OPEN_LITERAL = "[[cta]]"
+CTA_CLOSE_LITERAL = "[[/cta]]"
 BR_TAG = r"<br\s?/>"
 
 
@@ -488,8 +496,42 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
     def emphasis(self, text):
         return f"<em>{text}</em>"
 
+    def table(self, header, body):
+        # If the feature flag is off, return the content with the tags unprocessed. This allows us to add table tags to
+        # content without them being rendered as tables until we're ready to turn the feature flag on
+        try:
+            if not current_app.config.get("FF_EMAIL_TABLES", False):
+                return ""
+        except RuntimeError:
+            return ""
+        return (
+            '<table style="Margin: 0 0 20px 0; border-collapse: collapse; width: 100%; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
+            f"<thead>{header}</thead>"
+            f"<tbody>{body}</tbody>"
+            "</table>"
+        )
+
+    def table_row(self, content):
+        return f"<tr>{content}</tr>"
+
+    def table_cell(self, content, **flags):
+        if flags.get("header"):
+            return (
+                '<th style="text-align: left; border: 1px solid #BFC1C3; '
+                'padding: 8px; font-weight: bold; background: #fffdf5;"'
+                f">{content}</th>"
+            )
+
+        align = flags.get("align")
+        align_style = f"text-align: {align}; " if align else ""
+        return f'<td style="{align_style}border: 1px solid #BFC1C3; padding: 8px;">' f"{content}</td>"
+
 
 class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
+    _TABLE_CELL_SEPARATOR = "\u241f"
+    _TABLE_HEADER_PREFIX = "__TABLE_HEADER__:"
+    _TABLE_CELL_PREFIX = "__TABLE_CELL__:"
+
     COLUMN_WIDTH = 65
 
     def header(self, text, level, raw=None):
@@ -569,6 +611,37 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
 
     def emphasis(self, text):
         return f"_{text}_"
+
+    def table(self, header, body):
+        # If the feature flag is off, return the content with the tags unprocessed. This allows us to add table tags to
+        # content without them being rendered as tables until we're ready to turn the feature flag on
+        try:
+            if not current_app.config.get("FF_EMAIL_TABLES", False):
+                return ""
+        except RuntimeError:
+            return ""
+        return "".join((self.linebreak() * 2, header, body.rstrip("\n")))
+
+    def table_row(self, content):
+        cells_with_markers = [cell for cell in content.split(self._TABLE_CELL_SEPARATOR) if cell]
+        if not cells_with_markers:
+            return ""
+
+        is_header = all(cell.startswith(self._TABLE_HEADER_PREFIX) for cell in cells_with_markers)
+        cells = [
+            cell.replace(self._TABLE_HEADER_PREFIX, "", 1).replace(self._TABLE_CELL_PREFIX, "", 1) for cell in cells_with_markers
+        ]
+
+        row = f"| {' | '.join(cells)} |"
+        if is_header:
+            separator = f"| {' | '.join(['---'] * len(cells))} |"
+            return f"{row}\n{separator}\n"
+
+        return f"{row}\n"
+
+    def table_cell(self, content, **flags):
+        prefix = self._TABLE_HEADER_PREFIX if flags.get("header") else self._TABLE_CELL_PREFIX
+        return f"{prefix}{content}{self._TABLE_CELL_SEPARATOR}"
 
 
 class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer):
@@ -683,6 +756,122 @@ def remove_rtl_divs(_content: str) -> str:
     """Remove the tags from content. This fn is for use in the email
     preheader, since this is plain text not html"""
     return remove_tags(_content, RTL_OPEN, RTL_CLOSE)
+
+
+def escape_callout_tags(_content: str) -> str:
+    """
+    Escape callout tags into code tags in the content so mistune doesn't put them inside p tags.  This makes it simple
+    to replace them afterwards, and avoids creating invalid HTML in the process
+    """
+
+    # check to ensure we have the same number of opening and closing tags before escaping tags
+    if _content.count(CALLOUT_OPEN_LITERAL) == _content.count(CALLOUT_CLOSE_LITERAL):
+        _content = _content.replace(CALLOUT_OPEN_LITERAL, f"\n```\n{CALLOUT_OPEN_LITERAL}\n```\n")
+        _content = _content.replace(CALLOUT_CLOSE_LITERAL, f"\n```\n{CALLOUT_CLOSE_LITERAL}\n```\n")
+
+    return _content
+
+
+def add_callout_divs(_content: str) -> str:
+    """
+    Custom parser to add the callout divs.
+
+    String replace callout tags in-place with styled div elements.
+    """
+    # If the feature flag is off, return the content with the tags unprocessed. This allows us to add callout tags to
+    # content without them being rendered as callout divs until we're ready to turn the feature flag on.
+    try:
+        if not current_app.config.get("FF_EMAIL_CALLOUTS", False):
+            return _content
+    except RuntimeError:
+        return _content
+
+    # check to ensure we have the same number of opening and closing tags before replacing tags
+    if _content.count(CALLOUT_OPEN_LITERAL) == _content.count(CALLOUT_CLOSE_LITERAL):
+        _content = _content.replace(
+            CALLOUT_OPEN_LITERAL,
+            '<div style="margin-bottom: 20px; background: #fffdf5; padding: 15px 15px 0 15px; border-radius: 10px; box-shadow: 0 1px 3px #0000000d, 0 1px 2px #0000001a; border: 1px solid #dcd6d6">',
+        )
+        _content = _content.replace(CALLOUT_CLOSE_LITERAL, "</div>")
+
+    return _content
+
+
+def remove_callout_divs(_content: str) -> str:
+    """Remove the tags from content. This fn is for use in the email
+    preheader, since this is plain text not html"""
+    return remove_tags(_content, CALLOUT_OPEN, CALLOUT_CLOSE)
+
+
+def escape_cta_tags(_content: str) -> str:
+    """
+    Escape CTA tags into code tags in the content so mistune doesn't put them inside p tags.  This makes it simple
+    to replace them afterwards, and avoids creating invalid HTML in the process
+    """
+
+    # check to ensure we have the same number of opening and closing tags before escaping tags
+    if _content.count(CTA_OPEN_LITERAL) == _content.count(CTA_CLOSE_LITERAL):
+        _content = _content.replace(CTA_OPEN_LITERAL, f"\n```\n{CTA_OPEN_LITERAL}\n```\n")
+        _content = _content.replace(CTA_CLOSE_LITERAL, f"\n```\n{CTA_CLOSE_LITERAL}\n```\n")
+
+    return _content
+
+
+def add_cta_buttons(_content: str) -> str:
+    """
+    Custom parser to add CTA button divs.
+
+    String replace CTA tags in-place with styled div elements, but only if the content
+    contains exactly one link (<a> tag). If zero or multiple links, leave tags unprocessed.
+    """
+    # If the feature flag is off, return the content with the tags unprocessed. This allows us to add CTA tags to
+    # content without them being rendered as CTA buttons until we're ready to turn the feature flag on
+    try:
+        if not current_app.config.get("FF_EMAIL_CTA", False):
+            return _content
+    except RuntimeError:
+        return _content
+
+    # check to ensure we have the same number of opening and closing tags before replacing tags
+    if _content.count(CTA_OPEN_LITERAL) == _content.count(CTA_CLOSE_LITERAL):
+        # Find all CTA blocks and validate each one
+        result = _content
+        import re as regex_module
+
+        # Pattern to match CTA blocks
+        cta_pattern = regex_module.compile(r"\[\[cta\]\](.*?)\[\[/cta\]\]", regex_module.DOTALL)
+
+        def replace_cta(match):
+            cta_content = match.group(1)
+            # Count <a> tags in this CTA block
+            link_count = cta_content.count("<a ")
+
+            # Only replace if exactly one link
+            if link_count == 1:
+                # Add text-decoration: none and color to the <a> tag with !important
+                link_styled_content = regex_module.sub(
+                    r'<a style="([^"]*)"',
+                    r'<a style="text-decoration: none !important; color: #393939 !important; \1"',
+                    cta_content,
+                )
+                # Add color and remove margin from the <p> tag
+                link_styled_content = regex_module.sub(r'<p style="[^"]*"', r'<p style="Margin: 0;"', link_styled_content)
+                button_style = "margin-bottom: 20px; border-radius: 4px; background: #ffbf47; padding: 0.55em 1em 0.45em; text-align: center; display: inline-block; cursor: pointer;"
+                return f'<div style="{button_style}">{link_styled_content}</div>'
+            else:
+                # Leave unprocessed if not exactly one link
+                return match.group(0)
+
+        result = cta_pattern.sub(replace_cta, result)
+        return result
+
+    return _content
+
+
+def remove_cta_tags(_content: str) -> str:
+    """Remove the tags from content. This fn is for use in the email
+    preheader, since this is plain text not html"""
+    return remove_tags(_content, CTA_OPEN, CTA_CLOSE)
 
 
 def remove_tags(_content: str, *tags) -> str:

@@ -11,11 +11,15 @@ from notifications_utils import EMAIL_CHAR_COUNT_LIMIT, SMS_CHAR_COUNT_LIMIT, TE
 from notifications_utils.columns import Columns
 from notifications_utils.field import Field
 from notifications_utils.formatters import (
+    add_callout_divs,
+    add_cta_buttons,
     add_language_divs,
     add_prefix,
     add_rtl_divs,
     add_trailing_newline,
     autolink_sms,
+    escape_callout_tags,
+    escape_cta_tags,
     escape_html,
     escape_lang_tags,
     escape_rtl_tags,
@@ -28,6 +32,8 @@ from notifications_utils.formatters import (
     notify_email_preheader_markdown,
     notify_letter_preview_markdown,
     notify_plain_text_email_markdown,
+    remove_callout_divs,
+    remove_cta_tags,
     remove_empty_lines,
     remove_language_divs,
     remove_nested_list_padding,
@@ -423,6 +429,8 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             .then(notify_email_preheader_markdown)
             .then(remove_language_divs)
             .then(remove_rtl_divs)
+            .then(remove_callout_divs)
+            .then(remove_cta_tags)
             .then(do_nice_typography)
             .split()
         )[: self.PREHEADER_LENGTH_IN_CHARACTERS].strip()
@@ -857,10 +865,14 @@ def get_html_email_body(template_content, template_values, redact_missing_person
         .then(add_trailing_newline)
         .then(escape_lang_tags)
         .then(escape_rtl_tags)
+        .then(escape_callout_tags)
+        .then(escape_cta_tags)
         .then(notify_email_markdown)
         .then(remove_nested_list_padding)
         .then(add_language_divs)
         .then(add_rtl_divs)
+        .then(add_callout_divs)
+        .then(add_cta_buttons)
         .then(do_nice_typography)
     )
 
