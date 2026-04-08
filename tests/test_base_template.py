@@ -78,8 +78,15 @@ def test_extracting_placeholders(template_content, template_subject, expected):
         # should be replaced with a ?
         ("深", None, 1, 1),
         ("'First line.\n", None, 12, 12),
-        ("\t\n\r", None, 0, 0),
-        # variables do not count towards the character count for sms, since they will be replaced
+        ("\t\n\r", None, 0, 0),  # CRLF newlines (\r\n) from browser form submissions must be normalised to \n
+        # before counting, so each line break costs exactly 1 unit (not 2).
+        ("Hello\r\nWorld", None, 11, 11),
+        (
+            "Line1\r\nLine2\r\nLine3",
+            None,
+            17,
+            17,
+        ),  # variables do not count towards the character count for sms, since they will be replaced
         ("((placeholder))", None, 0, 3),
         ("((placeholder))", "Service name", 14, 17),
         ("Foo", "((placeholder))", 20, 20),  # placeholder doesn’t work in service name

@@ -211,11 +211,14 @@ class SMSMessageTemplate(Template):
         When values are set, placeholders are already replaced via __str__. When no values are
         set, placeholder syntax is stripped before encoding so that placeholder names don't
         inflate the character count or skew Unicode detection.
+
+        normalise_newlines is applied in both paths so that CRLF sequences (\\r\\n) submitted by
+        browsers are counted as a single newline unit, matching what is actually transmitted.
         """
         if self._values:
             # we always want to call SMSMessageTemplate.__str__ regardless of subclass, to avoid any html formatting
             return SMSMessageTemplate.__str__(self)
-        return sms_encode(add_prefix(Field.placeholder_pattern.sub("", self.content.strip()), self.prefix))
+        return normalise_newlines(sms_encode(add_prefix(Field.placeholder_pattern.sub("", self.content.strip()), self.prefix)))
 
     @property
     def content_count(self):
