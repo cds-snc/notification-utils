@@ -8,7 +8,7 @@ RUN apt-get update \
     && apt-get -y install \
         curl \
         emacs \
-        exa \
+        eza \
         fd-find \
         git \
         iproute2 \
@@ -21,7 +21,6 @@ RUN apt-get update \
         openssh-client \
         procps \
         sudo \
-        tldr \
         unzip \
         vim \
     && apt-get autoremove -y \
