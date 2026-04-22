@@ -6,12 +6,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@main
+    - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 # main
 
     - name: Set up Python 3.12
       uses: actions/setup-python@e9aba2c848f5ebd159c070c61ea2c4e2b122355e # v2.3.4
       with:
-        python-version: 3.12
+        python-version: 3.14
 
     - name: Install poetry
       env:
