@@ -557,11 +557,41 @@ def test_multiple_newlines_get_truncated(markdown_function, expected):
     assert markdown_function("before\n\n\n\n\n\nafter") == expected
 
 
-@pytest.mark.parametrize(
-    "markdown_function", (notify_letter_preview_markdown, notify_email_markdown, notify_plain_text_email_markdown)
-)
-def test_table(markdown_function):
-    assert markdown_function("col | col\n" "----|----\n" "val | val\n") == ("")
+def test_table_feature_off():
+    markdown_input = "col | col\n" "----|----\n" "val | val\n"
+
+    assert notify_letter_preview_markdown(markdown_input) == ""
+
+    # Tables are gated behind FF_EMAIL_TABLES — off by default (no app context)
+    email_result = notify_email_markdown(markdown_input)
+    assert "<table" not in email_result
+    assert "<th" not in email_result
+    assert "<td" not in email_result
+
+    plain_text_result = notify_plain_text_email_markdown(markdown_input)
+    assert "| col | col |" not in plain_text_result
+    assert "| --- | --- |" not in plain_text_result
+    assert "| val | val |" not in plain_text_result
+
+
+def test_table_feature_on(app):
+    app.config["FF_EMAIL_TABLES"] = True
+    markdown_input = "col | col\n" "----|----\n" "val | val\n"
+
+    assert notify_letter_preview_markdown(markdown_input) == ""
+
+    email_result = notify_email_markdown(markdown_input)
+    assert "<table" in email_result
+    assert "<th" in email_result
+    assert "<td" in email_result
+    assert "background: #fffdf5" in email_result
+    assert "col" in email_result
+    assert "val" in email_result
+
+    plain_text_result = notify_plain_text_email_markdown(markdown_input)
+    assert "| col | col |" in plain_text_result
+    assert "| --- | --- |" in plain_text_result
+    assert "| val | val |" in plain_text_result
 
 
 @pytest.mark.parametrize(
