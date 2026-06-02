@@ -510,8 +510,8 @@ def validate_phone_number(number, column=None, international=False):
         raise InvalidPhoneError("Not a valid country prefix")
 
     # if the prefix is not in our billing rates, then we don't send to it, so we should error here
-    if INTERNATIONAL_BILLING_RATES.get(prefix) is None:
-        raise InvalidPhoneError("Country code {} is not supported".format(prefix))
+    if prefix not in INTERNATIONAL_BILLING_RATES:
+        raise InvalidPhoneError(f"Country code {prefix} is not supported")
 
     return number
 

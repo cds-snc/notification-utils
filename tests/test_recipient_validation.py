@@ -206,6 +206,16 @@ def test_get_international_info_raises(phone_number):
     assert str(error.value) == "Not a valid international number"
 
 
+def test_validate_phone_number_raises_for_unsupported_country_code(monkeypatch):
+    # Use a valid international number for which parsing succeeds
+    number = "+249912345678"
+
+    with pytest.raises(InvalidPhoneError) as excinfo:
+        validate_phone_number(number, international=True)
+
+    assert str(excinfo.value) == "Country code 249 is not supported"
+
+
 @pytest.mark.parametrize("phone_number", valid_local_phone_numbers)
 @pytest.mark.parametrize(
     "validator",
