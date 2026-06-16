@@ -88,6 +88,41 @@ def test_fip_banner_french(renderer, show_banner):
         assert "canada-logo.png" not in str(email)
 
 
+def test_html_email_lang_defaults_to_english():
+    rendered = str(HTMLEmailTemplate({"content": "hello world", "subject": ""}))
+    assert '<html lang="en">' in rendered
+
+
+@pytest.mark.parametrize(
+    "lang,expected",
+    [
+        ("fr", '<html lang="fr">'),
+        ("fr-CA", '<html lang="fr-CA">'),
+        ("en-CA", '<html lang="en-CA">'),
+        ("und", '<html lang="und">'),
+    ],
+)
+def test_html_email_lang_is_threaded_into_html_tag(lang, expected):
+    rendered = str(HTMLEmailTemplate({"content": "hello world", "subject": ""}, lang=lang))
+    assert expected in rendered
+
+
+def test_html_email_lang_falls_back_to_english_when_none():
+    rendered = str(HTMLEmailTemplate({"content": "hello world", "subject": ""}, lang=None))
+    assert '<html lang="en">' in rendered
+
+
+def test_html_email_bilingual_blocks_get_inline_lang_attributes():
+    # add_language_divs already wraps [[en]]/[[fr]] blocks with lang attributes;
+    # for bilingual content the document-level lang should be set by the caller
+    # (e.g. to "und") so screen readers pick up the lang on the inline divs.
+    bilingual_content = "[[en]]\nHello\n[[/en]]\n[[fr]]\nBonjour\n[[/fr]]"
+    rendered = str(HTMLEmailTemplate({"content": bilingual_content, "subject": ""}, lang="und"))
+    assert '<html lang="und">' in rendered
+    assert '<div lang="en-ca">' in rendered
+    assert '<div lang="fr-ca">' in rendered
+
+
 def test_logo_with_background_colour_shows():
     email = str(
         HTMLEmailTemplate(
