@@ -731,6 +731,62 @@ def test_link_with_title(markdown_function, expected):
 
 
 @pytest.mark.parametrize(
+    "markdown, expected_href, expected_title_attr",
+    (
+        # title with a stray double-quote must not break out of the attribute
+        (
+            '[hi](https://example.com "a\\" onmouseover=\\"alert(1)")',
+            "https://example.com",
+            ' title="a\\&quot; onmouseover=\\&quot;alert(1)"',
+        ),
+        # href with a stray double-quote must not break out of the attribute
+        (
+            '[hi](https://example.com"onmouseover="alert)',
+            "https://example.com&quot;onmouseover=&quot;alert",
+            "",
+        ),
+    ),
+)
+def test_email_link_escapes_attribute_injection(markdown, expected_href, expected_title_attr):
+    rendered = notify_email_markdown(markdown)
+    assert f'href="{expected_href}"{expected_title_attr}>' in rendered
+
+
+@pytest.mark.parametrize(
+    "scheme_url",
+    (
+        "javascript:alert(1)",
+        "JavaScript:alert(1)",
+        " java\tscript:alert(1)",
+        "data:text/html,<script>alert(1)</script>",
+        "vbscript:msgbox(1)",
+        "file:///etc/passwd",
+    ),
+)
+def test_email_link_blocks_unsafe_url_schemes(scheme_url):
+    rendered = notify_email_markdown(f"[click]({scheme_url})")
+    assert 'href="#"' in rendered
+    assert "javascript:" not in rendered.lower()
+    assert "vbscript:" not in rendered.lower()
+    assert "data:" not in rendered.lower()
+
+
+@pytest.mark.parametrize(
+    "safe_url",
+    (
+        "http://example.com",
+        "https://example.com/path?q=1",
+        "mailto:hi@example.com",
+        "tel:+15551234567",
+        "example.com/relative",  # no scheme — passed through
+    ),
+)
+def test_email_link_allows_safe_url_schemes(safe_url):
+    rendered = notify_email_markdown(f"[click]({safe_url})")
+    assert f'href="{safe_url}"' in rendered
+
+
+@pytest.mark.parametrize(
     "markdown_function, expected",
     (
         [notify_letter_preview_markdown, "<p>Strike</p>"],
