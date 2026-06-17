@@ -311,6 +311,94 @@ class RecipientCSV:
                     if total_length > SMS_CHAR_COUNT_LIMIT:
                         yield row
 
+    def _normalise_recipient_for_dedupe(self, recipient):
+        """
+        Normalise a recipient value for case-insensitive, whitespace-insensitive
+        duplicate detection. Phone numbers are normalised to E.164 when possible
+        so that "+1 555-123-4567" and "5551234567" are treated as the same recipient.
+        Returns ``None`` if the value cannot meaningfully be normalised (e.g. empty).
+        """
+        if recipient is None:
+            return None
+        normalised = strip_and_remove_obscure_whitespace(str(recipient)).strip().lower()
+        if not normalised:
+            return None
+        if self.template_type == "sms":
+            try:
+                return validate_phone_number(recipient, international=self.international_sms)
+            except InvalidPhoneError:
+                return normalised
+        return normalised
+
+    @property
+    def _duplicate_recipient_row_indices(self):
+        """
+        Returns a set of row indices for rows whose recipient value has already
+        appeared in an earlier row. The first occurrence of each recipient is
+        not flagged. Rows with bad or missing recipients are skipped, and
+        duplicate detection is disabled for letter templates (where multiple
+        recipients can legitimately share an address).
+        """
+        if self.template_type == "letter":
+            return set()
+        seen = set()
+        duplicate_indices = set()
+        for row in self.rows:
+            if row is None:
+                continue
+            if row.has_bad_recipient or row.recipient is None:
+                continue
+            normalised = self._normalise_recipient_for_dedupe(row.recipient)
+            if normalised is None:
+                continue
+            if normalised in seen:
+                duplicate_indices.add(row.index)
+            else:
+                seen.add(normalised)
+        return duplicate_indices
+
+    @property
+    def rows_with_duplicate_recipients(self):
+        """
+        Yields rows whose recipient is a duplicate of an earlier row. The first
+        occurrence of each recipient is *not* yielded; only the subsequent
+        copies are yielded so callers can highlight or export them.
+        """
+        duplicate_indices = self._duplicate_recipient_row_indices
+        if not duplicate_indices:
+            return
+        for row in self.rows:
+            if row is None:
+                continue
+            if row.index in duplicate_indices:
+                yield row
+
+    @property
+    def has_duplicate_recipients(self):
+        return bool(self._duplicate_recipient_row_indices)
+
+    @property
+    def count_of_duplicate_recipient_rows(self):
+        """Total number of duplicate rows (i.e. extra copies beyond the first)."""
+        return len(self._duplicate_recipient_row_indices)
+
+    @property
+    def count_of_unique_duplicate_recipients(self):
+        """Number of distinct recipients that appear more than once."""
+        if self.template_type == "letter":
+            return 0
+        counts: Dict[str, int] = {}
+        for row in self.rows:
+            if row is None:
+                continue
+            if row.has_bad_recipient or row.recipient is None:
+                continue
+            normalised = self._normalise_recipient_for_dedupe(row.recipient)
+            if normalised is None:
+                continue
+            counts[normalised] = counts.get(normalised, 0) + 1
+        return sum(1 for count in counts.values() if count > 1)
+
     @property
     def initial_rows_with_errors(self):
         return islice(self.rows_with_errors, self.max_errors_shown)
