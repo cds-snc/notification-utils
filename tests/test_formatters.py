@@ -758,6 +758,7 @@ def test_email_link_escapes_attribute_injection(markdown, expected_href, expecte
         "javascript:alert(1)",
         "JavaScript:alert(1)",
         " java\tscript:alert(1)",
+        "java\u200bscript:alert(1)",
         "data:text/html,<script>alert(1)</script>",
         "vbscript:msgbox(1)",
         "file:///etc/passwd",
