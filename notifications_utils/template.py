@@ -389,6 +389,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         allow_html=False,
         alt_text_en=None,
         alt_text_fr=None,
+        lang=None,
     ):
         super().__init__(template, values, jinja_path=jinja_path)
         self.fip_banner_english = fip_banner_english
@@ -403,6 +404,11 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.alt_text_en = alt_text_en
         self.alt_text_fr = alt_text_fr
         self.text_direction_rtl = template.get("text_direction_rtl", False)
+        # BCP 47 language tag for the rendered <html lang="..."> attribute. Defaults to
+        # "en" so existing callers keep their current behaviour, but French / bilingual
+        # callers should pass "fr" or "und" so screen readers announce the document
+        # language correctly (WCAG 3.1.1).
+        self.lang = lang or "en"
 
         # set this again to make sure the correct either utils / downstream local jinja is used
         # however, don't set if we are in a test environment (to preserve the above mock)
@@ -447,6 +453,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
                 "alt_text_en": self.alt_text_en,
                 "alt_text_fr": self.alt_text_fr,
                 "text_direction_rtl": self.text_direction_rtl,
+                "lang": self.lang,
             }
         )
 
@@ -493,6 +500,7 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         alt_text_en=None,
         alt_text_fr=None,
         user_language="en",
+        lang=None,
     ):
         super().__init__(
             template,
@@ -517,6 +525,7 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         self.alt_text_fr = alt_text_fr
         self.user_language = user_language
         self.text_direction_rtl = template.get("text_direction_rtl", False)
+        self.lang = lang or "en"
 
     def __str__(self):
         return Markup(
@@ -544,6 +553,7 @@ class EmailPreviewTemplate(WithSubjectTemplate):
                     "alt_text_en": self.alt_text_en,
                     "alt_text_fr": self.alt_text_fr,
                     "text_direction_rtl": self.text_direction_rtl,
+                    "lang": self.lang,
                 }
             )
         )
