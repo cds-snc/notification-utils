@@ -33,10 +33,15 @@ def sanitise_link_url(link):
     """
     if not link:
         return "#"
-    stripped = re.sub(r"[\s\x00-\x1f]+", "", link)
+
+    link = str(link)
+    stripped = strip_and_remove_obscure_whitespace(link)
+    stripped = re.sub(r"[\s\x00-\x1f\x7f]+", "", stripped)
+
     match = LINK_SCHEME_REGEX.match(stripped)
     if match and match.group(1).lower() not in ALLOWED_LINK_SCHEMES:
         return "#"
+
     return link
 
 
