@@ -1,3 +1,4 @@
+import html
 import re
 import string
 import urllib
@@ -14,6 +15,35 @@ from notifications_utils.sanitise_text import SanitiseSMS
 from . import email_with_smart_quotes_regex
 
 LINK_STYLE = "word-wrap: break-word; word-break: break-word;"
+
+# Schemes that are safe to render in an ``href`` attribute in email HTML.
+# Anything else (notably ``javascript:`` and ``data:``) is replaced with ``#``
+# to avoid script execution in mail clients that don't sanitise URL schemes.
+ALLOWED_LINK_SCHEMES = frozenset({"http", "https", "mailto", "tel"})
+LINK_SCHEME_REGEX = re.compile(r"^([a-z][a-z0-9+\-.]*):", re.IGNORECASE)
+
+
+def sanitise_link_url(link):
+    """Return ``link`` if it uses a safe URL scheme, otherwise return ``'#'``.
+
+    Links without an explicit scheme (e.g. ``example.com/path``) are passed
+    through unchanged. Whitespace and control characters that some mail clients
+    silently ignore when resolving a URL are stripped before checking the
+    scheme so that e.g. ``" java\\tscript:alert(1)"`` is correctly rejected.
+    """
+    if not link:
+        return "#"
+
+    link = str(link)
+    stripped = strip_and_remove_obscure_whitespace(link)
+    stripped = re.sub(r"[\s\x00-\x1f\x7f]+", "", stripped)
+
+    match = LINK_SCHEME_REGEX.match(stripped)
+    if match and match.group(1).lower() not in ALLOWED_LINK_SCHEMES:
+        return "#"
+
+    return link
+
 
 OBSCURE_WHITESPACE = (
     "\u180e"  # Mongolian vowel separator
@@ -466,10 +496,12 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         ).format(text)
 
     def link(self, link, title, content):
-        return ('<a style="{}"{}{}>{}</a>').format(
+        safe_href = html.escape(sanitise_link_url(link), quote=True)
+        title_attr = ' title="{}"'.format(html.escape(title, quote=True)) if title else ""
+        return ('<a style="{}" href="{}"{}>{}</a>').format(
             LINK_STYLE,
-            ' href="{}"'.format(link),
-            ' title="{}"'.format(title) if title else "",
+            safe_href,
+            title_attr,
             content,
         )
 
