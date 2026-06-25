@@ -1152,3 +1152,195 @@ def test_multi_line_placeholders_work():
     )
 
     assert recipients.rows[0].personalisation["data"] == "a\nb\n\nc"
+
+
+class TestDuplicateRecipients:
+    """Duplicate-recipient detection (issue #3319).
+
+    The detection should be case-insensitive, ignore leading/trailing
+    whitespace, and treat phone numbers as equivalent when they normalise to
+    the same E.164 form. It should be a non-blocking warning -- ``has_errors``
+    must remain ``False`` when the only issue is duplicate recipients.
+    """
+
+    def test_no_duplicates_when_all_emails_unique(self):
+        recipients = RecipientCSV(
+            """
+                email address
+                alice@example.com
+                bob@example.com
+                carol@example.com
+            """,
+            template_type="email",
+        )
+        assert recipients.has_duplicate_recipients is False
+        assert recipients.count_of_duplicate_recipient_rows == 0
+        assert recipients.count_of_unique_duplicate_recipients == 0
+        assert list(recipients.rows_with_duplicate_recipients) == []
+        assert recipients.has_errors is False
+
+    def test_detects_exact_duplicate_emails(self):
+        recipients = RecipientCSV(
+            """
+                email address
+                alice@example.com
+                bob@example.com
+                alice@example.com
+            """,
+            template_type="email",
+        )
+        assert recipients.has_duplicate_recipients is True
+        assert recipients.count_of_duplicate_recipient_rows == 1
+        assert recipients.count_of_unique_duplicate_recipients == 1
+        duplicates = list(recipients.rows_with_duplicate_recipients)
+        # Only the *second* occurrence is flagged; the first is kept.
+        assert [row.index for row in duplicates] == [2]
+        # Duplicates are a warning, not a hard error.
+        assert recipients.has_errors is False
+
+    def test_email_dedupe_is_case_insensitive_and_trims_whitespace(self):
+        # Build the CSV explicitly so leading/trailing whitespace and case
+        # differences are preserved without tripping the linter.
+        file_contents = "email address\n" "Alice@Example.com\n" "  alice@example.COM  \n" "ALICE@EXAMPLE.COM\n"
+        recipients = RecipientCSV(file_contents, template_type="email")
+        assert recipients.count_of_duplicate_recipient_rows == 2
+        assert recipients.count_of_unique_duplicate_recipients == 1
+
+    def test_counts_unique_duplicate_recipients(self):
+        recipients = RecipientCSV(
+            """
+                email address
+                alice@example.com
+                bob@example.com
+                alice@example.com
+                bob@example.com
+                carol@example.com
+                bob@example.com
+            """,
+            template_type="email",
+        )
+        # alice appears twice (1 extra), bob appears 3 times (2 extra) -> 3 duplicate rows
+        assert recipients.count_of_duplicate_recipient_rows == 3
+        # Two distinct recipients have duplicates.
+        assert recipients.count_of_unique_duplicate_recipients == 2
+
+    def test_detects_duplicate_phone_numbers_in_different_formats(self):
+        recipients = RecipientCSV(
+            """
+                phone number
+                6502532222
+                +1 650-253-2222
+                650 253 2222
+                6502532223
+            """,
+            template_type="sms",
+            international_sms=True,
+        )
+        assert recipients.count_of_duplicate_recipient_rows == 2
+        assert recipients.count_of_unique_duplicate_recipients == 1
+
+    def test_skips_rows_with_bad_or_missing_recipients(self):
+        file_contents = "email address\n" "alice@example.com\n" "not-an-email\n" "\n" "alice@example.com\n"
+        recipients = RecipientCSV(file_contents, template_type="email")
+        # The blank row and bad-email row should not be considered for dedupe.
+        assert recipients.count_of_duplicate_recipient_rows == 1
+
+    def test_duplicate_detection_disabled_for_letters(self):
+        recipients = RecipientCSV(
+            """
+                address line 1, address line 2, address line 3, address line 4, address line 5, address line 6, postcode
+                A, B, C, , , , X1A0A1
+                A, B, C, , , , X1A0A1
+            """,
+            template_type="letter",
+        )
+        # Letters can legitimately share an address, so we don't flag duplicates.
+        assert recipients.has_duplicate_recipients is False
+        assert recipients.count_of_duplicate_recipient_rows == 0
+        assert recipients.count_of_unique_duplicate_recipients == 0
+
+    def test_duplicates_do_not_make_has_errors_true(self):
+        recipients = RecipientCSV(
+            """
+                email address
+                alice@example.com
+                alice@example.com
+            """,
+            template_type="email",
+        )
+        assert recipients.has_duplicate_recipients is True
+        # Critically: duplicates are a non-blocking warning, not an error.
+        assert recipients.has_errors is False
+        assert list(recipients.rows_with_errors) == []
+
+    def test_ses_simulator_addresses_are_not_flagged_as_duplicates(self):
+        # The ``simulator.amazonses.com`` mailboxes (success@, bounce@,
+        # complaint@, etc.) are deliberately re-used for load/smoke testing,
+        # so a CSV full of them should not produce a "duplicate recipients"
+        # warning.
+        recipients = RecipientCSV(
+            """
+                email address
+                success@simulator.amazonses.com
+                SUCCESS@simulator.amazonses.com
+                bounce@simulator.amazonses.com
+                bounce@simulator.amazonses.com
+                alice@example.com
+                alice@example.com
+            """,
+            template_type="email",
+        )
+        # Only the real duplicate (alice) is flagged; the simulator addresses
+        # are excluded even though they appear multiple times.
+        assert recipients.count_of_unique_duplicate_recipients == 1
+        assert recipients.count_of_duplicate_recipient_rows == 1
+        duplicate_rows = list(recipients.rows_with_duplicate_recipients)
+        assert len(duplicate_rows) == 1
+        assert duplicate_rows[0].recipient == "alice@example.com"
+
+    def test_simulator_phone_numbers_are_not_flagged_as_duplicates(self):
+        # The simulator numbers configured in ``notification-api``
+        # (``SIMULATED_SMS_NUMBERS``) are short-circuited and never actually
+        # delivered, so they are intentionally re-used in load/smoke tests
+        # and should not produce a duplicate warning. The exclusion is on the
+        # E.164 form, so different input formats of the same simulator number
+        # must also be excluded.
+        recipients = RecipientCSV(
+            """
+                phone number
+                +16132532222
+                6132532222
+                (613) 253-2222
+                +16132532223
+                +16132532223
+                +16135551234
+                +16135551234
+            """,
+            template_type="sms",
+        )
+        # Only the real duplicate (+16135551234) is flagged.
+        assert recipients.count_of_unique_duplicate_recipients == 1
+        assert recipients.count_of_duplicate_recipient_rows == 1
+        duplicate_rows = list(recipients.rows_with_duplicate_recipients)
+        assert len(duplicate_rows) == 1
+
+    def test_duplicate_summary_is_cached(self):
+        # Re-reading any of the duplicate properties on a large upload should
+        # be cheap: the underlying single-pass computation must only run once.
+        recipients = RecipientCSV(
+            """
+                email address
+                alice@example.com
+                alice@example.com
+            """,
+            template_type="email",
+        )
+        # Prime the cache.
+        first_indices = recipients._duplicate_recipient_row_indices
+        # Subsequent accesses (incl. via different public properties) should
+        # all return the exact same cached object.
+        assert recipients._duplicate_recipient_row_indices is first_indices
+        assert recipients._duplicate_recipient_summary.row_indices is first_indices
+        assert recipients.count_of_duplicate_recipient_rows == 1
+        assert recipients.count_of_unique_duplicate_recipients == 1
+        assert recipients.has_duplicate_recipients is True

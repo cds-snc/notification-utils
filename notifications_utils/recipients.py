@@ -78,6 +78,30 @@ optional_address_columns = {
     "address line 6",
 }
 
+# Email domains used for testing-only / synthetic recipients. Addresses on
+# these domains are excluded from duplicate-recipient detection because they
+# are intentionally re-used (e.g. AWS SES has a fixed set of mailboxes at
+# ``simulator.amazonses.com`` that always deliver, bounce, complain, etc.).
+DEDUPE_EXCLUDED_EMAIL_DOMAINS = frozenset(
+    {
+        "simulator.amazonses.com",
+    }
+)
+
+# Phone numbers used for testing-only / synthetic recipients. These are the
+# simulator numbers configured in ``notification-api`` (``SIMULATED_SMS_NUMBERS``):
+# the API short-circuits delivery for these so that they are intentionally
+# re-used in load and smoke tests. They should not be flagged as duplicates
+# when senders include them in a bulk-send CSV. Values are stored in E.164 so
+# they match what ``validate_phone_number`` returns.
+DEDUPE_EXCLUDED_PHONE_NUMBERS = frozenset(
+    {
+        "+16132532222",
+        "+16132532223",
+        "+16132532224",
+    }
+)
+
 
 class RecipientCSV:
     def __init__(
@@ -310,6 +334,117 @@ class RecipientCSV:
                     total_length = variable_length + (len(self.template.content) if self.template else 0)
                     if total_length > SMS_CHAR_COUNT_LIMIT:
                         yield row
+
+    def _normalise_recipient_for_dedupe(self, recipient):
+        """
+        Normalise a recipient value for case-insensitive, whitespace-insensitive
+        duplicate detection. Phone numbers are normalised to E.164 when possible
+        so that "+1 555-123-4567" and "5551234567" are treated as the same recipient.
+        Returns ``None`` if the value cannot meaningfully be normalised (e.g. empty)
+        or if the value is a known testing-only address (see
+        ``DEDUPE_EXCLUDED_EMAIL_DOMAINS`` / ``DEDUPE_EXCLUDED_PHONE_NUMBERS``)
+        that should not be flagged as a duplicate.
+        """
+        if recipient is None:
+            return None
+        normalised = strip_and_remove_obscure_whitespace(str(recipient)).strip().lower()
+        if not normalised:
+            return None
+        if self.template_type == "email":
+            # ``user@DOMAIN`` -> domain part is everything after the last ``@``.
+            # We only need to skip dedupe for synthetic test mailboxes, so a
+            # cheap suffix check on the lowercased value is sufficient.
+            domain = normalised.rpartition("@")[2]
+            if domain in DEDUPE_EXCLUDED_EMAIL_DOMAINS:
+                return None
+        if self.template_type == "sms":
+            try:
+                normalised_phone = validate_phone_number(recipient, international=self.international_sms)
+            except InvalidPhoneError:
+                return normalised
+            if normalised_phone in DEDUPE_EXCLUDED_PHONE_NUMBERS:
+                return None
+            return normalised_phone
+        return normalised
+
+    def _compute_duplicate_recipient_summary(self):
+        """
+        Single-pass computation of everything we need to report duplicate
+        recipients. Iterating ``self.rows`` and (for SMS) calling
+        ``validate_phone_number`` per row is expensive on large uploads, so all
+        of the public ``*_duplicate_*`` properties read from this cached result
+        rather than recomputing.
+        """
+        DuplicateSummary = namedtuple("DuplicateSummary", ("row_indices", "unique_count"))
+        if self.template_type == "letter":
+            return DuplicateSummary(row_indices=frozenset(), unique_count=0)
+
+        seen: Dict[str, int] = {}
+        duplicate_indices = set()
+        for row in self.rows:
+            if row is None:
+                continue
+            if row.has_bad_recipient or row.recipient is None:
+                continue
+            normalised = self._normalise_recipient_for_dedupe(row.recipient)
+            if normalised is None:
+                continue
+            previous_count = seen.get(normalised, 0)
+            seen[normalised] = previous_count + 1
+            if previous_count:
+                duplicate_indices.add(row.index)
+
+        unique_count = sum(1 for count in seen.values() if count > 1)
+        return DuplicateSummary(row_indices=frozenset(duplicate_indices), unique_count=unique_count)
+
+    @property
+    def _duplicate_recipient_summary(self):
+        # Cached on the instance so all of the public duplicate-recipient
+        # properties cost only one full pass over the rows in total.
+        if not hasattr(self, "_duplicate_recipient_summary_cache"):
+            self._duplicate_recipient_summary_cache = self._compute_duplicate_recipient_summary()
+        return self._duplicate_recipient_summary_cache
+
+    @property
+    def _duplicate_recipient_row_indices(self):
+        """
+        Returns a set of row indices for rows whose recipient value has already
+        appeared in an earlier row. The first occurrence of each recipient is
+        not flagged. Rows with bad or missing recipients are skipped, and
+        duplicate detection is disabled for letter templates (where multiple
+        recipients can legitimately share an address).
+        """
+        return self._duplicate_recipient_summary.row_indices
+
+    @property
+    def rows_with_duplicate_recipients(self):
+        """
+        Yields rows whose recipient is a duplicate of an earlier row. The first
+        occurrence of each recipient is *not* yielded; only the subsequent
+        copies are yielded so callers can highlight or export them.
+        """
+        duplicate_indices = self._duplicate_recipient_row_indices
+        if not duplicate_indices:
+            return
+        for row in self.rows:
+            if row is None:
+                continue
+            if row.index in duplicate_indices:
+                yield row
+
+    @property
+    def has_duplicate_recipients(self):
+        return bool(self._duplicate_recipient_summary.row_indices)
+
+    @property
+    def count_of_duplicate_recipient_rows(self):
+        """Total number of duplicate rows (i.e. extra copies beyond the first)."""
+        return len(self._duplicate_recipient_summary.row_indices)
+
+    @property
+    def count_of_unique_duplicate_recipients(self):
+        """Number of distinct recipients that appear more than once."""
+        return self._duplicate_recipient_summary.unique_count
 
     @property
     def initial_rows_with_errors(self):
