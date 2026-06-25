@@ -1298,6 +1298,32 @@ class TestDuplicateRecipients:
         assert len(duplicate_rows) == 1
         assert duplicate_rows[0].recipient == "alice@example.com"
 
+    def test_simulator_phone_numbers_are_not_flagged_as_duplicates(self):
+        # The simulator numbers configured in ``notification-api``
+        # (``SIMULATED_SMS_NUMBERS``) are short-circuited and never actually
+        # delivered, so they are intentionally re-used in load/smoke tests
+        # and should not produce a duplicate warning. The exclusion is on the
+        # E.164 form, so different input formats of the same simulator number
+        # must also be excluded.
+        recipients = RecipientCSV(
+            """
+                phone number
+                +16132532222
+                6132532222
+                (613) 253-2222
+                +16132532223
+                +16132532223
+                +16135551234
+                +16135551234
+            """,
+            template_type="sms",
+        )
+        # Only the real duplicate (+16135551234) is flagged.
+        assert recipients.count_of_unique_duplicate_recipients == 1
+        assert recipients.count_of_duplicate_recipient_rows == 1
+        duplicate_rows = list(recipients.rows_with_duplicate_recipients)
+        assert len(duplicate_rows) == 1
+
     def test_duplicate_summary_is_cached(self):
         # Re-reading any of the duplicate properties on a large upload should
         # be cheap: the underlying single-pass computation must only run once.

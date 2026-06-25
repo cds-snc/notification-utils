@@ -88,6 +88,20 @@ DEDUPE_EXCLUDED_EMAIL_DOMAINS = frozenset(
     }
 )
 
+# Phone numbers used for testing-only / synthetic recipients. These are the
+# simulator numbers configured in ``notification-api`` (``SIMULATED_SMS_NUMBERS``):
+# the API short-circuits delivery for these so that they are intentionally
+# re-used in load and smoke tests. They should not be flagged as duplicates
+# when senders include them in a bulk-send CSV. Values are stored in E.164 so
+# they match what ``validate_phone_number`` returns.
+DEDUPE_EXCLUDED_PHONE_NUMBERS = frozenset(
+    {
+        "+16132532222",
+        "+16132532223",
+        "+16132532224",
+    }
+)
+
 
 class RecipientCSV:
     def __init__(
@@ -328,7 +342,8 @@ class RecipientCSV:
         so that "+1 555-123-4567" and "5551234567" are treated as the same recipient.
         Returns ``None`` if the value cannot meaningfully be normalised (e.g. empty)
         or if the value is a known testing-only address (see
-        ``DEDUPE_EXCLUDED_EMAIL_DOMAINS``) that should not be flagged as a duplicate.
+        ``DEDUPE_EXCLUDED_EMAIL_DOMAINS`` / ``DEDUPE_EXCLUDED_PHONE_NUMBERS``)
+        that should not be flagged as a duplicate.
         """
         if recipient is None:
             return None
@@ -344,9 +359,12 @@ class RecipientCSV:
                 return None
         if self.template_type == "sms":
             try:
-                return validate_phone_number(recipient, international=self.international_sms)
+                normalised_phone = validate_phone_number(recipient, international=self.international_sms)
             except InvalidPhoneError:
                 return normalised
+            if normalised_phone in DEDUPE_EXCLUDED_PHONE_NUMBERS:
+                return None
+            return normalised_phone
         return normalised
 
     def _compute_duplicate_recipient_summary(self):
