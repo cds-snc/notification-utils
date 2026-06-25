@@ -1272,3 +1272,49 @@ class TestDuplicateRecipients:
         # Critically: duplicates are a non-blocking warning, not an error.
         assert recipients.has_errors is False
         assert list(recipients.rows_with_errors) == []
+
+    def test_ses_simulator_addresses_are_not_flagged_as_duplicates(self):
+        # The ``simulator.amazonses.com`` mailboxes (success@, bounce@,
+        # complaint@, etc.) are deliberately re-used for load/smoke testing,
+        # so a CSV full of them should not produce a "duplicate recipients"
+        # warning.
+        recipients = RecipientCSV(
+            """
+                email address
+                success@simulator.amazonses.com
+                SUCCESS@simulator.amazonses.com
+                bounce@simulator.amazonses.com
+                bounce@simulator.amazonses.com
+                alice@example.com
+                alice@example.com
+            """,
+            template_type="email",
+        )
+        # Only the real duplicate (alice) is flagged; the simulator addresses
+        # are excluded even though they appear multiple times.
+        assert recipients.count_of_unique_duplicate_recipients == 1
+        assert recipients.count_of_duplicate_recipient_rows == 1
+        duplicate_rows = list(recipients.rows_with_duplicate_recipients)
+        assert len(duplicate_rows) == 1
+        assert duplicate_rows[0].recipient == "alice@example.com"
+
+    def test_duplicate_summary_is_cached(self):
+        # Re-reading any of the duplicate properties on a large upload should
+        # be cheap: the underlying single-pass computation must only run once.
+        recipients = RecipientCSV(
+            """
+                email address
+                alice@example.com
+                alice@example.com
+            """,
+            template_type="email",
+        )
+        # Prime the cache.
+        first_indices = recipients._duplicate_recipient_row_indices
+        # Subsequent accesses (incl. via different public properties) should
+        # all return the exact same cached object.
+        assert recipients._duplicate_recipient_row_indices is first_indices
+        assert recipients._duplicate_recipient_summary.row_indices is first_indices
+        assert recipients.count_of_duplicate_recipient_rows == 1
+        assert recipients.count_of_unique_duplicate_recipients == 1
+        assert recipients.has_duplicate_recipients is True

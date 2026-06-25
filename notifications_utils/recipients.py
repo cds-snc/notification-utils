@@ -78,6 +78,16 @@ optional_address_columns = {
     "address line 6",
 }
 
+# Email domains used for testing-only / synthetic recipients. Addresses on
+# these domains are excluded from duplicate-recipient detection because they
+# are intentionally re-used (e.g. AWS SES has a fixed set of mailboxes at
+# ``simulator.amazonses.com`` that always deliver, bounce, complain, etc.).
+DEDUPE_EXCLUDED_EMAIL_DOMAINS = frozenset(
+    {
+        "simulator.amazonses.com",
+    }
+)
+
 
 class RecipientCSV:
     def __init__(
@@ -316,19 +326,66 @@ class RecipientCSV:
         Normalise a recipient value for case-insensitive, whitespace-insensitive
         duplicate detection. Phone numbers are normalised to E.164 when possible
         so that "+1 555-123-4567" and "5551234567" are treated as the same recipient.
-        Returns ``None`` if the value cannot meaningfully be normalised (e.g. empty).
+        Returns ``None`` if the value cannot meaningfully be normalised (e.g. empty)
+        or if the value is a known testing-only address (see
+        ``DEDUPE_EXCLUDED_EMAIL_DOMAINS``) that should not be flagged as a duplicate.
         """
         if recipient is None:
             return None
         normalised = strip_and_remove_obscure_whitespace(str(recipient)).strip().lower()
         if not normalised:
             return None
+        if self.template_type == "email":
+            # ``user@DOMAIN`` -> domain part is everything after the last ``@``.
+            # We only need to skip dedupe for synthetic test mailboxes, so a
+            # cheap suffix check on the lowercased value is sufficient.
+            domain = normalised.rpartition("@")[2]
+            if domain in DEDUPE_EXCLUDED_EMAIL_DOMAINS:
+                return None
         if self.template_type == "sms":
             try:
                 return validate_phone_number(recipient, international=self.international_sms)
             except InvalidPhoneError:
                 return normalised
         return normalised
+
+    def _compute_duplicate_recipient_summary(self):
+        """
+        Single-pass computation of everything we need to report duplicate
+        recipients. Iterating ``self.rows`` and (for SMS) calling
+        ``validate_phone_number`` per row is expensive on large uploads, so all
+        of the public ``*_duplicate_*`` properties read from this cached result
+        rather than recomputing.
+        """
+        DuplicateSummary = namedtuple("DuplicateSummary", ("row_indices", "unique_count"))
+        if self.template_type == "letter":
+            return DuplicateSummary(row_indices=frozenset(), unique_count=0)
+
+        seen: Dict[str, int] = {}
+        duplicate_indices = set()
+        for row in self.rows:
+            if row is None:
+                continue
+            if row.has_bad_recipient or row.recipient is None:
+                continue
+            normalised = self._normalise_recipient_for_dedupe(row.recipient)
+            if normalised is None:
+                continue
+            previous_count = seen.get(normalised, 0)
+            seen[normalised] = previous_count + 1
+            if previous_count:
+                duplicate_indices.add(row.index)
+
+        unique_count = sum(1 for count in seen.values() if count > 1)
+        return DuplicateSummary(row_indices=frozenset(duplicate_indices), unique_count=unique_count)
+
+    @property
+    def _duplicate_recipient_summary(self):
+        # Cached on the instance so all of the public duplicate-recipient
+        # properties cost only one full pass over the rows in total.
+        if not hasattr(self, "_duplicate_recipient_summary_cache"):
+            self._duplicate_recipient_summary_cache = self._compute_duplicate_recipient_summary()
+        return self._duplicate_recipient_summary_cache
 
     @property
     def _duplicate_recipient_row_indices(self):
@@ -339,23 +396,7 @@ class RecipientCSV:
         duplicate detection is disabled for letter templates (where multiple
         recipients can legitimately share an address).
         """
-        if self.template_type == "letter":
-            return set()
-        seen = set()
-        duplicate_indices = set()
-        for row in self.rows:
-            if row is None:
-                continue
-            if row.has_bad_recipient or row.recipient is None:
-                continue
-            normalised = self._normalise_recipient_for_dedupe(row.recipient)
-            if normalised is None:
-                continue
-            if normalised in seen:
-                duplicate_indices.add(row.index)
-            else:
-                seen.add(normalised)
-        return duplicate_indices
+        return self._duplicate_recipient_summary.row_indices
 
     @property
     def rows_with_duplicate_recipients(self):
@@ -375,29 +416,17 @@ class RecipientCSV:
 
     @property
     def has_duplicate_recipients(self):
-        return bool(self._duplicate_recipient_row_indices)
+        return bool(self._duplicate_recipient_summary.row_indices)
 
     @property
     def count_of_duplicate_recipient_rows(self):
         """Total number of duplicate rows (i.e. extra copies beyond the first)."""
-        return len(self._duplicate_recipient_row_indices)
+        return len(self._duplicate_recipient_summary.row_indices)
 
     @property
     def count_of_unique_duplicate_recipients(self):
         """Number of distinct recipients that appear more than once."""
-        if self.template_type == "letter":
-            return 0
-        counts: Dict[str, int] = {}
-        for row in self.rows:
-            if row is None:
-                continue
-            if row.has_bad_recipient or row.recipient is None:
-                continue
-            normalised = self._normalise_recipient_for_dedupe(row.recipient)
-            if normalised is None:
-                continue
-            counts[normalised] = counts.get(normalised, 0) + 1
-        return sum(1 for count in counts.values() if count > 1)
+        return self._duplicate_recipient_summary.unique_count
 
     @property
     def initial_rows_with_errors(self):
