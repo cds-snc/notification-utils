@@ -5,6 +5,6 @@ jobs:
     name: docker://cdssnc/seekret-github-action
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@main
+    - uses: actions/checkout@4f1f4aec02e41874fa0262ea8ff5172d7978ad1e # main
     - name: docker://cdssnc/seekret-github-action
       uses: docker://cdssnc/seekret-github-action@sha256:0aee6df949373ef6df26d35f6207b56f897ddd1caa030646d7421b0afb717665
