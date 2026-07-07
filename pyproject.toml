@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "notifications-utils"
-version = "53.2.27"
+version = "53.2.28"
 description = "Shared python code for Notification - Provides logging utils etc."
 authors = ["Canadian Digital Service"]
 license = "MIT license"
@@ -39,7 +39,7 @@ PyYAML = "6.0.3"
 requests = "2.32.3"
 smartypants = "2.0.2"
 statsd = "3.3.0"
-werkzeug = "3.1.6"
+werkzeug = "3.1.8"
 
 [tool.poetry.group.test.dependencies]
 beautifulsoup4 = "^4.12.3"
@@ -56,9 +56,9 @@ ruff = "^0.8.2"
 types-beautifulsoup4 = "^4.12.0.20240229"
 types-bleach = "5.0.3.1"
 types-cachetools = "5.5.0.20240820"
-types-python-dateutil = "2.9.0.20251115"
+types-python-dateutil = "2.9.0.20260518"
 types-pytz = "2022.7.1.2"
-types-PyYAML = "6.0.12.20250915"
+types-PyYAML = "6.0.12.20260518"
 types-redis = "4.6.0.20241004"
 types-requests = "2.32.4.20250913"
 
