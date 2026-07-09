@@ -742,7 +742,7 @@ def test_link_with_title(markdown_function, expected):
         # href with a stray double-quote must not break out of the attribute
         (
             '[hi](https://example.com"onmouseover="alert)',
-            "https://example.com&quot;onmouseover=&quot;alert",
+            "https://example.com%22onmouseover=%22alert",
             "",
         ),
     ),
@@ -777,6 +777,7 @@ def test_email_link_blocks_unsafe_url_schemes(scheme_url):
     (
         "http://example.com",
         "https://example.com/path?q=1",
+        "https://example.com/path?a=1&b=2",  # & must not become &amp;
         "mailto:hi@example.com",
         "tel:+15551234567",
         "example.com/relative",  # no scheme — passed through
