@@ -781,6 +781,14 @@ def test_email_link_blocks_unsafe_url_schemes(scheme_url):
         "mailto:hi@example.com",
         "tel:+15551234567",
         "example.com/relative",  # no scheme — passed through
+        "https://example.com/search?q=hello%20world",
+        "https://example.com/search?q=a+b",
+        "https://example.com/?q=one&two=three",
+        "https://example.com/page#section-1",
+        "https://example.com/café",
+        "https://example.com/a%2Fb",
+        "https://example.com/?next=%2Fadmin%3Fdebug%3D1",
+        "https://example.com/~user/path",
     ),
 )
 def test_email_link_allows_safe_url_schemes(safe_url):

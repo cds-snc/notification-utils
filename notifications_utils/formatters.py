@@ -496,7 +496,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         ).format(text)
 
     def link(self, link, title, content):
-        safe_href = urllib.parse.quote(urllib.parse.unquote(sanitise_link_url(link)), safe=":/?#=&;@!$'()*+,~")
+        safe_href = sanitise_link_url(link).replace('"', "%22")
         title_attr = ' title="{}"'.format(html.escape(title, quote=True)) if title else ""
         return ('<a style="{}" href="{}"{}>{}</a>').format(
             LINK_STYLE,
