@@ -50,8 +50,10 @@ def test_fip_banner_english(renderer, show_banner):
     email = renderer({"content": "hello world", "subject": ""})
     email.fip_banner_english = show_banner
     if show_banner:
-        assert "gc-logo-en.png" in str(email)
-        assert "canada-logo.png" in str(email)
+        rendered_email = str(email)
+        assert "gc-logo-en.png" in rendered_email
+        assert "canada-logo.png" in rendered_email
+        assert 'alt="Government of Canada"' in rendered_email
     else:
         assert "gc-logo-en.png" not in str(email)
         assert "canada-logo.png" not in str(email)
@@ -81,8 +83,10 @@ def test_fip_banner_french(renderer, show_banner):
     email.fip_banner_english = False
     email.fip_banner_french = show_banner
     if show_banner:
-        assert "gc-logo-fr.png" in str(email)
-        assert "canada-logo.png" in str(email)
+        rendered_email = str(email)
+        assert "gc-logo-fr.png" in rendered_email
+        assert "canada-logo.png" in rendered_email
+        assert 'alt="Gouvernement du Canada"' in rendered_email
     else:
         assert "gc-logo-fr.png" not in str(email)
         assert "canada-logo.png" not in str(email)
