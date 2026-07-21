@@ -1,9 +1,10 @@
 import html
 import re
 import string
+import threading
 import urllib
 from itertools import count
-from typing import List
+from typing import Callable, List
 
 import bleach
 import mistune
@@ -619,24 +620,62 @@ class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer)
         )
 
 
-notify_email_markdown = mistune.Markdown(
-    renderer=NotifyEmailMarkdownRenderer(),
-    hard_wrap=True,
-    use_xhtml=False,
-)
-notify_plain_text_email_markdown = mistune.Markdown(
-    renderer=NotifyPlainTextEmailMarkdownRenderer(),
-    hard_wrap=True,
-)
-notify_email_preheader_markdown = mistune.Markdown(
-    renderer=NotifyEmailPreheaderMarkdownRenderer(),
-    hard_wrap=True,
-)
-notify_letter_preview_markdown = mistune.Markdown(
-    renderer=NotifyLetterMarkdownPreviewRenderer(),
-    hard_wrap=True,
-    use_xhtml=False,
-)
+_markdown_local = threading.local()
+
+
+def _get_thread_local_markdown(name: str, factory: Callable[[], mistune.Markdown]) -> mistune.Markdown:
+    # Mistune 0.8 markdown instances keep mutable parse state and are not thread-safe.
+    parser = getattr(_markdown_local, name, None)
+    if parser is None:
+        parser = factory()
+        setattr(_markdown_local, name, parser)
+    return parser
+
+
+def _build_notify_email_markdown() -> mistune.Markdown:
+    return mistune.Markdown(
+        renderer=NotifyEmailMarkdownRenderer(),
+        hard_wrap=True,
+        use_xhtml=False,
+    )
+
+
+def _build_notify_plain_text_email_markdown() -> mistune.Markdown:
+    return mistune.Markdown(
+        renderer=NotifyPlainTextEmailMarkdownRenderer(),
+        hard_wrap=True,
+    )
+
+
+def _build_notify_email_preheader_markdown() -> mistune.Markdown:
+    return mistune.Markdown(
+        renderer=NotifyEmailPreheaderMarkdownRenderer(),
+        hard_wrap=True,
+    )
+
+
+def _build_notify_letter_preview_markdown() -> mistune.Markdown:
+    return mistune.Markdown(
+        renderer=NotifyLetterMarkdownPreviewRenderer(),
+        hard_wrap=True,
+        use_xhtml=False,
+    )
+
+
+def notify_email_markdown(text):
+    return _get_thread_local_markdown("notify_email_markdown", _build_notify_email_markdown)(text)
+
+
+def notify_plain_text_email_markdown(text):
+    return _get_thread_local_markdown("notify_plain_text_email_markdown", _build_notify_plain_text_email_markdown)(text)
+
+
+def notify_email_preheader_markdown(text):
+    return _get_thread_local_markdown("notify_email_preheader_markdown", _build_notify_email_preheader_markdown)(text)
+
+
+def notify_letter_preview_markdown(text):
+    return _get_thread_local_markdown("notify_letter_preview_markdown", _build_notify_letter_preview_markdown)(text)
 
 
 def escape_lang_tags(_content: str) -> str:

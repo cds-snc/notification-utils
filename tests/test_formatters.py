@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 import pytest
 from flask import Markup
 from notifications_utils.formatters import (
@@ -12,6 +14,7 @@ from notifications_utils.formatters import (
     nl2li,
     normalise_whitespace,
     notify_email_markdown,
+    notify_email_preheader_markdown,
     notify_letter_preview_markdown,
     notify_plain_text_email_markdown,
     remove_language_divs,
@@ -30,6 +33,33 @@ from notifications_utils.formatters import (
 )
 from notifications_utils.take import Take
 from notifications_utils.template import HTMLEmailTemplate, PlainTextEmailTemplate, SMSMessageTemplate, SMSPreviewTemplate
+
+
+@pytest.mark.parametrize(
+    "markdown_function",
+    [
+        notify_email_markdown,
+        notify_plain_text_email_markdown,
+        notify_email_preheader_markdown,
+        notify_letter_preview_markdown,
+    ],
+)
+def test_markdown_renderers_are_safe_under_concurrency(markdown_function):
+    samples = [
+        "heartbeat ok",
+        "# hi\n\nplain text",
+        "1. a\n2. b\n",
+        "no markdown here",
+        "___\nnext",
+    ]
+
+    def render(i):
+        return markdown_function(samples[i % len(samples)])
+
+    with ThreadPoolExecutor(max_workers=16) as executor:
+        results = list(executor.map(render, range(3000)))
+
+    assert len(results) == 3000
 
 
 @pytest.mark.parametrize(
