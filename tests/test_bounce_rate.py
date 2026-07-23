@@ -219,3 +219,13 @@ class TestRedisBounceRate:
             mocked_service_id, volume_threshold=volume_threshold
         )
         assert bounce_status == expected_status
+
+    def test_set_warning_email_key_only_sets_once(self, better_mocked_bounce_rate_client, mocked_service_id):
+        assert better_mocked_bounce_rate_client.set_warning_email_key(mocked_service_id) is True
+        assert better_mocked_bounce_rate_client.set_warning_email_key(mocked_service_id) is False
+        assert better_mocked_bounce_rate_client.set_warning_email_key(mocked_service_id) is False
+
+    def test_set_suspension_email_key_only_sets_once(self, better_mocked_bounce_rate_client, mocked_service_id):
+        assert better_mocked_bounce_rate_client.set_suspension_email_key(mocked_service_id) is True
+        assert better_mocked_bounce_rate_client.set_suspension_email_key(mocked_service_id) is False
+        assert better_mocked_bounce_rate_client.set_suspension_email_key(mocked_service_id) is False

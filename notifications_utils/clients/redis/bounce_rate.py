@@ -22,6 +22,14 @@ def seeding_started_key(service_id: str):
     return f"seeding_started:{service_id}"
 
 
+def bounce_rate_suspension_email_key(service_id: str) -> str:
+    return f"bounce_rate_suspension_email_sent:{service_id}"
+
+
+def bounce_rate_warning_email_key(service_id: str) -> str:
+    return f"bounce_rate_warning_email_sent:{service_id}"
+
+
 def _current_timestamp_s() -> int:
     return int(datetime.utcnow().timestamp())
 
@@ -135,3 +143,21 @@ class RedisBounceRate:
             return "critical"
 
         return "warning"
+
+    def set_warning_email_key(self, service_id: str) -> bool:
+        cache_key = bounce_rate_warning_email_key(service_id)
+        if not self._redis_client.active:
+            return False
+
+        if self._redis_client.redis_store.set(cache_key, datetime.utcnow().isoformat(), ex=TWENTY_FOUR_HOURS_IN_SECONDS, nx=True):
+            return True
+        return False
+
+    def set_suspension_email_key(self, service_id: str) -> bool:
+        cache_key = bounce_rate_suspension_email_key(service_id)
+        if not self._redis_client.active:
+            return False
+
+        if self._redis_client.redis_store.set(cache_key, datetime.utcnow().isoformat(), ex=TWENTY_FOUR_HOURS_IN_SECONDS, nx=True):
+            return True
+        return False
