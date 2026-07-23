@@ -23,11 +23,11 @@ def seeding_started_key(service_id: str):
 
 
 def bounce_rate_suspension_email_key(service_id: str) -> str:
-    return f"bounce-rate-suspension-email-sent:{service_id}"
+    return f"bounce_rate_suspension_email_sent:{service_id}"
 
 
 def bounce_rate_warning_email_key(service_id: str) -> str:
-    return f"bounce-rate-warning-email-sent:{service_id}"
+    return f"bounce_rate_warning_email_sent:{service_id}"
 
 
 def _current_timestamp_s() -> int:
