@@ -15,7 +15,7 @@ from notifications_utils.clients.redis.sliding_window_rate_limit import (
 @pytest.fixture
 def fake_redis_client():
     client = RedisClient()
-    client.redis_store = fakeredis.FakeStrictRedis(version=6)
+    client.redis_store = fakeredis.FakeStrictRedis(version=6)  # type: ignore
     client.active = True
     return client
 
