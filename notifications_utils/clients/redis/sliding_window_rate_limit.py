@@ -18,8 +18,8 @@ def report_rate_limit_cache_key(service_id):
 
 def check_and_count_window(redis_client: RedisClient, cache_key: str, window_seconds: int, now: Optional[float] = None) -> int:
     """
-    Remove entries older than window_seconds and return the current count of
-    entries within the window. Returns 0 if Redis is inactive.
+    Remove entries older than or equal to window_seconds and return the current
+    count of entries within the window. Returns 0 if Redis is inactive.
     """
     if not redis_client.active:
         return 0
