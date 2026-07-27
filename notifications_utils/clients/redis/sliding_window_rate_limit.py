@@ -7,6 +7,7 @@ accurate counting of requests within it.
 """
 
 from time import time
+from typing import Optional
 
 from notifications_utils.clients.redis.redis_client import RedisClient
 
@@ -15,7 +16,7 @@ def report_rate_limit_cache_key(service_id):
     return f"report-rate-limit:{service_id}"
 
 
-def check_and_count_window(redis_client: RedisClient, cache_key: str, window_seconds: int, now: float = None) -> int:
+def check_and_count_window(redis_client: RedisClient, cache_key: str, window_seconds: int, now: Optional[float] = None) -> int:
     """
     Remove entries older than window_seconds and return the current count of
     entries within the window. Returns 0 if Redis is inactive.
@@ -45,7 +46,7 @@ def get_window_oldest_entry(redis_client: RedisClient, cache_key: str):
     return None
 
 
-def record_window_request(redis_client: RedisClient, cache_key: str, window_seconds: int, now: float = None) -> None:
+def record_window_request(redis_client: RedisClient, cache_key: str, window_seconds: int, now: Optional[float] = None) -> None:
     """
     Record a request in the sliding window sorted set and refresh the key expiry.
     No-op if Redis is inactive.
