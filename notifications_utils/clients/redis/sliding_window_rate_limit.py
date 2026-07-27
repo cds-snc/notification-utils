@@ -7,7 +7,7 @@ accurate counting of requests within it.
 """
 
 from time import time
-from typing import Optional
+from typing import Optional, Tuple
 
 from notifications_utils.clients.redis.redis_client import RedisClient
 
@@ -16,46 +16,46 @@ def report_rate_limit_cache_key(service_id):
     return f"report-rate-limit:{service_id}"
 
 
-def check_and_count_window(redis_client: RedisClient, cache_key: str, window_seconds: int, now: Optional[float] = None) -> int:
+def check_and_record_window_request(
+    redis_client: RedisClient,
+    cache_key: str,
+    limit: int,
+    window_seconds: int,
+    now: Optional[float] = None,
+) -> Tuple[bool, Optional[float]]:
     """
-    Remove entries older than or equal to window_seconds and return the current
-    count of entries within the window. Returns 0 if Redis is inactive.
+    Atomically record a request and check whether the rate limit has been exceeded.
+
+    Uses a single pipeline (zadd -> zremrangebyscore -> zcard -> zrange -> expire)
+    so the record and check happen in the same round-trip, matching the pattern of
+    RedisClient.exceeded_rate_limit.
+
+    Because the entry is added before the count is inspected, a rejected request
+    still occupies a slot in the window.  This prevents concurrent callers from all
+    observing the same pre-add count and all proceeding past the limit.
+
+    Returns:
+        (exceeded, oldest_ts)
+        - exceeded:   True if the count after adding exceeds the limit.
+        - oldest_ts:  Timestamp of the oldest entry when exceeded (used by the
+                      caller to compute reset_at / Retry-After), or None when the
+                      limit is not exceeded or Redis is inactive.
     """
     if not redis_client.active:
-        return 0
+        return False, None
     if now is None:
         now = time()
     window_start = now - window_seconds
     pipe = redis_client.redis_store.pipeline()
+    pipe.zadd(cache_key, {now: now})
     pipe.zremrangebyscore(cache_key, "-inf", window_start)
     pipe.zcard(cache_key)
-    results = pipe.execute()
-    return results[1]
-
-
-def get_window_oldest_entry(redis_client: RedisClient, cache_key: str):
-    """
-    Returns the timestamp of the oldest entry in the sorted set, or None if the
-    set is empty or Redis is inactive.
-    """
-    if not redis_client.active:
-        return None
-    oldest = redis_client.redis_store.zrange(cache_key, 0, 0, withscores=True)
-    if oldest:
-        return oldest[0][1]
-    return None
-
-
-def record_window_request(redis_client: RedisClient, cache_key: str, window_seconds: int, now: Optional[float] = None) -> None:
-    """
-    Record a request in the sliding window sorted set and refresh the key expiry.
-    No-op if Redis is inactive.
-    """
-    if not redis_client.active:
-        return
-    if now is None:
-        now = time()
-    pipe = redis_client.redis_store.pipeline()
-    pipe.zadd(cache_key, {now: now})
+    pipe.zrange(cache_key, 0, 0, withscores=True)
     pipe.expire(cache_key, window_seconds + 60)
-    pipe.execute()
+    results = pipe.execute()
+    count = results[2]
+    if count > limit:
+        oldest_entries = results[3]
+        oldest_ts = oldest_entries[0][1] if oldest_entries else None
+        return True, oldest_ts
+    return False, None

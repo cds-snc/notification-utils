@@ -5,9 +5,7 @@ import fakeredis
 import pytest
 from notifications_utils.clients.redis.redis_client import RedisClient
 from notifications_utils.clients.redis.sliding_window_rate_limit import (
-    check_and_count_window,
-    get_window_oldest_entry,
-    record_window_request,
+    check_and_record_window_request,
     report_rate_limit_cache_key,
 )
 
@@ -41,146 +39,102 @@ class TestReportRateLimitCacheKey:
         assert report_rate_limit_cache_key("aaa") != report_rate_limit_cache_key("bbb")
 
 
-class TestCheckAndCountWindow:
-    def test_returns_zero_when_redis_inactive(self, inactive_redis_client, cache_key):
-        assert check_and_count_window(inactive_redis_client, cache_key, 3600) == 0
+class TestCheckAndRecordWindowRequest:
+    def test_returns_not_exceeded_when_redis_inactive(self, inactive_redis_client, cache_key):
+        exceeded, oldest_ts = check_and_record_window_request(inactive_redis_client, cache_key, 10, 3600)
+        assert exceeded is False
+        assert oldest_ts is None
 
-    def test_returns_zero_for_empty_set(self, fake_redis_client, cache_key):
-        assert check_and_count_window(fake_redis_client, cache_key, 3600) == 0
-
-    def test_counts_entries_within_window(self, fake_redis_client, cache_key):
+    def test_not_exceeded_below_limit(self, fake_redis_client, cache_key):
         now = time()
-        # Add 3 entries inside the window
-        for i in range(3):
-            ts = now - i * 10
-            fake_redis_client.redis_store.zadd(cache_key, {ts: ts})
+        for i in range(9):
+            exceeded, oldest_ts = check_and_record_window_request(fake_redis_client, cache_key, 10, 3600, now + i * 0.001)
+            assert exceeded is False
+            assert oldest_ts is None
 
-        count = check_and_count_window(fake_redis_client, cache_key, 3600, now)
-        assert count == 3
-
-    def test_removes_entries_outside_window(self, fake_redis_client, cache_key):
+    def test_not_exceeded_at_exact_limit(self, fake_redis_client, cache_key):
         now = time()
-        old_ts = now - 7200  # 2 hours ago — outside a 1-hour window
-        recent_ts = now - 60  # 1 minute ago — inside window
+        # Pre-fill 9 entries, then add the 10th — count reaches limit but does not exceed
+        for i in range(9):
+            fake_redis_client.redis_store.zadd(cache_key, {now - i: now - i})
 
-        fake_redis_client.redis_store.zadd(cache_key, {old_ts: old_ts, recent_ts: recent_ts})
+        exceeded, oldest_ts = check_and_record_window_request(fake_redis_client, cache_key, 10, 3600, now)
+        assert exceeded is False
+        assert oldest_ts is None
 
-        count = check_and_count_window(fake_redis_client, cache_key, 3600, now)
-        assert count == 1
-
-        # Old entry should be gone from the set
-        remaining = fake_redis_client.redis_store.zrange(cache_key, 0, -1, withscores=True)
-        assert len(remaining) == 1
-        assert abs(remaining[0][1] - recent_ts) < 0.001
-
-    def test_entry_exactly_at_window_boundary_is_removed(self, fake_redis_client, cache_key):
+    def test_exceeded_when_over_limit(self, fake_redis_client, cache_key):
         now = time()
-        boundary_ts = now - 3600  # exactly at the start of a 1-hour window
-        inside_ts = now - 3599
+        # Pre-fill 10 entries so the next add pushes count to 11.
+        # Use now - (i+1) so no member equals `now` (sorted sets deduplicate by member).
+        for i in range(10):
+            fake_redis_client.redis_store.zadd(cache_key, {now - (i + 1): now - (i + 1)})
 
-        fake_redis_client.redis_store.zadd(cache_key, {boundary_ts: boundary_ts, inside_ts: inside_ts})
+        exceeded, oldest_ts = check_and_record_window_request(fake_redis_client, cache_key, 10, 3600, now)
+        assert exceeded is True
 
-        count = check_and_count_window(fake_redis_client, cache_key, 3600, now)
-        assert count == 1
-
-    def test_uses_current_time_when_now_not_provided(self, fake_redis_client, cache_key):
-        ts = time() - 10
-        fake_redis_client.redis_store.zadd(cache_key, {ts: ts})
-
-        count = check_and_count_window(fake_redis_client, cache_key, 3600)
-        assert count == 1
-
-
-class TestGetWindowOldestEntry:
-    def test_returns_none_when_redis_inactive(self, inactive_redis_client, cache_key):
-        assert get_window_oldest_entry(inactive_redis_client, cache_key) is None
-
-    def test_returns_none_for_empty_set(self, fake_redis_client, cache_key):
-        assert get_window_oldest_entry(fake_redis_client, cache_key) is None
-
-    def test_returns_oldest_timestamp(self, fake_redis_client, cache_key):
+    def test_oldest_ts_is_populated_when_exceeded(self, fake_redis_client, cache_key):
         now = time()
-        oldest = now - 500
-        newer = now - 200
-        newest = now - 50
+        oldest = now - 100
+        for i in range(9):
+            fake_redis_client.redis_store.zadd(cache_key, {oldest - i: oldest - i})
+        # one more entry puts us to 10 before the new add
+        fake_redis_client.redis_store.zadd(cache_key, {now - 50: now - 50})
 
-        fake_redis_client.redis_store.zadd(cache_key, {oldest: oldest, newer: newer, newest: newest})
+        exceeded, oldest_ts = check_and_record_window_request(fake_redis_client, cache_key, 10, 3600, now)
+        assert exceeded is True
+        # oldest_ts should be the smallest score still in the window
+        assert oldest_ts is not None
+        assert oldest_ts <= oldest
 
-        result = get_window_oldest_entry(fake_redis_client, cache_key)
-        assert abs(result - oldest) < 0.001
-
-    def test_returns_single_entry(self, fake_redis_client, cache_key):
+    def test_expired_entries_are_trimmed_before_counting(self, fake_redis_client, cache_key):
         now = time()
-        fake_redis_client.redis_store.zadd(cache_key, {now: now})
+        # 8 old entries outside the window + 1 inside = 9 total before add
+        for i in range(8):
+            old_ts = now - 7200 - i
+            fake_redis_client.redis_store.zadd(cache_key, {old_ts: old_ts})
+        fake_redis_client.redis_store.zadd(cache_key, {now - 10: now - 10})
 
-        result = get_window_oldest_entry(fake_redis_client, cache_key)
-        assert abs(result - now) < 0.001
+        # After trim, only 1 valid entry + the new one = count 2, not exceeded
+        exceeded, oldest_ts = check_and_record_window_request(fake_redis_client, cache_key, 10, 3600, now)
+        assert exceeded is False
 
-
-class TestRecordWindowRequest:
-    def test_no_op_when_redis_inactive(self, inactive_redis_client, cache_key):
-        # Should not raise
-        record_window_request(inactive_redis_client, cache_key, 3600)
-
-    def test_adds_entry_to_sorted_set(self, fake_redis_client, cache_key):
+    def test_entry_at_window_boundary_is_trimmed(self, fake_redis_client, cache_key):
         now = time()
-        record_window_request(fake_redis_client, cache_key, 3600, now)
+        boundary_ts = now - 3600  # exactly at window start — should be removed
+        for i in range(10):
+            fake_redis_client.redis_store.zadd(cache_key, {boundary_ts - i: boundary_ts - i})
 
-        entries = fake_redis_client.redis_store.zrange(cache_key, 0, -1, withscores=True)
-        assert len(entries) == 1
-        assert abs(entries[0][1] - now) < 0.001
+        # All 10 pre-filled entries fall outside or at the boundary; only the new
+        # entry remains after trim, so count == 1 and limit is not exceeded
+        exceeded, _ = check_and_record_window_request(fake_redis_client, cache_key, 10, 3600, now)
+        assert exceeded is False
 
     def test_sets_key_expiry(self, fake_redis_client, cache_key):
-        record_window_request(fake_redis_client, cache_key, 3600)
+        check_and_record_window_request(fake_redis_client, cache_key, 10, 3600)
 
         ttl = fake_redis_client.redis_store.ttl(cache_key)
-        # expiry is window + 60; allow a small margin for test execution time
+        # expiry is window_seconds + 60; allow small margin for test execution time
         assert 3600 <= ttl <= 3661
 
-    def test_multiple_requests_accumulate(self, fake_redis_client, cache_key):
+    def test_rejected_request_occupies_a_slot(self, fake_redis_client, cache_key):
         now = time()
-        for i in range(5):
-            record_window_request(fake_redis_client, cache_key, 3600, now + i * 0.001)
+        # Fill to the brim so the next add exceeds the limit.
+        # Use now - (i+1) so no member equals `now`.
+        for i in range(10):
+            fake_redis_client.redis_store.zadd(cache_key, {now - (i + 1): now - (i + 1)})
 
-        entries = fake_redis_client.redis_store.zrange(cache_key, 0, -1)
-        assert len(entries) == 5
+        exceeded, _ = check_and_record_window_request(fake_redis_client, cache_key, 10, 3600, now)
+        assert exceeded is True
+
+        # The rejected entry was still added; set now has 11 members
+        count = fake_redis_client.redis_store.zcard(cache_key)
+        assert count == 11
 
     def test_uses_current_time_when_now_not_provided(self, fake_redis_client, cache_key):
         before = time()
-        record_window_request(fake_redis_client, cache_key, 3600)
+        check_and_record_window_request(fake_redis_client, cache_key, 10, 3600)
         after = time()
 
         entries = fake_redis_client.redis_store.zrange(cache_key, 0, -1, withscores=True)
         assert len(entries) == 1
         assert before <= entries[0][1] <= after
-
-
-class TestSlidingWindowIntegration:
-    def test_full_flow_within_limit(self, fake_redis_client, cache_key):
-        now = time()
-        for i in range(9):
-            count = check_and_count_window(fake_redis_client, cache_key, 3600, now)
-            assert count < 10
-            record_window_request(fake_redis_client, cache_key, 3600, now + i * 0.001)
-
-    def test_full_flow_at_limit(self, fake_redis_client, cache_key):
-        now = time()
-        # Pre-fill with 10 entries
-        for i in range(10):
-            fake_redis_client.redis_store.zadd(cache_key, {now - i: now - i})
-
-        count = check_and_count_window(fake_redis_client, cache_key, 3600, now)
-        assert count == 10
-
-    def test_expired_entries_bring_count_below_limit(self, fake_redis_client, cache_key):
-        now = time()
-        # 8 old entries outside window + 5 recent entries inside window
-        for i in range(8):
-            old_ts = now - 7200 - i
-            fake_redis_client.redis_store.zadd(cache_key, {old_ts: old_ts})
-        for i in range(5):
-            recent_ts = now - i * 10
-            fake_redis_client.redis_store.zadd(cache_key, {recent_ts: recent_ts})
-
-        count = check_and_count_window(fake_redis_client, cache_key, 3600, now)
-        assert count == 5
