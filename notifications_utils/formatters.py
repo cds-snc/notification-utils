@@ -247,7 +247,7 @@ def make_quotes_smart(value):
 def replace_hyphens_with_en_dashes(value):
     return re.sub(
         hyphens_surrounded_by_spaces,
-        (" " "\u2013" " "),  # space  # en dash  # space
+        (" \u2013 "),  # space  # en dash  # space
         value,
     )
 

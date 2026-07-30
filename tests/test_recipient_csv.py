@@ -767,9 +767,9 @@ def test_recipient_safelist(file_contents, template_type, safelist, count_of_row
             f"""
             phone number,placeholder
             6502532222,1
-            6502532222,{'a' * (SMS_CHAR_COUNT_LIMIT + 1)}
-            6502532222,{'a'* (SMS_CHAR_COUNT_LIMIT - 72)}
-            6502532222,{'a' * (SMS_CHAR_COUNT_LIMIT - 73) }
+            6502532222,{"a" * (SMS_CHAR_COUNT_LIMIT + 1)}
+            6502532222,{"a" * (SMS_CHAR_COUNT_LIMIT - 72)}
+            6502532222,{"a" * (SMS_CHAR_COUNT_LIMIT - 73)}
             """,
             {1},
         ),
@@ -778,9 +778,9 @@ def test_recipient_safelist(file_contents, template_type, safelist, count_of_row
             f"""
             phone number,placeholder1,placeholder2
             6502532222,1
-            6502532222,{'a' * (floor(SMS_CHAR_COUNT_LIMIT / 2))},{'a' * (floor(SMS_CHAR_COUNT_LIMIT / 2) + 1)}
-            6502532222,{'a'* (floor(SMS_CHAR_COUNT_LIMIT / 2))},{'a' * (floor(SMS_CHAR_COUNT_LIMIT / 2) - 72)}
-            6502532222,{'a' * (floor(SMS_CHAR_COUNT_LIMIT / 2)) },{'a' * (floor(SMS_CHAR_COUNT_LIMIT / 2) - 73)}
+            6502532222,{"a" * (floor(SMS_CHAR_COUNT_LIMIT / 2))},{"a" * (floor(SMS_CHAR_COUNT_LIMIT / 2) + 1)}
+            6502532222,{"a" * (floor(SMS_CHAR_COUNT_LIMIT / 2))},{"a" * (floor(SMS_CHAR_COUNT_LIMIT / 2) - 72)}
+            6502532222,{"a" * (floor(SMS_CHAR_COUNT_LIMIT / 2))},{"a" * (floor(SMS_CHAR_COUNT_LIMIT / 2) - 73)}
             """,
             {1},
         ),
@@ -1201,7 +1201,7 @@ class TestDuplicateRecipients:
     def test_email_dedupe_is_case_insensitive_and_trims_whitespace(self):
         # Build the CSV explicitly so leading/trailing whitespace and case
         # differences are preserved without tripping the linter.
-        file_contents = "email address\n" "Alice@Example.com\n" "  alice@example.COM  \n" "ALICE@EXAMPLE.COM\n"
+        file_contents = "email address\nAlice@Example.com\n  alice@example.COM  \nALICE@EXAMPLE.COM\n"
         recipients = RecipientCSV(file_contents, template_type="email")
         assert recipients.count_of_duplicate_recipient_rows == 2
         assert recipients.count_of_unique_duplicate_recipients == 1
@@ -1240,7 +1240,7 @@ class TestDuplicateRecipients:
         assert recipients.count_of_unique_duplicate_recipients == 1
 
     def test_skips_rows_with_bad_or_missing_recipients(self):
-        file_contents = "email address\n" "alice@example.com\n" "not-an-email\n" "\n" "alice@example.com\n"
+        file_contents = "email address\nalice@example.com\nnot-an-email\n\nalice@example.com\n"
         recipients = RecipientCSV(file_contents, template_type="email")
         # The blank row and bad-email row should not be considered for dedupe.
         assert recipients.count_of_duplicate_recipient_rows == 1

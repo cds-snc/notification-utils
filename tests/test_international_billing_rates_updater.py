@@ -56,7 +56,7 @@ def test_build_international_rates_uses_max_on_shared_prefix_when_strategy_max(t
     max_price_by_iso = {"CA": 0.02183, "US": 0.007}
 
     prefixes_csv = tmp_path / "prefixes.csv"
-    prefixes_csv.write_text("COUNTRY,ISO_CODE,DIALING_CODE\n" "Canada,CA,1\n" "United States,US,1\n")
+    prefixes_csv.write_text("COUNTRY,ISO_CODE,DIALING_CODE\nCanada,CA,1\nUnited States,US,1\n")
     prefix_by_name, feature_by_iso = load_prefixes_by_name(prefixes_csv)
 
     rates = build_international_rates(
