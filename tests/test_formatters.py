@@ -76,7 +76,7 @@ def test_markdown_renderers_are_safe_under_concurrency(markdown_function):
 def test_makes_links_out_of_URLs(url):
     link = '<a style="word-wrap: break-word; word-break: break-word;" href="{}">{}</a>'.format(url, url)
     assert notify_email_markdown(url) == (
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">' "{}" "</p>"
+        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">{}</p>'
     ).format(link)
 
 
@@ -102,7 +102,7 @@ def test_makes_links_out_of_URLs(url):
 )
 def test_makes_links_out_of_URLs_in_context(input, output):
     assert notify_email_markdown(input) == (
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">' "{}" "</p>"
+        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">{}</p>'
     ).format(output)
 
 
@@ -119,7 +119,7 @@ def test_makes_links_out_of_URLs_in_context(input, output):
 )
 def test_doesnt_make_links_out_of_invalid_urls(url):
     assert notify_email_markdown(url) == (
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">' "{}" "</p>"
+        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">{}</p>'
     ).format(url)
 
 
@@ -151,7 +151,7 @@ def test_handles_placeholders_in_urls():
 )
 def test_URLs_get_escaped(url, expected_html, expected_html_in_template):
     assert notify_email_markdown(url) == (
-        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">' "{}" "</p>"
+        '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">{}</p>'
     ).format(expected_html)
     assert expected_html_in_template in str(HTMLEmailTemplate({"content": url, "subject": ""}))
 
@@ -192,11 +192,11 @@ def test_HTML_template_has_URLs_replaced_with_links():
                 "</p>"
             ),
         ),
-        (notify_plain_text_email_markdown, ("\n" "\nhttps://example.com" "\n" "\nNext paragraph")),
+        (notify_plain_text_email_markdown, ("\n\nhttps://example.com\n\nNext paragraph")),
     ],
 )
 def test_preserves_whitespace_when_making_links(markdown_function, expected_output):
-    assert markdown_function("https://example.com\n" "\n" "Next paragraph") == expected_output
+    assert markdown_function("https://example.com\n\nNext paragraph") == expected_output
 
 
 @pytest.mark.parametrize(
@@ -289,7 +289,7 @@ def test_block_code(markdown_function, expected):
         ],
         [
             notify_plain_text_email_markdown,
-            ("\n" "\ninset text"),
+            ("\n\ninset text"),
         ],
     ),
 )
@@ -319,7 +319,7 @@ def test_block_quote(markdown_function, expected):
         ],
         [
             notify_plain_text_email_markdown,
-            ("\n" "\n" "\nheading" "\n-----------------------------------------------------------------"),
+            ("\n\n\nheading\n-----------------------------------------------------------------"),
         ],
     ),
 )
@@ -338,7 +338,7 @@ def test_level_1_header(markdown_function, heading, expected):
         ],
         [
             notify_plain_text_email_markdown,
-            ("\n" "\ninset text" "\n-----------------------------------------------------------------"),
+            ("\n\ninset text\n-----------------------------------------------------------------"),
         ],
     ),
 )
@@ -349,7 +349,7 @@ def test_level_2_header(markdown_function, expected):
 @pytest.mark.parametrize(
     "markdown_function, expected",
     (
-        [notify_letter_preview_markdown, ("<p>a</p>" '<div class="page-break">&nbsp;</div>' "<p>b</p>")],
+        [notify_letter_preview_markdown, ('<p>a</p><div class="page-break">&nbsp;</div><p>b</p>')],
         [
             notify_email_markdown,
             (
@@ -360,7 +360,7 @@ def test_level_2_header(markdown_function, expected):
         ],
         [
             notify_plain_text_email_markdown,
-            ("\n" "\na" "\n" "\n=================================================================" "\n" "\nb"),
+            ("\n\na\n\n=================================================================\n\nb"),
         ],
     ),
 )
@@ -374,13 +374,13 @@ def test_hrule(markdown_function, expected):
     (
         [
             notify_letter_preview_markdown,
-            "1. one\n" "2. two\n" "3. three\n",
-            ("<ol>\n" "<li>one</li>\n" "<li>two</li>\n" "<li>three</li>\n" "</ol>\n"),
+            "1. one\n2. two\n3. three\n",
+            ("<ol>\n<li>one</li>\n<li>two</li>\n<li>three</li>\n</ol>\n"),
         ],
-        [notify_letter_preview_markdown, "1.one\n" "2.two\n" "3.three\n", "<p>1.one<br>2.two<br>3.three</p>"],
+        [notify_letter_preview_markdown, "1.one\n2.two\n3.three\n", "<p>1.one<br>2.two<br>3.three</p>"],
         [
             notify_email_markdown,
-            "1. one\n" "2. two\n" "3. three\n",
+            "1. one\n2. two\n3. three\n",
             (
                 '<table role="presentation" style="padding: 0 0 20px 0;">'
                 "<tr>"
@@ -397,7 +397,7 @@ def test_hrule(markdown_function, expected):
         ],
         [
             notify_email_markdown,
-            "1.one\n" "2.two\n" "3.three\n",
+            "1.one\n2.two\n3.three\n",
             (
                 '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
                 "1.one"
@@ -410,12 +410,12 @@ def test_hrule(markdown_function, expected):
         ],
         [
             notify_plain_text_email_markdown,
-            "1. one\n" "2. two\n" "3. three\n",
-            ("\n" "\n1. one" "\n2. two" "\n3. three"),
+            "1. one\n2. two\n3. three\n",
+            ("\n\n1. one\n2. two\n3. three"),
         ],
         [
             notify_plain_text_email_markdown,
-            "1.one\n" "2.two\n" "3.three\n",
+            "1.one\n2.two\n3.three\n",
             "\n\n1.one\n2.two\n3.three",
         ],
     ),
@@ -427,18 +427,18 @@ def test_ordered_list(markdown_function, markdown_input, expected):
 @pytest.mark.parametrize(
     "markdown",
     (
-        ("* one\n" "* two\n" "* three\n"),  # single space
-        ("*  one\n" "*  two\n" "*  three\n"),  # two spaces
-        ("*  one\n" "*  two\n" "*  three\n"),  # tab
-        ("- one\n" "- two\n" "- three\n"),  # dash as bullet
-        pytest.param(("+ one\n" "+ two\n" "+ three\n"), marks=pytest.mark.xfail(raises=AssertionError)),  # plus as bullet
-        ("• one\n" "• two\n" "• three\n"),  # bullet as bullet
+        ("* one\n* two\n* three\n"),  # single space
+        ("*  one\n*  two\n*  three\n"),  # two spaces
+        ("*  one\n*  two\n*  three\n"),  # tab
+        ("- one\n- two\n- three\n"),  # dash as bullet
+        pytest.param(("+ one\n+ two\n+ three\n"), marks=pytest.mark.xfail(raises=AssertionError)),  # plus as bullet
+        ("• one\n• two\n• three\n"),  # bullet as bullet
     ),
 )
 @pytest.mark.parametrize(
     "markdown_function, expected",
     (
-        [notify_letter_preview_markdown, ("<ul>\n" "<li>one</li>\n" "<li>two</li>\n" "<li>three</li>\n" "</ul>\n")],
+        [notify_letter_preview_markdown, ("<ul>\n<li>one</li>\n<li>two</li>\n<li>three</li>\n</ul>\n")],
         [
             notify_email_markdown,
             (
@@ -457,7 +457,7 @@ def test_ordered_list(markdown_function, markdown_input, expected):
         ],
         [
             notify_plain_text_email_markdown,
-            ("\n" "\n• one" "\n• two" "\n• three"),
+            ("\n\n• one\n• two\n• three"),
         ],
     ),
 )
@@ -467,7 +467,7 @@ def test_unordered_list(markdown, markdown_function, expected):
 
 @pytest.mark.parametrize(
     "markdown",
-    (("*one\n" "*two\n" "*three\n"),),  # no space
+    (("*one\n*two\n*three\n"),),  # no space
 )
 @pytest.mark.parametrize(
     "markdown_function, expected",
@@ -506,12 +506,12 @@ def test_unordered_list_with_no_spaces(markdown, markdown_function, expected):
         ],
         [
             notify_plain_text_email_markdown,
-            ("\n\n+ one" "\n\n+ two" "\n\n+ three"),
+            ("\n\n+ one\n\n+ two\n\n+ three"),
         ],
     ),
 )
 def test_pluses_dont_render_as_lists(markdown_function, expected):
-    assert markdown_function("+ one\n" "+ two\n" "+ three\n") == expected
+    assert markdown_function("+ one\n+ two\n+ three\n") == expected
 
 
 @pytest.mark.parametrize(
@@ -547,7 +547,7 @@ def test_list_and_bold_or_italic(markdown_function, input, expected):
 @pytest.mark.parametrize(
     "markdown_function, expected",
     (
-        [notify_letter_preview_markdown, ("<p>" "line one<br>" "line two" "</p>" "<p>" "new paragraph" "</p>")],
+        [notify_letter_preview_markdown, ("<p>line one<br>line two</p><p>new paragraph</p>")],
         [
             notify_email_markdown,
             (
@@ -558,18 +558,18 @@ def test_list_and_bold_or_italic(markdown_function, input, expected):
         ],
         [
             notify_plain_text_email_markdown,
-            ("\n" "\nline one" "\nline two" "\n" "\nnew paragraph"),
+            ("\n\nline one\nline two\n\nnew paragraph"),
         ],
     ),
 )
 def test_paragraphs(markdown_function, expected):
-    assert markdown_function("line one\n" "line two\n" "\n" "new paragraph") == expected
+    assert markdown_function("line one\nline two\n\nnew paragraph") == expected
 
 
 @pytest.mark.parametrize(
     "markdown_function, expected",
     (
-        [notify_letter_preview_markdown, ("<p>before</p>" "<p>after</p>")],
+        [notify_letter_preview_markdown, ("<p>before</p><p>after</p>")],
         [
             notify_email_markdown,
             (
@@ -579,7 +579,7 @@ def test_paragraphs(markdown_function, expected):
         ],
         [
             notify_plain_text_email_markdown,
-            ("\n" "\nbefore" "\n" "\nafter"),
+            ("\n\nbefore\n\nafter"),
         ],
     ),
 )
@@ -591,7 +591,7 @@ def test_multiple_newlines_get_truncated(markdown_function, expected):
     "markdown_function", (notify_letter_preview_markdown, notify_email_markdown, notify_plain_text_email_markdown)
 )
 def test_table(markdown_function):
-    assert markdown_function("col | col\n" "----|----\n" "val | val\n") == ("")
+    assert markdown_function("col | col\n----|----\nval | val\n") == ("")
 
 
 @pytest.mark.parametrize(
@@ -621,7 +621,7 @@ def test_table(markdown_function):
         [
             notify_plain_text_email_markdown,
             "http://example.com",
-            ("\n" "\nhttp://example.com"),
+            ("\n\nhttp://example.com"),
         ],
     ),
 )
@@ -673,8 +673,7 @@ def test_double_emphasis(markdown_function, expected, emphasis_style):
         [notify_letter_preview_markdown, "<p>something important</p>"],
         [
             notify_email_markdown,
-            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">'
-            "something <em>important</em></p>",
+            '<p style="Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">something <em>important</em></p>',
         ],
         [
             notify_plain_text_email_markdown,
@@ -727,7 +726,7 @@ def test_image(markdown_function):
         ],
         [
             notify_plain_text_email_markdown,
-            ("\n" "\nExample: http://example.com"),
+            ("\n\nExample: http://example.com"),
         ],
     ),
 )
@@ -752,7 +751,7 @@ def test_link(markdown_function, expected):
         ],
         [
             notify_plain_text_email_markdown,
-            ("\n" "\nExample (An example URL): http://example.com"),
+            ("\n\nExample (An example URL): http://example.com"),
         ],
     ),
 )
@@ -1034,7 +1033,7 @@ def test_tweaking_dvla_list_markup(markup, expected_fixed):
 
 
 def test_make_list_from_linebreaks():
-    assert nl2li("a\n" "b\n" "c\n") == ("<ul>" "<li>a</li>" "<li>b</li>" "<li>c</li>" "</ul>")
+    assert nl2li("a\nb\nc\n") == ("<ul><li>a</li><li>b</li><li>c</li></ul>")
 
 
 @pytest.mark.parametrize(

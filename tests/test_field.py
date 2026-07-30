@@ -90,11 +90,7 @@ def test_replacement_of_placeholders(template_content: str, data: Dict[str, Any]
         (
             "Hey ((name)), click http://example.com/reset-password/?token=((token))",
             {"name": "Example"},
-            (
-                "Hey Example, click "
-                "http://example.com/reset-password/?token="
-                "<mark class='placeholder-redacted'>[hidden]</mark>"
-            ),
+            ("Hey Example, click http://example.com/reset-password/?token=<mark class='placeholder-redacted'>[hidden]</mark>"),
         ),
     ],
 )
@@ -206,7 +202,7 @@ def test_handling_of_missing_values(content, values, expected):
         99.99999,
         "off",
         "exclude",
-        "no" "any random string",
+        "noany random string",
         "false",
         False,
         [],
