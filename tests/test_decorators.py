@@ -1,3 +1,4 @@
+import threading
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
@@ -144,7 +145,14 @@ def test_parallel_process_iterable_does_not_persist_computed_values_between_call
 
 
 def test_parallel_process_iterable_uses_per_invocation_settings_under_concurrency(app, mocker):
+    barrier = None
+
     def fake_control_chunk_and_worker_size(data_size, chunk_size, max_workers):
+        nonlocal barrier
+        # Force both concurrent invocations to overlap deterministically in this helper.
+        if barrier is not None:
+            barrier.wait(timeout=2)
+
         if data_size == 1200:
             return 300, 1
         if data_size == 2400:
@@ -164,9 +172,10 @@ def test_parallel_process_iterable_uses_per_invocation_settings_under_concurrenc
     data_small = list(range(1200))
     data_large = list(range(2400))
 
-    # Repeat concurrent calls to increase race detection sensitivity.
-    for _ in range(200):
-        with ThreadPoolExecutor(max_workers=2) as executor:
+    # Reuse one executor and run fewer deterministic overlap checks to keep runtime low.
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        for _ in range(25):
+            barrier = threading.Barrier(2)
             future_small = executor.submit(run, data_small)
             future_large = executor.submit(run, data_large)
 
