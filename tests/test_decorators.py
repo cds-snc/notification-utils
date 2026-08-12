@@ -1,3 +1,6 @@
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
 import pytest
 from notifications_utils.decorators import control_chunk_and_worker_size, parallel_process_iterable, requires_feature
 
@@ -119,3 +122,67 @@ def test_parallel_process_iterable_continues_on_break_condition_exceptions_if_no
 def test_control_chunk_and_worker_size_scales_workers_down_when_chunk_size_exceeds_threshold(mocker):
     mocker.patch("multiprocessing.cpu_count", return_value=28)  # m5.large has 28 cores
     assert control_chunk_and_worker_size(300000) == (10000, 14)  # (chunk_size, worker_count)
+
+
+def test_parallel_process_iterable_does_not_persist_computed_values_between_calls(app, mocker):
+    calls = []
+
+    def fake_control_chunk_and_worker_size(data_size, chunk_size, max_workers):
+        calls.append((data_size, chunk_size, max_workers))
+        return data_size, 1
+
+    mocker.patch("notifications_utils.decorators.control_chunk_and_worker_size", side_effect=fake_control_chunk_and_worker_size)
+
+    @parallel_process_iterable()
+    def process_chunk_for_closure_isolation(chunk):
+        return list(chunk)
+
+    process_chunk_for_closure_isolation([1, 2, 3, 4, 5])
+    process_chunk_for_closure_isolation([1, 2, 3])
+
+    # Both calls should pass the original decorator arguments to the control helper.
+    assert calls == [(5, 10000, None), (3, 10000, None)]
+
+
+def test_parallel_process_iterable_uses_per_invocation_settings_under_concurrency(app, mocker):
+    barrier = None
+
+    def fake_control_chunk_and_worker_size(data_size, chunk_size, max_workers):
+        nonlocal barrier
+        # Force both concurrent invocations to overlap deterministically in this helper.
+        if barrier is not None:
+            barrier.wait(timeout=2)
+
+        if data_size == 1200:
+            return 300, 1
+        if data_size == 2400:
+            return 800, 1
+        raise AssertionError(f"Unexpected data_size in test: {data_size}")
+
+    mocker.patch("notifications_utils.decorators.control_chunk_and_worker_size", side_effect=fake_control_chunk_and_worker_size)
+
+    @parallel_process_iterable()
+    def process_chunk_for_thread_safety(chunk):
+        return list(chunk)
+
+    def run(data):
+        with app.app_context():
+            return process_chunk_for_thread_safety(data)
+
+    data_small = list(range(1200))
+    data_large = list(range(2400))
+
+    # Reuse one executor and run fewer deterministic overlap checks to keep runtime low.
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        for _ in range(25):
+            barrier = threading.Barrier(2)
+            future_small = executor.submit(run, data_small)
+            future_large = executor.submit(run, data_large)
+
+            results_small = future_small.result()
+            results_large = future_large.result()
+
+        assert len(results_small) == 4
+        assert all(len(chunk) <= 300 for chunk in results_small)
+        assert len(results_large) == 3
+        assert all(len(chunk) <= 800 for chunk in results_large)

@@ -44,17 +44,17 @@ def parallel_process_iterable(
         def wrapper(*args, **kwargs):
             data = args[0]
             data_size = len(data)
-            nonlocal chunk_size, max_workers
-            chunk_size, max_workers = control_chunk_and_worker_size(data_size, chunk_size, max_workers)
+            # Compute execution settings per invocation to avoid shared mutable closure state.
+            effective_chunk_size, effective_max_workers = control_chunk_and_worker_size(data_size, chunk_size, max_workers)
 
             def process_chunk(chunk):
                 return func(chunk, *args[1:])
 
             # Execute in parallel
-            with ThreadPoolExecutor(max_workers=max_workers) as executor:
-                futures = [executor.submit(process_chunk, chunk) for chunk in chunk_iterable(data, chunk_size)]
+            with ThreadPoolExecutor(max_workers=effective_max_workers) as executor:
+                futures = [executor.submit(process_chunk, chunk) for chunk in chunk_iterable(data, effective_chunk_size)]
                 current_app.logger.info(
-                    f"Beginning parallel processing of {data_size} items in {len(futures)} chunks for {func.__name__} across {max_workers} workers."
+                    f"Beginning parallel processing of {data_size} items in {len(futures)} chunks for {func.__name__} across {effective_max_workers} workers."
                 )
                 # Combine results
                 results = []
