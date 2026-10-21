@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "notifications-utils"
-version = "53.2.34"
+version = "53.2.35"
 description = "Shared python code for Notification - Provides logging utils etc."
 authors = ["Canadian Digital Service"]
 license = "MIT license"
@@ -20,7 +20,7 @@ boto3 = "1.43.54"
 cachetools = "4.2.4"
 
 # Pinned dependencies
-certifi = "^2024.0.0"        # pinned for security reasons: https://github.com/cds-snc/notification-utils/security/dependabot/22
+certifi = "^2026.10.19"      # pinned for security reasons: https://github.com/cds-snc/notification-utils/security/dependabot/22
 cryptography = "^46.0.5"     # https://github.com/cds-snc/notification-utils/security/dependabot/31
 Flask = "2.3.3"
 Flask-Redis = "0.4.0"
