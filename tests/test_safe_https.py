@@ -38,9 +38,9 @@ from notifications_utils.safe_https import (
     HTTPSTransportError,
     ResolvedAddress,
     SafeHTTPSClient,
-    SocketCallbackConnector,
-    SystemCallbackResolver,
-    parse_callback_url,
+    SocketAddressConnector,
+    SystemAddressResolver,
+    parse_https_url,
     validate_address,
     validate_resolved_addresses,
 )
@@ -157,18 +157,18 @@ def make_client(answer_sets=(("93.184.216.34",),), connector=None, tls_context=N
 @pytest.mark.parametrize(
     ("url", "code"),
     [
-        ("http://example.com/callback", UNSUPPORTED_SCHEME),
-        ("ftp://example.com/callback", UNSUPPORTED_SCHEME),
-        ("https://user:password@example.com/callback", USERINFO_NOT_ALLOWED),
-        ("https://example.com/callback#fragment", FRAGMENT_NOT_ALLOWED),
-        ("https://example.com:0/callback", INVALID_PORT),
-        ("https://example.com:65536/callback", INVALID_PORT),
-        ("https://example.com:unknown/callback", INVALID_PORT),
+        ("http://example.com/hook", UNSUPPORTED_SCHEME),
+        ("ftp://example.com/hook", UNSUPPORTED_SCHEME),
+        ("https://user:password@example.com/hook", USERINFO_NOT_ALLOWED),
+        ("https://example.com/hook#fragment", FRAGMENT_NOT_ALLOWED),
+        ("https://example.com:0/hook", INVALID_PORT),
+        ("https://example.com:65536/hook", INVALID_PORT),
+        ("https://example.com:unknown/hook", INVALID_PORT),
         ("https://example.com/%", AMBIGUOUS_ENCODING),
         ("https://example.com/%ZZ", AMBIGUOUS_ENCODING),
         ("https://example.com/%0a", AMBIGUOUS_ENCODING),
-        ("https://example.com%2eexample/callback", AMBIGUOUS_ENCODING),
-        ("https://example.com\\callback", AMBIGUOUS_ENCODING),
+        ("https://example.com%2eexample/hook", AMBIGUOUS_ENCODING),
+        ("https://example.com\\hook", AMBIGUOUS_ENCODING),
         ("https://example.com/call back", AMBIGUOUS_ENCODING),
         ("https://example.com.", INVALID_HOST),
         ("https://example..com", INVALID_HOST),
@@ -177,29 +177,29 @@ def make_client(answer_sets=(("93.184.216.34",),), connector=None, tls_context=N
         ("https://[2001:db8::1", INVALID_URL),
     ],
 )
-def test_parse_callback_url_rejects_unsafe_syntax(url, code):
+def test_parse_https_url_rejects_unsafe_syntax(url, code):
     with pytest.raises(HTTPSPolicyError) as error:
-        parse_callback_url(url)
+        parse_https_url(url)
 
     assert error.value.code == code
     assert error.value.category == "policy"
     assert error.value.retryable is False
 
 
-def test_parse_callback_url_normalizes_hostname_and_request_target():
-    target = parse_callback_url("https://Example.COM:8443/callback?event=delivered")
+def test_parse_https_url_normalizes_hostname_and_request_target():
+    target = parse_https_url("https://Example.COM:8443/hook?event=delivered")
 
     assert target.hostname == "example.com"
     assert target.port == 8443
-    assert target.path == "/callback"
+    assert target.path == "/hook"
     assert target.query == "event=delivered"
-    assert target.request_target == "/callback?event=delivered"
+    assert target.request_target == "/hook?event=delivered"
     assert target.host_header == "example.com:8443"
     assert target.explicit_port is True
 
 
-def test_parse_callback_url_normalizes_public_ipv6_literal():
-    target = parse_callback_url("https://[2001:4860:4860::8888]/callback")
+def test_parse_https_url_normalizes_public_ipv6_literal():
+    target = parse_https_url("https://[2001:4860:4860::8888]/hook")
 
     assert target.ip_address == ipaddress.ip_address("2001:4860:4860::8888")
     assert target.host_header == "[2001:4860:4860::8888]"
@@ -287,7 +287,7 @@ def test_system_resolver_requests_uncached_a_and_aaaa_answers(monkeypatch):
         ]
 
     monkeypatch.setattr(safe_https.socket, "getaddrinfo", fake_getaddrinfo)
-    addresses = SystemCallbackResolver().resolve("callback.example", 8443)
+    addresses = SystemAddressResolver().resolve("callback.example", 8443)
 
     assert [str(address.address) for address in addresses] == ["93.184.216.34", "2001:4860:4860::8888"]
     assert calls == [
@@ -306,7 +306,7 @@ def test_system_resolver_maps_dns_failures_to_transport_error(monkeypatch):
     monkeypatch.setattr(safe_https.socket, "getaddrinfo", failing_getaddrinfo)
 
     with pytest.raises(HTTPSTransportError) as error:
-        SystemCallbackResolver().resolve("callback.example", 443)
+        SystemAddressResolver().resolve("callback.example", 443)
 
     assert error.value.code == DNS_RESOLUTION_FAILED
     assert error.value.category == "transport"
@@ -319,7 +319,7 @@ def test_system_resolver_maps_empty_answers_to_transport_error(monkeypatch):
     monkeypatch.setattr(safe_https.socket, "getaddrinfo", lambda *args, **kwargs: [])
 
     with pytest.raises(HTTPSTransportError) as error:
-        SystemCallbackResolver().resolve("callback.example", 443)
+        SystemAddressResolver().resolve("callback.example", 443)
 
     assert error.value.code == DNS_NO_ADDRESSES
     assert error.value.retryable is True
@@ -348,7 +348,7 @@ def test_socket_connector_connects_to_numeric_validated_sockaddr(monkeypatch):
     monkeypatch.setattr(safe_https.socket, "socket", RecordingSocket)
     address = ResolvedAddress.from_ip("93.184.216.34", 8443)
 
-    connected_socket = SocketCallbackConnector().connect(address, 2.5)
+    connected_socket = SocketAddressConnector().connect(address, 2.5)
 
     assert connected_socket is created[0]
     assert created[0].args == (socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
@@ -360,7 +360,7 @@ def test_socket_connector_revalidates_address_before_opening_socket(monkeypatch)
     monkeypatch.setattr(safe_https.socket, "socket", lambda *args: pytest.fail("socket must not open"))
 
     with pytest.raises(HTTPSPolicyError) as error:
-        SocketCallbackConnector().connect(ResolvedAddress.from_ip("10.0.0.1"), 2.5)
+        SocketAddressConnector().connect(ResolvedAddress.from_ip("10.0.0.1"), 2.5)
 
     assert error.value.code == UNSAFE_ADDRESS
 

@@ -1,4 +1,4 @@
-"""Security primitives for user-configured HTTPS callbacks."""
+"""Security primitives for caller-controlled outbound HTTPS requests."""
 
 from __future__ import annotations
 
@@ -90,8 +90,8 @@ _SPECIAL_USE_NETWORKS: tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...]
 )
 
 
-class CallbackSecurityError(Exception):
-    """Base class for callback policy and transport failures."""
+class HTTPSSecurityError(Exception):
+    """Base class for HTTPS policy and transport failures."""
 
     def __init__(
         self,
@@ -108,14 +108,14 @@ class CallbackSecurityError(Exception):
         super().__init__(code)
 
 
-class HTTPSPolicyError(CallbackSecurityError):
-    """A permanent callback policy violation."""
+class HTTPSPolicyError(HTTPSSecurityError):
+    """A permanent HTTPS policy violation."""
 
     def __init__(self, code: str, *, details: Mapping[str, object] | None = None) -> None:
         super().__init__(code, category="policy", retryable=False, details=details)
 
 
-class HTTPSTransportError(CallbackSecurityError):
+class HTTPSTransportError(HTTPSSecurityError):
     """A network, TLS, or HTTP transport failure."""
 
     def __init__(
@@ -130,7 +130,7 @@ class HTTPSTransportError(CallbackSecurityError):
 
 @dataclass(frozen=True, slots=True)
 class ResolvedAddress:
-    """An address returned by a callback resolver."""
+    """An address returned by an address resolver."""
 
     family: int
     address: IPAddress
@@ -169,7 +169,7 @@ class ResolvedAddress:
 
 @dataclass(frozen=True, slots=True)
 class HTTPSRequestTarget:
-    """A normalized HTTPS callback target."""
+    """A normalized HTTPS request target."""
 
     hostname: str
     port: int
@@ -197,13 +197,13 @@ class HTTPSRequestTarget:
 
 
 class AddressResolver(Protocol):
-    """Resolve a callback hostname to numeric socket addresses."""
+    """Resolve a hostname to numeric socket addresses."""
 
     def resolve(self, hostname: str, port: int) -> Iterable[ResolvedAddress]: ...
 
 
 class AddressConnector(Protocol):
-    """Connect to a previously validated numeric callback address."""
+    """Connect to a previously validated numeric address."""
 
     def connect(self, address: ResolvedAddress, timeout: float) -> socket.socket: ...
 
@@ -290,8 +290,8 @@ def _validate_url_characters(url: str) -> None:
         raise _policy_error(AMBIGUOUS_ENCODING)
 
 
-def parse_callback_url(url: str) -> HTTPSRequestTarget:
-    """Parse and validate a callback URL without performing DNS resolution."""
+def parse_https_url(url: str) -> HTTPSRequestTarget:
+    """Parse and validate an HTTPS URL without performing DNS resolution."""
 
     if not isinstance(url, str) or not url:
         raise _policy_error(INVALID_URL)
@@ -427,8 +427,8 @@ def validate_resolved_addresses(addresses: Iterable[ResolvedAddress]) -> tuple[R
 
 
 @dataclass(frozen=True, slots=True)
-class CallbackResponse:
-    """A fully read callback response."""
+class HTTPSResponse:
+    """A fully read HTTPS response."""
 
     status_code: int
     reason: str
@@ -440,8 +440,8 @@ class CallbackResponse:
         return self.status_code
 
 
-class SystemCallbackResolver:
-    """Resolve callback hostnames with uncached A and AAAA lookups."""
+class SystemAddressResolver:
+    """Resolve hostnames with uncached A and AAAA lookups."""
 
     def resolve(self, hostname: str, port: int) -> tuple[ResolvedAddress, ...]:
         try:
@@ -484,7 +484,7 @@ class SystemCallbackResolver:
         return tuple(addresses)
 
 
-class SocketCallbackConnector:
+class SocketAddressConnector:
     """Open a TCP socket to a validated numeric address without proxy handling."""
 
     def connect(self, address: ResolvedAddress, timeout: float) -> socket.socket:
@@ -612,8 +612,8 @@ class SafeHTTPSClient:
         connector: AddressConnector | None = None,
         ssl_context: ssl.SSLContext | None = None,
     ) -> None:
-        self.resolver = resolver or SystemCallbackResolver()
-        self.connector = connector or SocketCallbackConnector()
+        self.resolver = resolver or SystemAddressResolver()
+        self.connector = connector or SocketAddressConnector()
         self.ssl_context = ssl_context or _default_ssl_context()
         _validate_ssl_context(self.ssl_context)
 
@@ -625,14 +625,14 @@ class SafeHTTPSClient:
         headers: Mapping[str, str] | None = None,
         body: bytes | bytearray | memoryview | str | None = None,
         timeout: float = 10.0,
-    ) -> CallbackResponse:
+    ) -> HTTPSResponse:
         normalized_method = _validate_method(method)
         _validate_timeout(timeout)
-        callback_target = _validate_target(parse_callback_url(target) if isinstance(target, str) else target)
-        request_headers = _validate_headers(headers, callback_target.host_header)
+        request_target = _validate_target(parse_https_url(target) if isinstance(target, str) else target)
+        request_headers = _validate_headers(headers, request_target.host_header)
         request_body = _normalize_body(body)
 
-        addresses = self._resolve(callback_target)
+        addresses = self._resolve(request_target)
         last_connection_error: HTTPSTransportError | None = None
         for address in addresses:
             try:
@@ -657,7 +657,7 @@ class SafeHTTPSClient:
 
             return self._request_over_socket(
                 raw_socket,
-                callback_target,
+                request_target,
                 normalized_method,
                 request_headers,
                 request_body,
@@ -674,7 +674,7 @@ class SafeHTTPSClient:
 
         try:
             addresses = tuple(self.resolver.resolve(target.hostname, target.port))
-        except CallbackSecurityError:
+        except HTTPSSecurityError:
             raise
         except Exception as error:
             raise HTTPSTransportError(
@@ -693,7 +693,7 @@ class SafeHTTPSClient:
         headers: Mapping[str, str],
         body: bytes | None,
         timeout: float,
-    ) -> CallbackResponse:
+    ) -> HTTPSResponse:
         try:
             tls_socket = self.ssl_context.wrap_socket(raw_socket, server_hostname=target.hostname)
         except ssl.CertificateError as error:
@@ -717,7 +717,7 @@ class SafeHTTPSClient:
             response = connection.getresponse()
             response_body = response.read()
             response_headers: tuple[tuple[str, str], ...] = tuple((name, value) for name, value in response.getheaders())
-            return CallbackResponse(response.status, response.reason, response_headers, response_body)
+            return HTTPSResponse(response.status, response.reason, response_headers, response_body)
         except (socket.timeout, TimeoutError) as error:
             raise HTTPSTransportError(
                 HTTP_TIMEOUT,
@@ -742,8 +742,8 @@ __all__ = [
     "AddressConnector",
     "AddressResolver",
     "HTTPSPolicyError",
-    "CallbackResponse",
-    "CallbackSecurityError",
+    "HTTPSResponse",
+    "HTTPSSecurityError",
     "HTTPSRequestTarget",
     "HTTPSTransportError",
     "CONNECTION_FAILED",
@@ -771,14 +771,14 @@ __all__ = [
     "NON_ASCII_HOSTNAME",
     "ResolvedAddress",
     "SafeHTTPSClient",
-    "SocketCallbackConnector",
-    "SystemCallbackResolver",
+    "SocketAddressConnector",
+    "SystemAddressResolver",
     "TLS_CERTIFICATE_FAILED",
     "TLS_FAILED",
     "UNSAFE_ADDRESS",
     "UNSUPPORTED_SCHEME",
     "USERINFO_NOT_ALLOWED",
-    "parse_callback_url",
+    "parse_https_url",
     "validate_address",
     "validate_resolved_addresses",
 ]
