@@ -386,6 +386,19 @@ def test_safe_client_rejects_mixed_dns_before_connector(fake_http):
     assert fake_http.instances == []
 
 
+@pytest.mark.parametrize("loopback_address", ["127.0.0.1", "::1"])
+def test_safe_client_rejects_localhost_loopback_answer_before_connector(fake_http, loopback_address):
+    client, resolver, connector, _tls_context = make_client(((loopback_address,),))
+
+    with pytest.raises(HTTPSPolicyError) as error:
+        client.request("POST", "https://localhost/hook", body=b"payload")
+
+    assert error.value.code == UNSAFE_ADDRESS
+    assert resolver.calls == [("localhost", 443)]
+    assert connector.calls == []
+    assert fake_http.instances == []
+
+
 def test_safe_client_resolves_again_and_rejects_rebinding_before_second_connect(fake_http):
     client, resolver, connector, _tls_context = make_client(
         (("93.184.216.34",), ("10.0.0.1",)),
