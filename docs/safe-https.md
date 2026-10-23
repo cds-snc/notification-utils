@@ -43,7 +43,7 @@ Numeric literals receive the same address policy and do not trigger a second hos
 
 The transport connects directly to the validated numeric address. It does not use proxy environment variables, `requests`, `urllib3`, ordinary hostname connection helpers, or a fallback path that performs a second DNS lookup.
 
-TLS uses certificate verification and hostname checking with the existing `certifi` trust bundle. The normalized request hostname is retained as:
+TLS uses certificate verification and hostname checking with the existing `certifi` trust bundle, with TLS 1.2 or newer required. The normalized request hostname is retained as:
 
 - `server_hostname` for TLS SNI and certificate validation.
 - The HTTP `Host` header.

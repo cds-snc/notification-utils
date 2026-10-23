@@ -90,6 +90,10 @@ _SPECIAL_USE_NETWORKS: tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...]
 )
 
 
+def _is_valid_port(port: object) -> bool:
+    return isinstance(port, int) and not isinstance(port, bool) and 1 <= port <= 65535
+
+
 class HTTPSSecurityError(Exception):
     """Base class for HTTPS policy and transport failures."""
 
@@ -150,7 +154,7 @@ class ResolvedAddress:
         if isinstance(parsed_address, ipaddress.IPv6Address) and parsed_address.scope_id:
             raise HTTPSPolicyError(INVALID_RESOLVED_ADDRESS)
 
-        if not isinstance(port, int) or isinstance(port, bool) or not 1 <= port <= 65535:
+        if not _is_valid_port(port):
             raise HTTPSPolicyError(INVALID_PORT)
         if not isinstance(scope_id, int) or isinstance(scope_id, bool) or scope_id < 0:
             raise HTTPSPolicyError(INVALID_RESOLVED_ADDRESS)
@@ -160,6 +164,8 @@ class ResolvedAddress:
 
     @property
     def sockaddr(self) -> SocketAddress:
+        if not _is_valid_port(self.port):
+            raise HTTPSPolicyError(INVALID_RESOLVED_ADDRESS)
         if self.family == socket.AF_INET:
             return (str(self.address), self.port)
         if self.family == socket.AF_INET6:
@@ -353,7 +359,7 @@ def _address_reason(address: ResolvedAddress) -> str | None:
         return "family_mismatch"
     if address.family == socket.AF_INET6 and not isinstance(address.address, ipaddress.IPv6Address):
         return "family_mismatch"
-    if not 1 <= address.port <= 65535:
+    if not _is_valid_port(address.port):
         return "invalid_port"
     if isinstance(address.address, ipaddress.IPv6Address):
         if address.address.ipv4_mapped is not None:
@@ -513,13 +519,16 @@ class SocketAddressConnector:
 
 def _default_ssl_context() -> ssl.SSLContext:
     context = ssl.create_default_context(cafile=certifi.where())
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
     context.check_hostname = True
     context.verify_mode = ssl.CERT_REQUIRED
     return context
 
 
 def _validate_ssl_context(context: object) -> None:
-    if isinstance(context, ssl.SSLContext) and (context.verify_mode != ssl.CERT_REQUIRED or not context.check_hostname):
+    if isinstance(context, ssl.SSLContext) and (
+        context.minimum_version < ssl.TLSVersion.TLSv1_2 or context.verify_mode != ssl.CERT_REQUIRED or not context.check_hostname
+    ):
         raise _policy_error(INSECURE_TLS_CONTEXT)
 
 

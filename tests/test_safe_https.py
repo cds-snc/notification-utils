@@ -259,6 +259,16 @@ def test_validate_address_rejects_malformed_resolver_record():
     assert error.value.code == INVALID_RESOLVED_ADDRESS
 
 
+@pytest.mark.parametrize("port", [True, "443", None, 0, 65536])
+def test_validate_address_rejects_malformed_direct_port(port):
+    malformed = ResolvedAddress(family=socket.AF_INET, address=ipaddress.ip_address("8.8.8.8"), port=port)
+
+    with pytest.raises(HTTPSPolicyError) as error:
+        validate_address(malformed)
+
+    assert error.value.code == INVALID_RESOLVED_ADDRESS
+
+
 def test_validate_resolved_addresses_rejects_mixed_public_and_private_answers():
     answers = (ResolvedAddress.from_ip("93.184.216.34"), ResolvedAddress.from_ip("10.0.0.1"))
 
@@ -367,6 +377,16 @@ def test_socket_connector_revalidates_address_before_opening_socket(monkeypatch)
 
 def test_safe_client_rejects_unverified_ssl_context():
     insecure_context = ssl._create_unverified_context()
+
+    with pytest.raises(HTTPSPolicyError) as error:
+        SafeHTTPSClient(ssl_context=insecure_context)
+
+    assert error.value.code == INSECURE_TLS_CONTEXT
+
+
+def test_safe_client_rejects_ssl_context_below_tls_1_2():
+    insecure_context = ssl.create_default_context()
+    insecure_context.minimum_version = ssl.TLSVersion.TLSv1_1
 
     with pytest.raises(HTTPSPolicyError) as error:
         SafeHTTPSClient(ssl_context=insecure_context)
