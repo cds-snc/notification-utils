@@ -73,7 +73,7 @@ def test_custom_asset_domain(lang, asset_domain):
         asset_domain=asset_domain,
     )
 
-    assert f"https://{expected_domain}/gc-logo-{lang}.png" in str(email)
+    assert f"https://{expected_domain}/gc-logo-{lang}.png?20261023" in str(email)
 
 
 @pytest.mark.parametrize("renderer", [HTMLEmailTemplate, EmailPreviewTemplate])
