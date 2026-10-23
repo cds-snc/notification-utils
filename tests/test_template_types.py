@@ -349,6 +349,11 @@ def test_preheader_is_at_start_of_html_emails():
             {},
             "short email",
         ),
+        (
+            "[[fr]]\n_(la version française suit)_\n[[/fr]]\n\n[[en]]\nHello **(( name ))**, this is *important*\n[[/en]]",
+            {"name": "Jo"},
+            "(la version française suit) Hello Jo, this is important",
+        ),
     ],
 )
 @mock.patch("notifications_utils.template.HTMLEmailTemplate.jinja_template.render", return_value="mocked")
