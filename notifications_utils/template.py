@@ -341,6 +341,8 @@ class PlainTextEmailTemplate(WithSubjectTemplate):
             Take(Field(self.content, self.values, html="passthrough", markdown_lists=True))
             .then(unlink_govuk_escaped)
             .then(strip_unsupported_characters)
+            .then(remove_language_divs)
+            .then(remove_rtl_divs)
             .then(add_trailing_newline)
             .then(notify_plain_text_email_markdown)
             .then(do_nice_typography)

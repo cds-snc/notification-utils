@@ -517,6 +517,23 @@ def test_stripping_of_unsupported_characters_in_email_templates():
     assert expected in str(HTMLEmailTemplate({"content": template_content, "subject": ""}))
 
 
+@pytest.mark.parametrize(
+    "template_content, expected",
+    [
+        (
+            "[[fr]]\n_(la version française suit)_\n[[/fr]]\n\n[[en]]\nHello ((name))\n[[/en]]\n\n---\n\n[[fr]]\nBonjour ((name))\n[[/fr]]",
+            "_(la version française suit)_\n\nHello Stephen\n\n"
+            "=================================================================\n\nBonjour Stephen\n",
+        ),
+        ("[[en]]hello[[/en]] [[fr]]bonjour[[/fr]]", "hello bonjour\n"),
+        ("[[rtl]]\nمرحبا\n[[/rtl]]", "مرحبا\n"),
+        ("[[en]]unbalanced", "unbalanced\n"),
+    ],
+)
+def test_plain_text_email_strips_language_and_rtl_tags(template_content, expected):
+    assert str(PlainTextEmailTemplate({"content": template_content, "subject": ""}, {"name": "Stephen"})) == expected
+
+
 @mock.patch("notifications_utils.template.add_prefix", return_value="")
 @pytest.mark.parametrize(
     "template_class, prefix, body, expected_call",
