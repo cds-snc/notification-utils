@@ -619,6 +619,12 @@ class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer)
             )
         )
 
+    def double_emphasis(self, text):
+        return text
+
+    def emphasis(self, text):
+        return text
+
 
 _markdown_local = threading.local()
 
