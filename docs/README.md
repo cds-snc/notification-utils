@@ -36,17 +36,21 @@ from the file contents by [`email_assets.py`](../notifications_utils/email_asset
 Pass `asset_domain` (the app's `ASSET_DOMAIN` config) to `HTMLEmailTemplate` and `EmailPreviewTemplate` so each
 environment uses its own assets. It defaults to `assets.notification.canada.ca`.
 
-The [Publish email assets](../.github/workflows/publish-email-assets.yml) workflow uploads the images to the
-staging asset bucket when they change on `main`, and to the production bucket when a version tag is pushed.
-Uploads are additive, so publishing never changes what an existing URL serves.
+notification-terraform uploads the images to every environment's asset bucket, alongside the admin assets
+(see [`aws/common/uploadS3Assets.tf`](https://github.com/cds-snc/notification-terraform/blob/main/aws/common/uploadS3Assets.tf)).
+It clones this repo's `main` branch and computes the same content-addressed names, so new environments get the
+images automatically. Uploads are additive: replaced images are never deleted, so an existing URL always keeps
+serving the same image. Only `.gif`, `.jpeg`, `.jpg`, `.png` and `.svg` files are uploaded.
 
 To change an image:
 
 1. Replace the file in `notifications_utils/static/email`, keeping the same filename, and bump the version.
-2. Merge, then push the version tag (`scripts/push-tag.sh`). The workflow publishes the new image to staging and
-   production under its new name. Nothing references it yet, so production emails are unchanged.
-3. Bump utils in api and admin and check the emails sent from staging.
-4. Production emails switch to the new image when api and admin are released to production.
+2. Merge, then push the version tag (`scripts/push-tag.sh`).
+3. Run the "Merge to main (Staging)" workflow in notification-terraform so the new image is uploaded to staging.
+   Nothing references it yet, so emails are unchanged.
+4. Bump utils in api and admin and check the emails sent from staging.
+5. Make sure the notification-terraform production release (which uploads the image to production) is applied
+   before api and admin are released to production.
 
 ### Accessibility hacks
 
