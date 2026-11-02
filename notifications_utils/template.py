@@ -9,6 +9,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from notifications_utils import EMAIL_CHAR_COUNT_LIMIT, SMS_CHAR_COUNT_LIMIT, TEMPLATE_NAME_CHAR_COUNT_LIMIT
 from notifications_utils.columns import Columns
+from notifications_utils.email_assets import DEFAULT_ASSET_DOMAIN, email_asset_urls
 from notifications_utils.field import Field
 from notifications_utils.formatters import (
     add_language_divs,
@@ -391,6 +392,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         allow_html=False,
         alt_text_en=None,
         alt_text_fr=None,
+        asset_domain=None,
     ):
         super().__init__(template, values, jinja_path=jinja_path)
         self.fip_banner_english = fip_banner_english
@@ -404,6 +406,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.allow_html = allow_html
         self.alt_text_en = alt_text_en
         self.alt_text_fr = alt_text_fr
+        self.asset_domain = asset_domain or DEFAULT_ASSET_DOMAIN
         self.text_direction_rtl = template.get("text_direction_rtl", False)
 
         # set this again to make sure the correct either utils / downstream local jinja is used
@@ -449,6 +452,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
                 "alt_text_en": self.alt_text_en,
                 "alt_text_fr": self.alt_text_fr,
                 "text_direction_rtl": self.text_direction_rtl,
+                "email_asset_urls": email_asset_urls(self.asset_domain),
             }
         )
 
@@ -513,7 +517,7 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         self.brand_logo = brand_logo
         self.brand_text = brand_text
         self.brand_name = brand_name
-        self.asset_domain = asset_domain or "assets.notification.canada.ca"
+        self.asset_domain = asset_domain or DEFAULT_ASSET_DOMAIN
         self.allow_html = allow_html
         self.alt_text_en = alt_text_en
         self.alt_text_fr = alt_text_fr
@@ -543,6 +547,7 @@ class EmailPreviewTemplate(WithSubjectTemplate):
                     "brand_text": self.brand_text,
                     "brand_name": self.brand_name,
                     "asset_domain": self.asset_domain,
+                    "email_asset_urls": email_asset_urls(self.asset_domain),
                     "alt_text_en": self.alt_text_en,
                     "alt_text_fr": self.alt_text_fr,
                     "text_direction_rtl": self.text_direction_rtl,

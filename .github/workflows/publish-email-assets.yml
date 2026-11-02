@@ -1,0 +1,113 @@
+name: Publish email assets
+
+# Uploads the images in notifications_utils/static/email to each environment's asset bucket
+# (served from assets.<domain>) under content-addressed names, e.g. email-assets/gc-logo-en-<hash>.png.
+#
+# Uploads are additive and never overwrite an existing image, so publishing is always safe: an
+# environment only starts using a new image once its api/admin run a utils version that references it.
+#   - staging:    on every push to main that touches the assets
+#   - production: on every version tag (pushed by scripts/push-tag.sh)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "notifications_utils/static/email/**"
+      - "notifications_utils/email_assets.py"
+      - ".github/workflows/publish-email-assets.yml"
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  id-token: write
+  contents: read
+
+env: # temporary CA mitigation
+  NODE_OPTIONS: --use-openssl-ca
+  SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
+  SSL_CERT_DIR: /etc/ssl/certs
+  AWS_REGION: ca-central-1
+
+jobs:
+  publish:
+    name: Publish to ${{ matrix.environment }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - environment: staging
+            account_id: "239043911459"
+            asset_domain: assets.staging.notification.cdssandbox.xyz
+          - environment: production
+            account_id: "296255494825"
+            asset_domain: assets.notification.canada.ca
+    steps:
+      - name: Skip production unless this is a version tag
+        id: gate
+        env:
+          ENVIRONMENT: ${{ matrix.environment }}
+          REF: ${{ github.ref }}
+        run: |
+          if [[ "$ENVIRONMENT" == "production" && "$REF" != refs/tags/* ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Prepare Ubuntu CA trust
+        if: steps.gate.outputs.run == 'true'
+        uses: route06/actions/prepare-ubuntu-ca@aa6b218e4bc5445f54d3649a04297af5e1ce7458 # temporary CA mitigation
+
+      - name: Checkout
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Build content-addressed assets
+        if: steps.gate.outputs.run == 'true'
+        run: python3 notifications_utils/email_assets.py build/email-assets
+
+      - name: Configure AWS credentials
+        if: steps.gate.outputs.run == 'true'
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+        with:
+          role-to-assume: arn:aws:iam::${{ matrix.account_id }}:role/notification-utils-publish-email-assets
+          role-session-name: NotifyUtilsPublishEmailAssets
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload to S3
+        if: steps.gate.outputs.run == 'true'
+        env:
+          BUCKET: notification-canada-ca-${{ matrix.environment }}-asset-upload
+        # --size-only: names are content-addressed, so an existing key already has the right content.
+        # No --delete: emails that have already been sent keep referencing older images.
+        run: |
+          aws s3 sync build/email-assets "s3://${BUCKET}/email-assets/" \
+            --size-only \
+            --cache-control "public, max-age=31536000, immutable"
+
+      - name: Verify assets are served
+        if: steps.gate.outputs.run == 'true'
+        env:
+          ASSET_DOMAIN: ${{ matrix.asset_domain }}
+        run: |
+          for file in build/email-assets/*; do
+            url="https://${ASSET_DOMAIN}/email-assets/$(basename "$file")"
+            content_type=$(curl -fsSI "$url" | tr -d '\r' | awk -F': ' 'tolower($1) == "content-type" { print $2 }')
+            echo "$url -> $content_type"
+            [[ "$content_type" == image/* ]] || { echo "::error::$url is not served as an image"; exit 1; }
+          done
+
+      - name: Notify Slack channel if this job failed
+        if: ${{ failure() }}
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_NOTIFY_WEBHOOK }}
+          ENVIRONMENT: ${{ matrix.environment }}
+        run: |
+          json="{\"text\":\"Publishing email assets to ${ENVIRONMENT} failed in <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>!\"}"
+          curl -X POST -H 'Content-type: application/json' --data "$json" "$SLACK_WEBHOOK"

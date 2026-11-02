@@ -20,6 +20,34 @@ Note: the term 'government identity' refers to logos from the [government identi
 The dimensions of logos vary. Their height will be either 27px or 54px, depending on what suits the
 image. The width will adjust to keep the aspect-ratio.
 
+### Default branding images (FIP signature, wordmark)
+
+The images used by the default branding live in [`notifications_utils/static/email`](../notifications_utils/static/email),
+so changes to them show up as image diffs in pull requests.
+
+They are served from each environment's asset domain (`assets.<domain>`) under content-addressed names, for
+example `https://assets.notification.canada.ca/email-assets/gc-logo-en-522e149af6.png`. The hash is computed
+from the file contents by [`email_assets.py`](../notifications_utils/email_assets.py), so:
+
+* changing an image changes its URL. There is no cache-busting query string to update.
+* emails that have already been sent keep pointing at the image they were sent with.
+* an environment only starts using a new image once its api/admin run a utils version that references it.
+
+Pass `asset_domain` (the app's `ASSET_DOMAIN` config) to `HTMLEmailTemplate` and `EmailPreviewTemplate` so each
+environment uses its own assets. It defaults to `assets.notification.canada.ca`.
+
+The [Publish email assets](../.github/workflows/publish-email-assets.yml) workflow uploads the images to the
+staging asset bucket when they change on `main`, and to the production bucket when a version tag is pushed.
+Uploads are additive, so publishing never changes what an existing URL serves.
+
+To change an image:
+
+1. Replace the file in `notifications_utils/static/email`, keeping the same filename, and bump the version.
+2. Merge, then push the version tag (`scripts/push-tag.sh`). The workflow publishes the new image to staging and
+   production under its new name. Nothing references it yet, so production emails are unchanged.
+3. Bump utils in api and admin and check the emails sent from staging.
+4. Production emails switch to the new image when api and admin are released to production.
+
 ### Accessibility hacks
 
 The following hacks have been added to make the template work with assistive technologies.
