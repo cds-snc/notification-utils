@@ -46,16 +46,21 @@ jobs:
             account_id: "296255494825"
             asset_domain: assets.notification.canada.ca
     steps:
-      - name: Skip production unless this is a version tag
+      # The OIDC roles only trust utils' main branch (staging) and version tags (staging and production).
+      - name: Choose role, skipping production unless this is a version tag
         id: gate
         env:
           ENVIRONMENT: ${{ matrix.environment }}
           REF: ${{ github.ref }}
         run: |
-          if [[ "$ENVIRONMENT" == "production" && "$REF" != refs/tags/* ]]; then
-            echo "run=false" >> "$GITHUB_OUTPUT"
-          else
+          if [[ "$REF" == refs/tags/* ]]; then
+            echo "role=notification-utils-publish-email-assets-tags" >> "$GITHUB_OUTPUT"
             echo "run=true" >> "$GITHUB_OUTPUT"
+          elif [[ "$ENVIRONMENT" == "staging" && "$REF" == refs/heads/main ]]; then
+            echo "role=notification-utils-publish-email-assets-main-branch" >> "$GITHUB_OUTPUT"
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Prepare Ubuntu CA trust
@@ -76,7 +81,7 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
         with:
-          role-to-assume: arn:aws:iam::${{ matrix.account_id }}:role/notification-utils-publish-email-assets
+          role-to-assume: arn:aws:iam::${{ matrix.account_id }}:role/${{ steps.gate.outputs.role }}
           role-session-name: NotifyUtilsPublishEmailAssets
           aws-region: ${{ env.AWS_REGION }}
 
