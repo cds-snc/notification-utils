@@ -14,13 +14,16 @@ poetry run python -m scripts.email_samples.generate --help
 
 The compatibility check needs Node.js (it runs [doiuse-email](https://github.com/leondreamed/doiuse-email) with `npx`). Pass `--no-lint` to skip it.
 
+Branding images (the Government of Canada signature, the Canada wordmark, etc.) are loaded from this repository's [`notifications_utils/static/email/`](../../notifications_utils/static/email/) folder, not the asset bucket, so you can review image changes before they're deployed. Pass `--remote-assets` to use the hosted URLs that real emails use instead (for example, to upload `.html` files to a screenshot service that can't see your local files).
+
 Everything is written to `scripts/email_samples/output/` (ignored by git):
 
 | File | What it's for |
 | --- | --- |
 | `index.html` | A gallery of every sample at desktop and mobile widths. Open it in a browser for a quick look. This is a browser rendering, not an email client rendering. |
-| `<sample>.html` | The exact HTML that notification-api sends. Upload it to a screenshot service such as Litmus or Email on Acid / Mailgun Inspect. |
-| `<sample>.eml` | A complete email with plain text and HTML parts. Open it in a desktop client (for example Outlook for Windows or Apple Mail) to see how that client renders it. |
+| `<sample>.html` | The HTML that notification-api sends, with image URLs pointing at `email-assets/` (or the hosted URLs with `--remote-assets`). Upload it to a screenshot service such as Litmus or Email on Acid / Mailgun Inspect. |
+| `<sample>.eml` | A complete email with plain text and HTML parts, with the local branding images embedded inline. Open it in a desktop client (for example Outlook for Windows or Apple Mail) to see how that client renders it. |
+| `email-assets/` | Copies of the local branding images referenced by the `.html` files. |
 | `lint-report.md` | HTML and CSS features the samples use that some clients don't support or only partly support, based on [caniemail.com](https://www.caniemail.com) data. |
 | `lint-report.json` | The raw doiuse-email output for each sample. |
 

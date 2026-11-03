@@ -3,9 +3,15 @@ Render sample GC Notify emails so they can be reviewed in different email client
 
 For each sample in `samples.SAMPLES` this writes:
 
-- `<name>.html`: the exact HTML body that notification-api sends
+- `<name>.html`: the HTML body that notification-api sends
 - `<name>.eml`: a multipart email (plain text + HTML), which can be opened in
   desktop clients such as Outlook or Apple Mail, or uploaded to screenshot tools
+- `email-assets/`: the branding images from `notifications_utils/static/email`
+
+By default the branding images are loaded from this repository rather than the
+asset bucket, so image changes can be reviewed before they are deployed: the
+`.html` files reference `email-assets/` and the `.eml` files embed the images
+inline. Pass `--remote-assets` to use the hosted URLs that real emails use.
 - `index.html`: a gallery showing every sample at desktop and mobile widths
 - `lint-report.md` / `lint-report.json`: HTML and CSS features the samples use that
   some email clients don't support, based on https://www.caniemail.com data
@@ -13,12 +19,13 @@ For each sample in `samples.SAMPLES` this writes:
 
 Usage, from the repository root:
 
-    poetry run python -m scripts.email_samples.generate [--output-dir DIR] [--no-lint]
+    poetry run python -m scripts.email_samples.generate [--output-dir DIR] [--no-lint] [--remote-assets]
 """
 
 import argparse
 import html
 import json
+import mimetypes
 import re
 import shlex
 import shutil
@@ -28,7 +35,9 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from email.message import EmailMessage
 from pathlib import Path
+from typing import cast
 
+from notifications_utils.email_assets import EMAIL_ASSETS_DIR, EMAIL_ASSETS_PREFIX, email_asset_urls
 from notifications_utils.template import HTMLEmailTemplate, PlainTextEmailTemplate
 
 from scripts.email_samples.samples import (
@@ -53,6 +62,7 @@ DEFAULT_EMAIL_CLIENTS = [
 ]
 # Fixed so that output is identical between runs, which makes it easy to diff two branches.
 EML_DATE = "Thu, 01 Oct 2026 12:00:00 -0400"
+LOCAL_LOGO_FILENAME = "canada-logo.png"
 
 NOT_SUPPORTED_RE = re.compile(r"^`(?P<feature>.+)` is not supported by `(?P<client>[^`]+)`")
 PARTIALLY_SUPPORTED_RE = re.compile(r"^`(?P<feature>.+)` is only partially supported by `(?P<client>[^`]+)`")
@@ -65,6 +75,7 @@ class RenderedSample:
     subject: str
     html: str
     text: str
+    local_assets: tuple[str, ...] = ()
 
     @property
     def name(self) -> str:
@@ -78,7 +89,30 @@ class FeatureFindings:
     notes: dict[str, set[str]] = field(default_factory=lambda: defaultdict(set))
 
 
-def render_sample(sample: Sample, logo_url: str = DEFAULT_LOGO_URL, brand_colour: str = DEFAULT_BRAND_COLOUR) -> RenderedSample:
+def local_asset_path(filename: str) -> str:
+    return f"{EMAIL_ASSETS_PREFIX}/{filename}"
+
+
+def use_local_assets(html_body: str, logo_url: str | None) -> tuple[str, tuple[str, ...]]:
+    """Point the hosted branding image URLs at the copies in `EMAIL_ASSETS_DIR`."""
+    urls = {url: name for name, url in email_asset_urls().items()}
+    if logo_url is None:
+        urls[DEFAULT_LOGO_URL] = LOCAL_LOGO_FILENAME
+    used = []
+    for url, name in urls.items():
+        if url in html_body:
+            html_body = html_body.replace(url, local_asset_path(name))
+            used.append(name)
+    return html_body, tuple(sorted(used))
+
+
+def render_sample(
+    sample: Sample,
+    logo_url: str | None = None,
+    brand_colour: str = DEFAULT_BRAND_COLOUR,
+    local_assets: bool = True,
+) -> RenderedSample:
+    """Render a sample. With no `logo_url`, custom branding uses the Canada wordmark."""
     content = CONTENTS[sample.content]
     branding = BRANDINGS[sample.branding]
     template = {
@@ -89,16 +123,21 @@ def render_sample(sample: Sample, logo_url: str = DEFAULT_LOGO_URL, brand_colour
     }
     options = dict(branding.options)
     if branding.uses_logo:
-        options["brand_logo"] = logo_url
+        options["brand_logo"] = logo_url or DEFAULT_LOGO_URL
     if branding.uses_colour:
         options["brand_colour"] = brand_colour
 
     plain_text = PlainTextEmailTemplate(template, PERSONALISATION)
+    html_body = str(HTMLEmailTemplate(template, PERSONALISATION, **options))
+    used_assets: tuple[str, ...] = ()
+    if local_assets:
+        html_body, used_assets = use_local_assets(html_body, logo_url)
     return RenderedSample(
         sample=sample,
         subject=str(plain_text.subject),
-        html=str(HTMLEmailTemplate(template, PERSONALISATION, **options)),
+        html=html_body,
         text=str(plain_text),
+        local_assets=used_assets,
     )
 
 
@@ -109,9 +148,28 @@ def build_eml(rendered: RenderedSample) -> bytes:
     message["To"] = "recipient@example.com"
     message["Date"] = EML_DATE
     message.set_content(rendered.text)
-    message.add_alternative(rendered.html, subtype="html")
+    html_body = rendered.html
+    for name in rendered.local_assets:
+        html_body = html_body.replace(local_asset_path(name), f"cid:{name}")
+    message.add_alternative(html_body, subtype="html")
+    if rendered.local_assets:
+        # Embed the local images so the .eml renders without access to the output directory.
+        html_part = cast(EmailMessage, list(message.iter_parts())[1])
+        for name in rendered.local_assets:
+            maintype, subtype = (mimetypes.guess_type(name)[0] or "application/octet-stream").split("/")
+            html_part.add_related(
+                (EMAIL_ASSETS_DIR / name).read_bytes(), maintype=maintype, subtype=subtype, cid=f"<{name}>", filename=name
+            )
+        html_part.set_boundary("gc-notify-email-sample-related")
     message.set_boundary("gc-notify-email-sample")
     return message.as_bytes()
+
+
+def copy_local_assets(output_dir: Path) -> None:
+    assets_dir = output_dir / EMAIL_ASSETS_PREFIX
+    assets_dir.mkdir(parents=True, exist_ok=True)
+    for name in email_asset_urls():
+        shutil.copyfile(EMAIL_ASSETS_DIR / name, assets_dir / name)
 
 
 def write_samples(output_dir: Path, rendered_samples: list[RenderedSample]) -> None:
@@ -119,6 +177,8 @@ def write_samples(output_dir: Path, rendered_samples: list[RenderedSample]) -> N
     for rendered in rendered_samples:
         (output_dir / f"{rendered.name}.html").write_text(rendered.html, encoding="utf-8")
         (output_dir / f"{rendered.name}.eml").write_bytes(build_eml(rendered))
+    if any(rendered.local_assets for rendered in rendered_samples):
+        copy_local_assets(output_dir)
     (output_dir / "index.html").write_text(build_index(rendered_samples), encoding="utf-8")
 
 
@@ -267,17 +327,25 @@ def run_lint(output_dir: Path, rendered_samples: list[RenderedSample], email_cli
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR, help=f"default: {DEFAULT_OUTPUT_DIR}")
-    parser.add_argument("--logo-url", default=DEFAULT_LOGO_URL, help="logo used by custom branding samples")
+    parser.add_argument(
+        "--logo-url",
+        help="logo used by custom branding samples (default: the local Canada wordmark, or the hosted one with --remote-assets)",
+    )
     parser.add_argument("--brand-colour", default=DEFAULT_BRAND_COLOUR, help="colour used by custom branding samples")
     parser.add_argument(
         "--email-clients",
         default=",".join(DEFAULT_EMAIL_CLIENTS),
         help="comma separated caniemail client globs to lint against (default: %(default)s)",
     )
+    parser.add_argument(
+        "--remote-assets",
+        action="store_true",
+        help="load branding images from the hosted asset bucket instead of `notifications_utils/static/email`",
+    )
     parser.add_argument("--no-lint", action="store_true", help="skip the caniemail compatibility check")
     args = parser.parse_args(argv)
 
-    rendered_samples = [render_sample(sample, args.logo_url, args.brand_colour) for sample in SAMPLES]
+    rendered_samples = [render_sample(sample, args.logo_url, args.brand_colour, not args.remote_assets) for sample in SAMPLES]
     write_samples(args.output_dir, rendered_samples)
     print(f"Wrote {len(rendered_samples)} samples to {args.output_dir}")
     print(f"Gallery: {args.output_dir / 'index.html'}")
