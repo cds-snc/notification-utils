@@ -42,15 +42,21 @@ It clones this repo's `main` branch and computes the same content-addressed name
 images automatically. Uploads are additive: replaced images are never deleted, so an existing URL always keeps
 serving the same image. Only `.gif`, `.jpeg`, `.jpg`, `.png` and `.svg` files are uploaded.
 
-To change an image:
+Because Terraform only uploads images from `main`, new branding can't be test-sent from a PR branch, but it can be
+checked on staging before it reaches production. To change the default branding:
 
-1. Replace the file in `notifications_utils/static/email`, keeping the same filename, and bump the version.
-2. Merge, then push the version tag (`scripts/push-tag.sh`).
-3. Run the "Merge to main (Staging)" workflow in notification-terraform so the new image is uploaded to staging.
-   Nothing references it yet, so emails are unchanged.
-4. Bump utils in api and admin and check the emails sent from staging.
-5. Make sure the notification-terraform production release (which uploads the image to production) is applied
-   before api and admin are released to production.
+1. Submit a PR that replaces the file(s) in `notifications_utils/static/email`, keeping the same filenames, and
+   bumps the version.
+2. The reviewer visually compares the new branding images to the old ones (GitHub shows image diffs) and approves
+   if they look good.
+3. Merge the PR to `main` and push the version tag (`scripts/push-tag.sh`).
+4. Terraform uploads the new files to the staging S3 asset bucket the next time a PR is merged to `main` in
+   notification-api or notification-admin. Nothing references the new files yet, so emails are unchanged.
+5. Terraform uploads the new files to the production S3 asset bucket with the next production release.
+6. Once api and admin are updated to the new utils version, emails sent on staging use the new branding.
+7. If the new branding looks good on staging, release the api/admin utils version bump to production. Make sure
+   the production release that uploads the new files (step 5) has been applied first, otherwise emails will show
+   broken images.
 
 ### Accessibility hacks
 
