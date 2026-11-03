@@ -8,6 +8,7 @@ import pytest
 from bs4 import BeautifulSoup
 from flask import Markup
 from freezegun import freeze_time
+from notifications_utils.email_assets import email_asset_urls
 from notifications_utils.formatters import unlink_govuk_escaped
 from notifications_utils.template import (
     EmailPreviewTemplate,
@@ -22,6 +23,8 @@ from notifications_utils.template import (
     WithSubjectTemplate,
     _render_conditional_email_markdown,
 )
+
+ASSET_URLS = email_asset_urls()
 
 
 def test_pass_through_renderer():
@@ -51,29 +54,39 @@ def test_fip_banner_english(renderer, show_banner):
     email.fip_banner_english = show_banner
     if show_banner:
         rendered_email = str(email)
-        assert "gc-logo-en.png" in rendered_email
-        assert "canada-logo.png" in rendered_email
+        assert ASSET_URLS["gc-logo-en.png"] in rendered_email
+        assert ASSET_URLS["canada-logo.png"] in rendered_email
         assert 'alt="Government of Canada"' in rendered_email
     else:
-        assert "gc-logo-en.png" not in str(email)
-        assert "canada-logo.png" not in str(email)
+        assert ASSET_URLS["gc-logo-en.png"] not in str(email)
+        assert ASSET_URLS["canada-logo.png"] not in str(email)
 
 
+@pytest.mark.parametrize("renderer", [HTMLEmailTemplate, EmailPreviewTemplate])
 @pytest.mark.parametrize("lang", ["en", "fr"])
 @pytest.mark.parametrize("asset_domain", [None, "assets.example.com"])
-def test_custom_asset_domain(lang, asset_domain):
+def test_custom_asset_domain(renderer, lang, asset_domain):
     expected_domain = asset_domain or "assets.notification.canada.ca"
-    email = EmailPreviewTemplate(
-        {
-            "content": "hello world",
-            "subject": "",
-        },
-        fip_banner_english=lang == "en",
-        fip_banner_french=lang == "fr",
-        asset_domain=asset_domain,
+    email = str(
+        renderer(
+            {
+                "content": "hello world",
+                "subject": "",
+            },
+            fip_banner_english=lang == "en",
+            fip_banner_french=lang == "fr",
+            asset_domain=asset_domain,
+        )
     )
 
-    assert f"https://{expected_domain}/gc-logo-{lang}.png" in str(email)
+    urls = email_asset_urls(asset_domain)
+    for name in (f"gc-logo-{lang}.png", "canada-logo.png"):
+        assert urls[name].startswith(f"https://{expected_domain}/email-assets/")
+        assert urls[name] in email
+    if renderer is HTMLEmailTemplate:
+        assert urls["1x1-ffffff.png"] in email
+    if asset_domain:
+        assert "assets.notification.canada.ca" not in email
 
 
 @pytest.mark.parametrize("renderer", [HTMLEmailTemplate, EmailPreviewTemplate])
@@ -84,12 +97,12 @@ def test_fip_banner_french(renderer, show_banner):
     email.fip_banner_french = show_banner
     if show_banner:
         rendered_email = str(email)
-        assert "gc-logo-fr.png" in rendered_email
-        assert "canada-logo.png" in rendered_email
+        assert ASSET_URLS["gc-logo-fr.png"] in rendered_email
+        assert ASSET_URLS["canada-logo.png"] in rendered_email
         assert 'alt="Gouvernement du Canada"' in rendered_email
     else:
-        assert "gc-logo-fr.png" not in str(email)
-        assert "canada-logo.png" not in str(email)
+        assert ASSET_URLS["gc-logo-fr.png"] not in str(email)
+        assert ASSET_URLS["canada-logo.png"] not in str(email)
 
 
 def test_logo_with_background_colour_shows():
@@ -101,7 +114,7 @@ def test_logo_with_background_colour_shows():
             brand_colour="#eee",
         )
     )
-    assert "gc-logo-en.png" not in email
+    assert ASSET_URLS["gc-logo-en.png"] not in email
     assert 'bgcolor="#eee"' in email
     assert "background: linear-gradient(#eee, #eee);" in email
 

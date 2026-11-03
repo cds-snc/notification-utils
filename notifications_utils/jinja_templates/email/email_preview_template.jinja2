@@ -40,7 +40,7 @@
       {% if fip_banner_english %}
         <div style="margin: 20px auto 30px auto;">
           <img
-            src="https://{{ asset_domain }}/gc-logo-en.png"
+            src="{{ email_asset_urls['gc-logo-en.png'] }}"
             alt="Government of Canada"
             height="55"
             width="281"
@@ -51,7 +51,7 @@
       {% if fip_banner_french or brand_name == "canada.ca-fr" %}
         <div style="margin: 20px auto 30px auto;">
           <img
-            src="https://{{ asset_domain }}/gc-logo-fr.png"
+            src="{{ email_asset_urls['gc-logo-fr.png'] }}"
             alt="Gouvernement du Canada"
             height="55"
             width="281"
@@ -82,7 +82,7 @@
       {% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
         <div style="margin: 10px 0 20px 0; float: right">
           <img
-            src="https://{{ asset_domain }}/canada-logo.png"
+            src="{{ email_asset_urls['canada-logo.png'] }}"
             alt="Symbol of the Government of Canada / Symbole du gouvernement du Canada"
             height="55"
             width="123"

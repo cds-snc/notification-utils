@@ -20,6 +20,44 @@ Note: the term 'government identity' refers to logos from the [government identi
 The dimensions of logos vary. Their height will be either 27px or 54px, depending on what suits the
 image. The width will adjust to keep the aspect-ratio.
 
+### Default branding images (FIP signature, wordmark)
+
+The images used by the default branding live in [`notifications_utils/static/email`](../notifications_utils/static/email),
+so changes to them show up as image diffs in pull requests.
+
+They are served from each environment's asset domain (`assets.<domain>`) under content-addressed names, for
+example `https://assets.notification.canada.ca/email-assets/gc-logo-en-522e149af6.png`. The hash is computed
+from the file contents by [`email_assets.py`](../notifications_utils/email_assets.py), so:
+
+* changing an image changes its URL. There is no cache-busting query string to update.
+* emails that have already been sent keep pointing at the image they were sent with.
+* an environment only starts using a new image once its api/admin run a utils version that references it.
+
+Pass `asset_domain` (the app's `ASSET_DOMAIN` config) to `HTMLEmailTemplate` and `EmailPreviewTemplate` so each
+environment uses its own assets. It defaults to `assets.notification.canada.ca`.
+
+notification-terraform uploads the images to every environment's asset bucket, alongside the admin assets
+(see [`aws/common/uploadS3Assets.tf`](https://github.com/cds-snc/notification-terraform/blob/main/aws/common/uploadS3Assets.tf)).
+It clones this repo's `main` branch and computes the same content-addressed names, so new environments get the
+images automatically. Uploads are additive: replaced images are never deleted, so an existing URL always keeps
+serving the same image. Only `.gif`, `.jpeg`, `.jpg`, `.png` and `.svg` files are uploaded.
+
+Because Terraform only uploads images from `main`, new branding can't be test-sent from a PR branch, but it can be
+checked on staging before it reaches production. To change the default branding:
+
+1. Submit a PR that replaces the file(s) in `notifications_utils/static/email`, keeping the same filenames, and
+   bumps the version.
+2. The reviewer visually compares the new branding images to the old ones (GitHub shows image diffs) and approves
+   if they look good.
+3. Merge the PR to `main` and push the version tag (`scripts/push-tag.sh`).
+4. Terraform uploads the new files to the staging S3 asset bucket the next time a PR is merged to `main` in
+   notification-api or notification-admin. Nothing references the new files yet, so emails are unchanged.
+5. Terraform uploads the new files to the production S3 asset bucket with the next production release.
+6. Once api and admin are updated to the new utils version, emails sent on staging use the new branding.
+7. If the new branding looks good on staging, release the api/admin utils version bump to production. Make sure
+   the production release that uploads the new files (step 5) has been applied first, otherwise emails will show
+   broken images.
+
 ### Accessibility hacks
 
 The following hacks have been added to make the template work with assistive technologies.
