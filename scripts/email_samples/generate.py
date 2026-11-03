@@ -281,7 +281,7 @@ def build_lint_report(findings: dict[str, FeatureFindings], all_samples: set[str
         "using its bundled [caniemail.com](https://www.caniemail.com) data (which may lag the live site).",
         f"Clients checked: `{', '.join(email_clients)}`.",
         "",
-        "This only lists features that a client is *known* not to support. It can't tell whether the "
+        "This only lists features that a client is *known* not to support. It can't tell whether the " +
         "email still looks acceptable, and it misses features caniemail has no data for. "
         "Confirm findings in real clients.",
         "",
