@@ -69,3 +69,5 @@ target/
 # Linux and Mac Dev Environment
 .DS_Store
 
+# Rendered email samples (make email-samples)
+scripts/email_samples/output/
