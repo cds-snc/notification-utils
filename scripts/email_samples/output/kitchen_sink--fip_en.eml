@@ -1,0 +1,231 @@
+Subject: Every formatting option
+From: Example Department <example.department@notification.canada.ca>
+To: recipient@example.com
+Date: Thu, 01 Oct 2026 12:00:00 -0400
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="gc-notify-email-sample"
+
+--gc-notify-email-sample
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Heading level 1
+-----------------------------------------------------------------
+
+Hello Alex Tremblay, this paragraph has **bold text**, _emphasis_, a descript=
+ive link: https://www.canada.ca/en.html and a bare link: https://www.canada.c=
+a/en/services.html
+
+Heading level 2
+-----------------------------------------------------------------
+
+A paragraph directly after a level 2 heading.
+This line follows a single line break.
+
+=E2=80=A2 First bullet point
+=E2=80=A2 Second bullet point that is long enough to wrap onto a second line =
+on narrow mobile screens
+=E2=80=A2 Third bullet point with a link: https://www.canada.ca/en.html
+=E2=80=A2 First numbered step
+=E2=80=A2 Second numbered step that is long enough to wrap onto a second line=
+ on narrow mobile screens
+=E2=80=A2 Third numbered step
+
+This is inset text. It is used to draw attention to important information, an=
+d is long enough to wrap onto several lines.
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+Text after a horizontal rule.
+
+This conditional text appears because show_optional is set.
+
+Thank you,
+The Example Program team
+
+--gc-notify-email-sample
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/T=
+R/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang=3D"en">
+
+<head>
+  <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8" />
+  <meta content=3D"telephone=3Dno" name=3D"format-detection" /> <!-- need to =
+add formatting for real phone numbers -->
+  <meta name=3D"viewport" content=3D"width=3Ddevice-width" />
+  <title>Every formatting option</title>
+
+  <style type=3D"text/css">
+    @media only screen and (min-device-width: 581px) {
+      .content {
+        width: 580px !important;
+      }
+    }
+    body { margin:0 !important; }
+    div[style*=3D"margin: 16px 0"] { margin:0 !important; }
+    .force-white-bg { background-color: #fff; background: linear-gradient(#ff=
+f, #fff); background-image: url("https://assets.notification.canada.ca/1x1-ff=
+ffff.png"); }
+    [data-ogsc] .force-white-bg { background-color: #fff; }
+    li table[role=3D"presentation"] {
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+  </style>
+  <!--[if gte mso 9]>
+  <style>
+     li {text-indent: -1em;}
+  </style>
+  <![endif]-->
+</head>
+
+<body style=3D"font-family: Helvetica, Arial, sans-serif;font-size: 16px;marg=
+in: 0;color:#0b0c0c;">
+
+<span style=3D"display: none;font-size: 1px;color: #fff; max-height: 0;">Head=
+ing level 1 Hello Alex Tremblay, this paragraph has **bold text**, _emphasis_=
+, a descriptive link and a bare link: https://www.canada.ca/en/services.html =
+Heading level 2 A paragraph directly after a level 2 heading. This line follo=
+ws a single line brea=E2=80=A6</span>
+
+<div style=3D"height:20px">&nbsp;</div>
+<!-- start primary template header EN + FR -->
+
+  <table role=3D"presentation" style=3D"border-collapse: collapse; width:100%=
+ !important; max-width: 580px; margin: 0px auto">
+    <tr>
+        <td width=3D"100%" class=3D"force-white-bg" style=3D"border-radius: 1=
+0px;">
+        <!-- start fip -->
+        <table role=3D"presentation" style=3D"border-collapse: collapse; max-=
+width: 286px;" align=3D"left">
+            <tr>
+            <td style=3D"line-height: 0px; border: 0; padding: 0">
+
+               =20
+                <img
+                src=3D"https://assets.notification.canada.ca/gc-logo-en.png?2=
+0210531"
+                alt=3D"Government of Canada"
+                height=3D"55"
+                width=3D"286"
+                border=3D"0"
+                />
+               =20
+
+               =20
+
+            </td>
+            </tr>
+        </table>
+        <!-- end fip -->
+        </td>
+    </tr>
+</table>
+<div style=3D"height:30px">&nbsp;</div>
+
+
+
+
+
+
+<!-- main content -->
+<table
+    role=3D"presentation"
+    class=3D"content"
+    style=3D"border-collapse: collapse; width:100% !important; max-width: 580=
+px; margin: 0 auto;"
+>
+  <tr>
+    <td style=3D"font-family: Helvetica, Arial, sans-serif; font-size: 16px; =
+line-height: 1.315789474; padding: 0 10px;" dir=3D"ltr">
+      <h2 style=3D"Margin: 0 0 20px 0; padding: 0; font-size: 27px; line-heig=
+ht: 35px; font-weight: bold; color: #0B0C0C;">Heading level 1</h2><p style=3D=
+"Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">Hel=
+lo Alex Tremblay, this paragraph has <strong>bold text</strong>, <em>emphasis=
+</em>, a <a style=3D"word-wrap: break-word; word-break: break-word;" href=3D"=
+https://www.canada.ca/en.html">descriptive link</a> and a bare link: <a style=
+=3D"word-wrap: break-word; word-break: break-word;" href=3D"https://www.canad=
+a.ca/en/services.html">https://www.canada.ca/en/services.html</a></p><h3 styl=
+e=3D"Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #0B0C0C;font-s=
+ize: 24px; font-weight: bold;">Heading level 2</h3><p style=3D"Margin: 0 0 20=
+px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">A paragraph direct=
+ly after a level 2 heading.<br />This line follows a single line break.</p><t=
+able role=3D"presentation" style=3D"padding: 0 0 20px 0;"><tr><td style=3D"fo=
+nt-family: Helvetica, Arial, sans-serif;"><ul style=3D"margin: 0; padding: 0;=
+ list-style-type: disc; margin-inline-start: 20px;"><li style=3D"Margin: 5px =
+0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C=
+; text-align:start;">First bullet point</li><li style=3D"Margin: 5px 0 5px; p=
+adding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-a=
+lign:start;">Second bullet point that is long enough to wrap onto a second li=
+ne on narrow mobile screens</li><li style=3D"Margin: 5px 0 5px; padding: 0 0 =
+0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;"=
+><p style=3D"Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #=
+0B0C0C;"> Third bullet point with a <a style=3D"word-wrap: break-word; word-b=
+reak: break-word;" href=3D"https://www.canada.ca/en.html">link</a></p></li><l=
+i style=3D"Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-heigh=
+t: 25px; color: #0B0C0C; text-align:start;"><p style=3D"Margin: 0 0 20px 0; f=
+ont-size: 19px; line-height: 25px; color: #0B0C0C;"> First numbered step</p><=
+/li><li style=3D"Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line=
+-height: 25px; color: #0B0C0C; text-align:start;">Second numbered step that i=
+s long enough to wrap onto a second line on narrow mobile screens</li><li sty=
+le=3D"Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25=
+px; color: #0B0C0C; text-align:start;">Third numbered step</li></ul></td></tr=
+></table><blockquote style=3D"Margin: 0 0 20px 0; border-left: 10px solid #BF=
+C1C3;padding: 15px 0 0.1px 15px; font-size: 19px; line-height: 25px;"><p styl=
+e=3D"Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;"=
+>This is inset text. It is used to draw attention to important information, a=
+nd is long enough to wrap onto several lines.</p></blockquote><hr style=3D"bo=
+rder: 0; height: 1px; background: #BFC1C3; Margin: 30px 0 30px 0;"><p style=
+=3D"Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">=
+Text after a horizontal rule.</p><p style=3D"Margin: 0 0 20px 0; font-size: 1=
+9px; line-height: 25px; color: #0B0C0C;">This conditional text appears becaus=
+e show_optional is set.</p><p style=3D"Margin: 0 0 20px 0; font-size: 19px; l=
+ine-height: 25px; color: #0B0C0C;">Thank you,<br />The Example Program team</=
+p>
+    </td>
+  </tr>
+</table>
+<!-- end main content -->
+
+
+  <div style=3D"height:10px">&nbsp;</div>
+<table role=3D"presentation" width=3D"100%" style=3D"border-collapse: collaps=
+e; width:100% !important; max-width: 580px; margin: 0px auto;">
+  <tr>
+    <td width=3D"100%" class=3D"force-white-bg" style=3D"text-align:right; wi=
+dth:100%!important; border-radius: 10px;">
+      <table role=3D"presentation" style=3D"border-collapse: collapse; width:=
+ 100%!important; text-align: right;" align=3D"right">
+        <tr>
+          <td style=3D"line-height: 0px; border: 0; padding: 0">
+            <img
+              src=3D"https://assets.notification.canada.ca/canada-logo.png?20=
+210531"
+              alt=3D"Symbol of the Government of Canada / Symbole du gouverne=
+ment du Canada"
+              width=3D"123"
+              height=3D"55"
+              border=3D"0"
+            />
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<div style=3D"height:20px">&nbsp;</div>
+
+
+
+</body>
+</html>
+
+--gc-notify-email-sample--

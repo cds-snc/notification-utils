@@ -1,0 +1,194 @@
+Subject: =?utf-8?b?2YLYp9mE2Kgg2YXZhiDYp9mE2YrZhdmK2YYg2KXZhNmJINin2YTZitiz?=
+ =?utf-8?q?=D8=A7=D8=B1?=
+From: Example Department <example.department@notification.canada.ca>
+To: recipient@example.com
+Date: Thu, 01 Oct 2026 12:00:00 -0400
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="gc-notify-email-sample"
+
+--gc-notify-email-sample
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+
+2YXYsdit2KjYpyBBbGV4IFRyZW1ibGF5Ci0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgrYqtmFINin2LPYqtmE2KfZhSDYt9mE
+2KjZgyBBQkMtMTIzLTQ1Ni4g2LPZhtiq2LXZhCDYqNmDINiu2YTYp9mEINmh2aAg2KPZitin2YUg
+2LnZhdmELgoK4oCiINin2YTYqNmG2K8g2KfZhNij2YjZhArigKIg2KfZhNio2YbYryDYp9mE2KvY
+p9mG2YoK4oCiINin2YTYrti32YjYqSDYp9mE2KPZiNmE2YkK4oCiINin2YTYrti32YjYqSDYp9mE
+2KvYp9mG2YrYqQoK2YbYtSDZhdmH2YUKCmh0dHBzOi8vd3d3LmNhbmFkYS5jYS9lbi5odG1sCg==
+
+--gc-notify-email-sample
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/T=
+R/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang=3D"en">
+
+<head>
+  <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8" />
+  <meta content=3D"telephone=3Dno" name=3D"format-detection" /> <!-- need to =
+add formatting for real phone numbers -->
+  <meta name=3D"viewport" content=3D"width=3Ddevice-width" />
+  <title>=D9=82=D8=A7=D9=84=D8=A8 =D9=85=D9=86 =D8=A7=D9=84=D9=8A=D9=85=D9=8A=
+=D9=86 =D8=A5=D9=84=D9=89 =D8=A7=D9=84=D9=8A=D8=B3=D8=A7=D8=B1</title>
+
+  <style type=3D"text/css">
+    @media only screen and (min-device-width: 581px) {
+      .content {
+        width: 580px !important;
+      }
+    }
+    body { margin:0 !important; }
+    div[style*=3D"margin: 16px 0"] { margin:0 !important; }
+    .force-white-bg { background-color: #fff; background: linear-gradient(#ff=
+f, #fff); background-image: url("https://assets.notification.canada.ca/1x1-ff=
+ffff.png"); }
+    [data-ogsc] .force-white-bg { background-color: #fff; }
+    li table[role=3D"presentation"] {
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+  </style>
+  <!--[if gte mso 9]>
+  <style>
+     li {text-indent: -1em;}
+  </style>
+  <![endif]-->
+</head>
+
+<body style=3D"font-family: Helvetica, Arial, sans-serif;font-size: 16px;marg=
+in: 0;color:#0b0c0c;">
+
+<span style=3D"display: none;font-size: 1px;color: #fff; max-height: 0;">=D9=
+=85=D8=B1=D8=AD=D8=A8=D8=A7 Alex Tremblay =D8=AA=D9=85 =D8=A7=D8=B3=D8=AA=D9=
+=84=D8=A7=D9=85 =D8=B7=D9=84=D8=A8=D9=83 ABC-123-456. =D8=B3=D9=86=D8=AA=D8=
+=B5=D9=84 =D8=A8=D9=83 =D8=AE=D9=84=D8=A7=D9=84 =D9=A1=D9=A0 =D8=A3=D9=8A=D8=
+=A7=D9=85 =D8=B9=D9=85=D9=84. =E2=80=A2 =D8=A7=D9=84=D8=A8=D9=86=D8=AF =D8=A7=
+=D9=84=D8=A3=D9=88=D9=84 =E2=80=A2 =D8=A7=D9=84=D8=A8=D9=86=D8=AF =D8=A7=D9=
+=84=D8=AB=D8=A7=D9=86=D9=8A =E2=80=A2 =D8=A7=D9=84=D8=AE=D8=B7=D9=88=D8=A9 =
+=D8=A7=D9=84=D8=A3=D9=88=D9=84=D9=89 =E2=80=A2 =D8=A7=D9=84=D8=AE=D8=B7=D9=88=
+=D8=A9 =D8=A7=D9=84=D8=AB=D8=A7=D9=86=D9=8A=D8=A9 =D9=86=D8=B5 =D9=85=D9=87=
+=D9=85 https://www.canada.ca/en.html=E2=80=A6</span>
+
+<div style=3D"height:20px">&nbsp;</div>
+<!-- start primary template header EN + FR -->
+
+  <table role=3D"presentation" style=3D"border-collapse: collapse; width:100%=
+ !important; max-width: 580px; margin: 0px auto">
+    <tr>
+        <td width=3D"100%" class=3D"force-white-bg" style=3D"border-radius: 1=
+0px;">
+        <!-- start fip -->
+        <table role=3D"presentation" style=3D"border-collapse: collapse; max-=
+width: 286px;" align=3D"left">
+            <tr>
+            <td style=3D"line-height: 0px; border: 0; padding: 0">
+
+               =20
+                <img
+                src=3D"https://assets.notification.canada.ca/gc-logo-en.png?2=
+0210531"
+                alt=3D"Government of Canada"
+                height=3D"55"
+                width=3D"286"
+                border=3D"0"
+                />
+               =20
+
+               =20
+
+            </td>
+            </tr>
+        </table>
+        <!-- end fip -->
+        </td>
+    </tr>
+</table>
+<div style=3D"height:30px">&nbsp;</div>
+
+
+
+
+
+
+<!-- main content -->
+<table
+    role=3D"presentation"
+    class=3D"content"
+    style=3D"border-collapse: collapse; width:100% !important; max-width: 580=
+px; margin: 0 auto;"
+>
+  <tr>
+    <td style=3D"font-family: Helvetica, Arial, sans-serif; font-size: 16px; =
+line-height: 1.315789474; padding: 0 10px;" dir=3D"rtl">
+      <h2 style=3D"Margin: 0 0 20px 0; padding: 0; font-size: 27px; line-heig=
+ht: 35px; font-weight: bold; color: #0B0C0C;">=D9=85=D8=B1=D8=AD=D8=A8=D8=A7 =
+Alex Tremblay</h2><p style=3D"Margin: 0 0 20px 0; font-size: 19px; line-heigh=
+t: 25px; color: #0B0C0C;">=D8=AA=D9=85 =D8=A7=D8=B3=D8=AA=D9=84=D8=A7=D9=85 =
+=D8=B7=D9=84=D8=A8=D9=83 ABC-123-456. =D8=B3=D9=86=D8=AA=D8=B5=D9=84 =D8=A8=
+=D9=83 =D8=AE=D9=84=D8=A7=D9=84 =D9=A1=D9=A0 =D8=A3=D9=8A=D8=A7=D9=85 =D8=B9=
+=D9=85=D9=84.</p><table role=3D"presentation" style=3D"padding: 0 0 20px 0;">=
+<tr><td style=3D"font-family: Helvetica, Arial, sans-serif;"><ul style=3D"mar=
+gin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px;"><li st=
+yle=3D"Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 2=
+5px; color: #0B0C0C; text-align:start;">=D8=A7=D9=84=D8=A8=D9=86=D8=AF =D8=A7=
+=D9=84=D8=A3=D9=88=D9=84</li><li style=3D"Margin: 5px 0 5px; padding: 0 0 0 5=
+px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;"><p=
+ style=3D"Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0=
+C0C;"> =D8=A7=D9=84=D8=A8=D9=86=D8=AF =D8=A7=D9=84=D8=AB=D8=A7=D9=86=D9=8A</p=
+></li><li style=3D"Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; li=
+ne-height: 25px; color: #0B0C0C; text-align:start;"><p style=3D"Margin: 0 0 2=
+0px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;"> =D8=A7=D9=84=D8=
+=AE=D8=B7=D9=88=D8=A9 =D8=A7=D9=84=D8=A3=D9=88=D9=84=D9=89</p></li><li style=
+=3D"Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px=
+; color: #0B0C0C; text-align:start;">=D8=A7=D9=84=D8=AE=D8=B7=D9=88=D8=A9 =D8=
+=A7=D9=84=D8=AB=D8=A7=D9=86=D9=8A=D8=A9</li></ul></td></tr></table><blockquot=
+e style=3D"Margin: 0 0 20px 0; border-left: 10px solid #BFC1C3;padding: 15px =
+0 0.1px 15px; font-size: 19px; line-height: 25px;"><p style=3D"Margin: 0 0 20=
+px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">=D9=86=D8=B5 =D9=
+=85=D9=87=D9=85</p></blockquote><p style=3D"Margin: 0 0 20px 0; font-size: 19=
+px; line-height: 25px; color: #0B0C0C;"><a style=3D"word-wrap: break-word; wo=
+rd-break: break-word;" href=3D"https://www.canada.ca/en.html">https://www.can=
+ada.ca/en.html</a></p>
+    </td>
+  </tr>
+</table>
+<!-- end main content -->
+
+
+  <div style=3D"height:10px">&nbsp;</div>
+<table role=3D"presentation" width=3D"100%" style=3D"border-collapse: collaps=
+e; width:100% !important; max-width: 580px; margin: 0px auto;">
+  <tr>
+    <td width=3D"100%" class=3D"force-white-bg" style=3D"text-align:right; wi=
+dth:100%!important; border-radius: 10px;">
+      <table role=3D"presentation" style=3D"border-collapse: collapse; width:=
+ 100%!important; text-align: right;" align=3D"right">
+        <tr>
+          <td style=3D"line-height: 0px; border: 0; padding: 0">
+            <img
+              src=3D"https://assets.notification.canada.ca/canada-logo.png?20=
+210531"
+              alt=3D"Symbol of the Government of Canada / Symbole du gouverne=
+ment du Canada"
+              width=3D"123"
+              height=3D"55"
+              border=3D"0"
+            />
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<div style=3D"height:20px">&nbsp;</div>
+
+
+
+</body>
+</html>
+
+--gc-notify-email-sample--

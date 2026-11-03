@@ -1,0 +1,252 @@
+Subject: List layouts
+From: Example Department <example.department@notification.canada.ca>
+To: recipient@example.com
+Date: Thu, 01 Oct 2026 12:00:00 -0400
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="gc-notify-email-sample"
+
+--gc-notify-email-sample
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+A list straight after a heading
+-----------------------------------------------------------------
+
+=E2=80=A2 Bullet one
+=E2=80=A2 Bullet two
+
+Nested bullets:
+
+=E2=80=A2 Parent bullet
+
+=E2=80=A2 Child bullet
+=E2=80=A2 Another child bullet that is long enough to wrap onto a second line=
+ on narrow mobile screens
+=E2=80=A2 Second parent bullet
+
+Nested numbers:
+
+1. Parent step
+
+1. Child step
+2. Another child step
+2. Second parent step
+
+Mixed nesting:
+
+1. Numbered parent
+
+=E2=80=A2 Bullet child
+=E2=80=A2 Bullet child
+2. Numbered parent
+3. A list using asterisks
+4. A list using hyphens
+5. A list using bullet characters
+
+A paragraph after the lists.
+
+--gc-notify-email-sample
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/T=
+R/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang=3D"en">
+
+<head>
+  <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8" />
+  <meta content=3D"telephone=3Dno" name=3D"format-detection" /> <!-- need to =
+add formatting for real phone numbers -->
+  <meta name=3D"viewport" content=3D"width=3Ddevice-width" />
+  <title>List layouts</title>
+
+  <style type=3D"text/css">
+    @media only screen and (min-device-width: 581px) {
+      .content {
+        width: 580px !important;
+      }
+    }
+    body { margin:0 !important; }
+    div[style*=3D"margin: 16px 0"] { margin:0 !important; }
+    .force-white-bg { background-color: #fff; background: linear-gradient(#ff=
+f, #fff); background-image: url("https://assets.notification.canada.ca/1x1-ff=
+ffff.png"); }
+    [data-ogsc] .force-white-bg { background-color: #fff; }
+    li table[role=3D"presentation"] {
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+  </style>
+  <!--[if gte mso 9]>
+  <style>
+     li {text-indent: -1em;}
+  </style>
+  <![endif]-->
+</head>
+
+<body style=3D"font-family: Helvetica, Arial, sans-serif;font-size: 16px;marg=
+in: 0;color:#0b0c0c;">
+
+<span style=3D"display: none;font-size: 1px;color: #fff; max-height: 0;">A li=
+st straight after a heading =E2=80=A2 Bullet one =E2=80=A2 Bullet two Nested =
+bullets: =E2=80=A2 Parent bullet =E2=80=A2 Child bullet =E2=80=A2 Another chi=
+ld bullet that is long enough to wrap onto a second line on narrow mobile scr=
+eens =E2=80=A2 Second parent bullet Nested numbers: 1. Parent step 1.=E2=80=
+=A6</span>
+
+<div style=3D"height:20px">&nbsp;</div>
+<!-- start primary template header EN + FR -->
+
+  <table role=3D"presentation" style=3D"border-collapse: collapse; width:100%=
+ !important; max-width: 580px; margin: 0px auto">
+    <tr>
+        <td width=3D"100%" class=3D"force-white-bg" style=3D"border-radius: 1=
+0px;">
+        <!-- start fip -->
+        <table role=3D"presentation" style=3D"border-collapse: collapse; max-=
+width: 286px;" align=3D"left">
+            <tr>
+            <td style=3D"line-height: 0px; border: 0; padding: 0">
+
+               =20
+                <img
+                src=3D"https://assets.notification.canada.ca/gc-logo-en.png?2=
+0210531"
+                alt=3D"Government of Canada"
+                height=3D"55"
+                width=3D"286"
+                border=3D"0"
+                />
+               =20
+
+               =20
+
+            </td>
+            </tr>
+        </table>
+        <!-- end fip -->
+        </td>
+    </tr>
+</table>
+<div style=3D"height:30px">&nbsp;</div>
+
+
+
+
+
+
+<!-- main content -->
+<table
+    role=3D"presentation"
+    class=3D"content"
+    style=3D"border-collapse: collapse; width:100% !important; max-width: 580=
+px; margin: 0 auto;"
+>
+  <tr>
+    <td style=3D"font-family: Helvetica, Arial, sans-serif; font-size: 16px; =
+line-height: 1.315789474; padding: 0 10px;" dir=3D"ltr">
+      <h3 style=3D"Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: =
+#0B0C0C;font-size: 24px; font-weight: bold;">A list straight after a heading<=
+/h3><table role=3D"presentation" style=3D"padding: 0 0 20px 0;"><tr><td style=
+=3D"font-family: Helvetica, Arial, sans-serif;"><ul style=3D"margin: 0; paddi=
+ng: 0; list-style-type: disc; margin-inline-start: 20px;"><li style=3D"Margin=
+: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #=
+0B0C0C; text-align:start;">Bullet one</li><li style=3D"Margin: 5px 0 5px; pad=
+ding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-ali=
+gn:start;">Bullet two</li></ul></td></tr></table><p style=3D"Margin: 0 0 20px=
+ 0; font-size: 19px; line-height: 25px; color: #0B0C0C;">Nested bullets:</p><=
+table role=3D"presentation" style=3D"padding: 0 0 20px 0;"><tr><td style=3D"f=
+ont-family: Helvetica, Arial, sans-serif;"><ul style=3D"margin: 0; padding: 0=
+; list-style-type: disc; margin-inline-start: 20px;"><li style=3D"Margin: 5px=
+ 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0=
+C; text-align:start;">Parent bullet<table role=3D"presentation" style=3D"padd=
+ing: 0;"><tr><td style=3D"font-family: Helvetica, Arial, sans-serif;"><ul sty=
+le=3D"margin: 0; padding: 0; list-style-type: disc; margin-inline-start: 20px=
+;"><li style=3D"Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-=
+height: 25px; color: #0B0C0C; text-align:start;">Child bullet</li><li style=
+=3D"Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px=
+; color: #0B0C0C; text-align:start;">Another child bullet that is long enough=
+ to wrap onto a second line on narrow mobile screens</li></ul></td></tr></tab=
+le></li><li style=3D"Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; =
+line-height: 25px; color: #0B0C0C; text-align:start;">Second parent bullet</l=
+i></ul></td></tr></table><p style=3D"Margin: 0 0 20px 0; font-size: 19px; lin=
+e-height: 25px; color: #0B0C0C;">Nested numbers:</p><table role=3D"presentati=
+on" style=3D"padding: 0 0 20px 0;"><tr><td style=3D"font-family: Helvetica, A=
+rial, sans-serif;"><ol style=3D"margin: 0; padding: 0; list-style-type: decim=
+al; margin-inline-start: 20px;"><li style=3D"Margin: 5px 0 5px; padding: 0 0 =
+0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;"=
+>Parent step<table role=3D"presentation" style=3D"padding: 0;"><tr><td style=
+=3D"font-family: Helvetica, Arial, sans-serif;"><ol style=3D"margin: 0; paddi=
+ng: 0; list-style-type: decimal; margin-inline-start: 20px;"><li style=3D"Mar=
+gin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color=
+: #0B0C0C; text-align:start;">Child step</li><li style=3D"Margin: 5px 0 5px; =
+padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-=
+align:start;">Another child step</li></ol></td></tr></table></li><li style=3D=
+"Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; c=
+olor: #0B0C0C; text-align:start;">Second parent step</li></ol></td></tr></tab=
+le><p style=3D"Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color:=
+ #0B0C0C;">Mixed nesting:</p><table role=3D"presentation" style=3D"padding: 0=
+ 0 20px 0;"><tr><td style=3D"font-family: Helvetica, Arial, sans-serif;"><ol =
+style=3D"margin: 0; padding: 0; list-style-type: decimal; margin-inline-start=
+: 20px;"><li style=3D"Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 19px;=
+ line-height: 25px; color: #0B0C0C; text-align:start;">Numbered parent<table =
+role=3D"presentation" style=3D"padding: 0;"><tr><td style=3D"font-family: Hel=
+vetica, Arial, sans-serif;"><ul style=3D"margin: 0; padding: 0; list-style-ty=
+pe: disc; margin-inline-start: 20px;"><li style=3D"Margin: 5px 0 5px; padding=
+: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:s=
+tart;">Bullet child</li><li style=3D"Margin: 5px 0 5px; padding: 0 0 0 5px; f=
+ont-size: 19px; line-height: 25px; color: #0B0C0C; text-align:start;">Bullet =
+child</li></ul></td></tr></table></li><li style=3D"Margin: 5px 0 5px; padding=
+: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align:s=
+tart;"><p style=3D"Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; co=
+lor: #0B0C0C;"> Numbered parent</p></li><li style=3D"Margin: 5px 0 5px; paddi=
+ng: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-align=
+:start;"><p style=3D"Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; =
+color: #0B0C0C;"> A list using asterisks</p></li><li style=3D"Margin: 5px 0 5=
+px; padding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; t=
+ext-align:start;">A list using hyphens</li><li style=3D"Margin: 5px 0 5px; pa=
+dding: 0 0 0 5px; font-size: 19px; line-height: 25px; color: #0B0C0C; text-al=
+ign:start;">A list using bullet characters</li></ol></td></tr></table><p styl=
+e=3D"Margin: 0 0 20px 0; font-size: 19px; line-height: 25px; color: #0B0C0C;"=
+>A paragraph after the lists.</p>
+    </td>
+  </tr>
+</table>
+<!-- end main content -->
+
+
+  <div style=3D"height:10px">&nbsp;</div>
+<table role=3D"presentation" width=3D"100%" style=3D"border-collapse: collaps=
+e; width:100% !important; max-width: 580px; margin: 0px auto;">
+  <tr>
+    <td width=3D"100%" class=3D"force-white-bg" style=3D"text-align:right; wi=
+dth:100%!important; border-radius: 10px;">
+      <table role=3D"presentation" style=3D"border-collapse: collapse; width:=
+ 100%!important; text-align: right;" align=3D"right">
+        <tr>
+          <td style=3D"line-height: 0px; border: 0; padding: 0">
+            <img
+              src=3D"https://assets.notification.canada.ca/canada-logo.png?20=
+210531"
+              alt=3D"Symbol of the Government of Canada / Symbole du gouverne=
+ment du Canada"
+              width=3D"123"
+              height=3D"55"
+              border=3D"0"
+            />
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<div style=3D"height:20px">&nbsp;</div>
+
+
+
+</body>
+</html>
+
+--gc-notify-email-sample--
