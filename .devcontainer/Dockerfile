@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/vscode/devcontainers/python:3.12
+FROM mcr.microsoft.com/vscode/devcontainers/python:3.12@sha256:79a80515d78783e761af1db255e92767c4e887a2d56dbeb85e7753da8c12dc16
 
 ENV POETRY_VERSION="1.7.1"
 ENV POETRY_VENV_PATH="/home/vscode/.venv/workspace"
