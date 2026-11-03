@@ -2,6 +2,7 @@ from email import message_from_bytes, policy
 from email.message import EmailMessage
 
 import pytest
+from notifications_utils.email_assets import DEFAULT_ASSET_DOMAIN
 from scripts.email_samples.generate import (
     build_eml,
     build_lint_report,
@@ -56,8 +57,32 @@ def test_render_sample_sets_template_direction():
     assert 'dir="rtl"' in rendered.html
 
 
+@pytest.mark.parametrize("sample", SAMPLES, ids=lambda sample: sample.name)
+def test_render_sample_uses_local_assets_by_default(sample):
+    rendered = render_sample(sample)
+
+    assert DEFAULT_ASSET_DOMAIN not in rendered.html
+    for name in rendered.local_assets:
+        assert f"email-assets/{name}" in rendered.html
+
+
+def test_render_sample_uses_local_logo_by_default():
+    rendered = render_sample(Sample("plain", "custom_logo"))
+
+    assert 'src="email-assets/canada-logo.png"' in rendered.html
+    assert "canada-logo.png" in rendered.local_assets
+
+
+def test_render_sample_can_use_remote_assets():
+    rendered = render_sample(Sample("plain", "fip_en"), local_assets=False)
+
+    assert f"https://{DEFAULT_ASSET_DOMAIN}/email-assets/gc-logo-en-" in rendered.html
+    assert "email-assets/gc-logo-en.png" not in rendered.html
+    assert rendered.local_assets == ()
+
+
 def test_build_eml_is_multipart_alternative():
-    rendered = render_sample(Sample("bilingual", "fip_en"))
+    rendered = render_sample(Sample("bilingual", "fip_en"), local_assets=False)
 
     message = message_from_bytes(build_eml(rendered), policy=policy.default)
 
@@ -70,6 +95,22 @@ def test_build_eml_is_multipart_alternative():
     assert isinstance(html_part, EmailMessage)
     assert plain_part.get_content() == rendered.text
     assert html_part.get_content() == rendered.html
+
+
+def test_build_eml_embeds_local_assets():
+    rendered = render_sample(Sample("bilingual", "fip_en"))
+
+    message = message_from_bytes(build_eml(rendered), policy=policy.default)
+
+    assert isinstance(message, EmailMessage)
+    html_part = message.get_body(("html",))
+    assert isinstance(html_part, EmailMessage)
+    html = html_part.get_content()
+    assert "email-assets/" not in html
+    images = {part["Content-ID"]: part for part in message.walk() if part.get_content_maintype() == "image"}
+    assert set(images) == {f"<{name}>" for name in rendered.local_assets}
+    for name in rendered.local_assets:
+        assert f"cid:{name}" in html
 
 
 def test_build_eml_is_deterministic():
@@ -88,6 +129,15 @@ def test_main_writes_samples_and_gallery_without_lint(tmp_path):
     for sample in SAMPLES:
         assert f'src="{sample.name}.html"' in index
     assert not (tmp_path / "lint-report.md").exists()
+    for name in ("gc-logo-en.png", "gc-logo-fr.png", "canada-logo.png", "1x1-ffffff.png"):
+        assert (tmp_path / "email-assets" / name).exists()
+
+
+def test_main_with_remote_assets_does_not_copy_assets(tmp_path):
+    assert main(["--output-dir", str(tmp_path), "--no-lint", "--remote-assets"]) == 0
+
+    assert not (tmp_path / "email-assets").exists()
+    assert DEFAULT_ASSET_DOMAIN in (tmp_path / "plain--fip_en.html").read_text(encoding="utf-8")
 
 
 def test_collect_findings_and_build_lint_report():
