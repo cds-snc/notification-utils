@@ -12,7 +12,7 @@ make email-samples
 poetry run python -m scripts.email_samples.generate --help
 ```
 
-The compatibility check needs Node.js (it runs [doiuse-email](https://github.com/leondreamed/doiuse-email) with `npx`). Pass `--no-lint` to skip it.
+The compatibility check needs Node.js (it runs [doiuse-email](https://github.com/leondreamed/doiuse-email) with `npx`). Node.js is installed in the dev container (rebuild the container if `npx` is missing). If `npx` isn't available the check is skipped with a warning; pass `--no-lint` to skip it explicitly.
 
 Branding images (the Government of Canada signature, the Canada wordmark, etc.) are loaded from this repository's [`notifications_utils/static/email/`](../../notifications_utils/static/email/) folder, not the asset bucket, so you can review image changes before they're deployed. Pass `--remote-assets` to use the hosted URLs that real emails use instead (for example, to upload `.html` files to a screenshot service that can't see your local files).
 

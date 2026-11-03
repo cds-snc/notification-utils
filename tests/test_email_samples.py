@@ -1,12 +1,17 @@
+import json
+import subprocess
 from email import message_from_bytes, policy
 from email.message import EmailMessage
 
 import pytest
 from notifications_utils.email_assets import DEFAULT_ASSET_DOMAIN
 from scripts.email_samples.generate import (
+    DEFAULT_EMAIL_CLIENTS,
+    DOIUSE_EMAIL_VERSION,
     build_eml,
     build_lint_report,
     collect_findings,
+    lint_html,
     main,
     render_sample,
 )
@@ -138,6 +143,59 @@ def test_main_with_remote_assets_does_not_copy_assets(tmp_path):
 
     assert not (tmp_path / "email-assets").exists()
     assert DEFAULT_ASSET_DOMAIN in (tmp_path / "plain--fip_en.html").read_text(encoding="utf-8")
+
+
+def test_lint_html_runs_doiuse_email_through_npx_and_parses_json(mocker, tmp_path):
+    lint_result = {"errors": ["`@media` is not supported by `outlook.windows`"], "warnings": [], "notes": []}
+    run = mocker.patch(
+        "scripts.email_samples.generate.subprocess.run",
+        return_value=subprocess.CompletedProcess([], 0, stdout=json.dumps(lint_result), stderr=""),
+    )
+    html_path = tmp_path / "sample.html"
+
+    assert lint_html(html_path, ["outlook.*", "gmail.*"]) == lint_result
+
+    command = run.call_args.args[0]
+    assert command[:4] == ["npx", "--yes", "-p", f"doiuse-email@{DOIUSE_EMAIL_VERSION}"]
+    assert "--email-clients 'outlook.*,gmail.*'" in command[-1]
+    assert str(html_path) in command[-1]
+    assert run.call_args.kwargs["check"] is True
+
+
+def test_main_runs_lint_and_writes_reports(mocker, tmp_path):
+    lint_result = {
+        "errors": ["`@media` is not supported by `outlook.windows`"],
+        "warnings": ["`max-width` is only partially supported by `outlook.windows`"],
+        "notes": [],
+    }
+    mocker.patch("scripts.email_samples.generate.shutil.which", return_value="/usr/bin/npx")
+    run = mocker.patch(
+        "scripts.email_samples.generate.subprocess.run",
+        return_value=subprocess.CompletedProcess([], 0, stdout=json.dumps(lint_result), stderr=""),
+    )
+
+    assert main(["--output-dir", str(tmp_path)]) == 0
+
+    assert run.call_count == len(SAMPLES)
+    raw = json.loads((tmp_path / "lint-report.json").read_text(encoding="utf-8"))
+    assert set(raw) == {sample.name for sample in SAMPLES}
+    assert all(result == lint_result for result in raw.values())
+    report = (tmp_path / "lint-report.md").read_text(encoding="utf-8")
+    assert "| `@media` | outlook.windows | all |" in report
+    assert "| `max-width` | outlook.windows | all |" in report
+    assert ", ".join(DEFAULT_EMAIL_CLIENTS) in report
+
+
+def test_main_skips_lint_with_a_warning_when_npx_is_missing(mocker, tmp_path, capsys):
+    mocker.patch("scripts.email_samples.generate.shutil.which", return_value=None)
+    run = mocker.patch("scripts.email_samples.generate.subprocess.run")
+
+    assert main(["--output-dir", str(tmp_path)]) == 0
+
+    run.assert_not_called()
+    assert "npx not found" in capsys.readouterr().err
+    assert (tmp_path / "index.html").exists()
+    assert not (tmp_path / "lint-report.md").exists()
 
 
 def test_collect_findings_and_build_lint_report():

@@ -274,16 +274,22 @@ def _samples_cell(samples: set[str], all_samples: set[str]) -> str:
 
 
 def build_lint_report(findings: dict[str, FeatureFindings], all_samples: set[str], email_clients: list[str]) -> str:
+    source = (
+        f"Static analysis by [doiuse-email](https://github.com/leondreamed/doiuse-email) {DOIUSE_EMAIL_VERSION}, "
+        "using its bundled [caniemail.com](https://www.caniemail.com) data (which may lag the live site)."
+    )
+    caveat = (
+        "This only lists features that a client is *known* not to support. It can't tell whether the "
+        "email still looks acceptable, and it misses features caniemail has no data for. "
+        "Confirm findings in real clients."
+    )
     lines = [
         "# Email client compatibility report",
         "",
-        f"Static analysis by [doiuse-email](https://github.com/leondreamed/doiuse-email) {DOIUSE_EMAIL_VERSION}, "
-        "using its bundled [caniemail.com](https://www.caniemail.com) data (which may lag the live site).",
+        source,
         f"Clients checked: `{', '.join(email_clients)}`.",
         "",
-        "This only lists features that a client is *known* not to support. It can't tell whether the "
-        + "email still looks acceptable, and it misses features caniemail has no data for. "
-        "Confirm findings in real clients.",
+        caveat,
         "",
     ]
     for title, attribute in (("Not supported", "not_supported"), ("Partially supported", "partially_supported")):
@@ -354,7 +360,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if shutil.which("npx") is None:
         print("npx not found, skipping compatibility check (install Node.js or pass --no-lint)", file=sys.stderr)
-        return 1
+        return 0
 
     email_clients = [client.strip() for client in args.email_clients.split(",") if client.strip()]
     findings = run_lint(args.output_dir, rendered_samples, email_clients)
