@@ -660,6 +660,10 @@ def test_codespan(markdown_function, expected):
             notify_plain_text_email_markdown,
             "\n\nsomething **important**",
         ],
+        [
+            notify_email_preheader_markdown,
+            "\n\nsomething important",
+        ],
     ),
 )
 @pytest.mark.parametrize("emphasis_style", ["**", "__"])
@@ -679,6 +683,10 @@ def test_double_emphasis(markdown_function, expected, emphasis_style):
             notify_plain_text_email_markdown,
             "\n\nsomething _important_",
         ],
+        [
+            notify_email_preheader_markdown,
+            "\n\nsomething important",
+        ],
     ),
 )
 @pytest.mark.parametrize("emphasis_style", ["_", "*"])
@@ -697,6 +705,10 @@ def test_emphasis(markdown_function, expected, emphasis_style):
         [
             notify_plain_text_email_markdown,
             "\n\nfoo **_bar_**",
+        ],
+        [
+            notify_email_preheader_markdown,
+            "\n\nfoo bar",
         ],
     ),
 )
