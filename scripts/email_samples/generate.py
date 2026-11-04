@@ -19,10 +19,11 @@ inline. Pass `--remote-assets` to use the hosted URLs that real emails use.
 
 Usage, from the repository root:
 
-    poetry run python -m scripts.email_samples.generate [--output-dir DIR] [--no-lint] [--remote-assets]
+    poetry run python -m scripts.email_samples.generate [--output-dir DIR] [--no-lint] [--remote-assets] [--serve [--port PORT]]
 """
 
 import argparse
+import functools
 import html
 import json
 import mimetypes
@@ -31,9 +32,11 @@ import shlex
 import shutil
 import subprocess
 import sys
+import webbrowser
 from collections import defaultdict
 from dataclasses import dataclass, field
 from email.message import EmailMessage
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import cast
 
@@ -51,6 +54,7 @@ from scripts.email_samples.samples import (
 )
 
 DEFAULT_OUTPUT_DIR = Path(__file__).parent / "output"
+DEFAULT_SERVE_PORT = 8765
 DOIUSE_EMAIL_VERSION = "0.4.1"
 DEFAULT_EMAIL_CLIENTS = [
     "outlook.*",
@@ -349,6 +353,12 @@ def main(argv: list[str] | None = None) -> int:
         help="load branding images from the hosted asset bucket instead of `notifications_utils/static/email`",
     )
     parser.add_argument("--no-lint", action="store_true", help="skip the caniemail compatibility check")
+    parser.add_argument(
+        "--serve",
+        action="store_true",
+        help="after rendering, serve the output directory over HTTP, open the gallery in a browser, and run until Ctrl-C",
+    )
+    parser.add_argument("--port", type=int, default=DEFAULT_SERVE_PORT, help="port for --serve (default: %(default)s)")
     args = parser.parse_args(argv)
 
     rendered_samples = [render_sample(sample, args.logo_url, args.brand_colour, not args.remote_assets) for sample in SAMPLES]
@@ -356,17 +366,36 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Wrote {len(rendered_samples)} samples to {args.output_dir}")
     print(f"Gallery: {args.output_dir / 'index.html'}")
 
-    if args.no_lint:
-        return 0
+    if not args.no_lint:
+        run_compatibility_check(args, rendered_samples)
+
+    if args.serve:
+        return serve_gallery(args.output_dir, args.port)
+    return 0
+
+
+def run_compatibility_check(args: argparse.Namespace, rendered_samples: list[RenderedSample]) -> None:
     if shutil.which("npx") is None:
         print("npx not found, skipping compatibility check (install Node.js or pass --no-lint)", file=sys.stderr)
-        return 0
+        return
 
     email_clients = [client.strip() for client in args.email_clients.split(",") if client.strip()]
     findings = run_lint(args.output_dir, rendered_samples, email_clients)
     not_supported = sorted(feature for feature, f in findings.items() if f.not_supported)
     print(f"Compatibility report: {args.output_dir / 'lint-report.md'}")
     print(f"Features not supported by at least one client: {', '.join(not_supported) or 'none'}")
+
+
+def serve_gallery(output_dir: Path, port: int) -> int:
+    handler = functools.partial(SimpleHTTPRequestHandler, directory=str(output_dir))
+    with ThreadingHTTPServer(("127.0.0.1", port), handler) as server:
+        url = f"http://localhost:{port}/"
+        print(f"Serving {url} (Ctrl-C to stop)")
+        webbrowser.open(url)
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print()
     return 0
 
 
