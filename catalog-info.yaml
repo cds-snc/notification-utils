@@ -6,7 +6,6 @@ metadata:
   description: Shared Python utilities for GC Notify applications.
   annotations:
     github.com/project-slug: cds-snc/notification-utils
-    backstage.io/source-location: url:https://github.com/cds-snc/notification-utils/tree/main/
   labels:
     license: MIT
 spec:
