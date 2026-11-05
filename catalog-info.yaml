@@ -2,8 +2,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: notification-utils
-  title: Notification Utils
-  description: Shared Python utilities for GC Notify applications.
+  description: Notification Utils
   annotations:
     github.com/project-slug: cds-snc/notification-utils
   labels:
