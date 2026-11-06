@@ -2,14 +2,14 @@ import html
 import re
 import string
 import threading
-import urllib
+import urllib.parse
 from itertools import count
 from typing import Callable, List
 
 import bleach
 import mistune
 import smartypants
-from flask import Markup
+from markupsafe import Markup
 
 from notifications_utils.sanitise_text import SanitiseSMS
 
