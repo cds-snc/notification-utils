@@ -84,5 +84,5 @@ refresh-dlr-snapshot: ## Rebuild `scripts/sms_pricing/dlr_snapshot.yml` from cur
 	python3 -c 'from scripts.sms_pricing.international_billing_rates_updater import DEFAULT_DLR_SNAPSHOT_PATH, DEFAULT_OUTPUT_PATH, build_dlr_snapshot, write_yaml_file; write_yaml_file(build_dlr_snapshot(DEFAULT_OUTPUT_PATH), DEFAULT_DLR_SNAPSHOT_PATH)'
 
 .PHONY: email-samples
-email-samples: ## Render sample emails, a gallery and an email client compatibility report to `scripts/email_samples/output`
-	poetry run python -m scripts.email_samples.generate
+email-samples: ## Render sample emails, serve the gallery at http://localhost:8765 and open it in a browser
+	poetry run python -m scripts.email_samples.generate --serve
