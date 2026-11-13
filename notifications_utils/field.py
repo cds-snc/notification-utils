@@ -1,4 +1,5 @@
 import re
+from html import escape
 from typing import Any, Callable, Dict, List, Literal, Optional
 
 from flask import Markup
@@ -83,11 +84,13 @@ class Field:
         redact_missing_personalisation: bool = False,
         translated: bool = False,
         markdown_renderer: Optional[Callable] = None,
+        render_inline_images: bool = False,
     ):
         self.content = content
         self.values = values
         self.markdown_lists = markdown_lists
         self.markdown_renderer = markdown_renderer
+        self.render_inline_images = render_inline_images
         if translated:
             self.placeholder_tag = self.placeholder_tag_translated
 
@@ -153,6 +156,12 @@ class Field:
         placeholder = Placeholder.from_match(match)
         replacement = self.values.get(placeholder.name)
 
+        if self.render_inline_images and self.get_inline_image(replacement) is not None:
+            before = match.string[: match.start()].rsplit("\n", 1)[-1]
+            after = match.string[match.end() :].split("\n", 1)[0]
+            if placeholder.is_conditional() or before.strip() or after.strip():
+                raise ValueError("Inline image placeholders must be on their own line")
+
         if placeholder.is_conditional() and replacement is not None:
             return placeholder.get_conditional_body(replacement)
 
@@ -167,6 +176,33 @@ class Field:
         if replacement is None:
             return None
 
+        image = self.get_inline_image(replacement)
+        if image is not None:
+            alt_text = image["alt_text"]
+            content_id = image["content_id"]
+            if not isinstance(alt_text, str) or not alt_text.strip() or len(alt_text) > 1000:
+                raise ValueError("Inline images require alt text of 1 to 1000 characters")
+            if not isinstance(content_id, str) or not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9_.@-]{0,127}", content_id):
+                raise ValueError("Invalid inline image content ID")
+            display_size = image.get("display_size", "responsive")
+            if display_size not in ("responsive", "original"):
+                raise ValueError("Invalid inline image display size")
+            if "max_width" in image:
+                max_width = image["max_width"]
+                if "display_size" in image:
+                    raise ValueError("Inline images cannot specify both display_size and max_width")
+                if isinstance(max_width, bool) or not isinstance(max_width, int) or max_width < 1:
+                    raise ValueError("Inline image max_width must be a positive integer in pixels")
+            if self.render_inline_images:
+                sizing = "max-width: none; width: auto;" if display_size == "original" else "max-width: 100%;"
+                if "max_width" in image:
+                    sizing = f"max-width: {image['max_width']}px; width: auto;"
+                return (
+                    f'<img src="cid:{escape(content_id, quote=True)}" alt="{escape(alt_text, quote=True)}" '
+                    f'style="display: block; {sizing} height: auto; border: 0;">'
+                )
+            return self.sanitizer(alt_text)
+
         if isinstance(replacement, list):
             vals: List[Any] = list(filter(None, replacement))
             if not vals:
@@ -174,6 +210,16 @@ class Field:
             return self.sanitizer(self.get_replacement_as_list(vals))
 
         return self.sanitizer(str(replacement))
+
+    @staticmethod
+    def get_inline_image(value):
+        if isinstance(value, dict) and isinstance(value.get("document"), dict):
+            image = value["document"].get("inline_image")
+            if image is not None:
+                if not isinstance(image, dict) or not {"alt_text", "content_id"} <= image.keys():
+                    raise ValueError("Invalid inline image metadata")
+                return image
+        return None
 
     def get_replacement_as_list(self, replacement):
         if self.markdown_lists:
