@@ -1,5 +1,5 @@
 # Container image that runs your code
-FROM python:3.12@sha256:17b9724493d916f56565c131f389faff2597f46dec6ce09516f95125bc9f519f
+FROM python:3.12@sha256:cad37dd20c7cac861af9003af8796d03ea7a998ec1e3a664429740fc9d7d2691
 
 RUN apt update
 RUN apt install -y python3-pip python3 git libmagic-dev
