@@ -133,14 +133,17 @@ class RedisAnnualLimit:
 
     def increment_notification_count(self, service_id: str, field: str, increment_value: int = 1):
         """Increments the specified daily notification count field for a service.
-        Fields that can be set: `sms_delivered`, `email_delivered`, `sms_failed`, `email_failed`
+        Fields that can be set: `sms_delivered_today`, `email_delivered_today`, `sms_failed_today`, `email_failed_today`,
+        `total_sms_fiscal_year_to_yesterday`, `total_email_fiscal_year_to_yesterday`, `sms_billable_units_delivered_today`,
+        `sms_billable_units_failed_today`, `total_sms_billable_units_fiscal_year_to_yesterday`
 
         We need the increment_value to handle billable units which can be more than 1 per notification.
         The increment_value defaults to 1 for normal notifications.
 
         Args:
             service_id (str): service id
-            field (str): redis key we want to increment the value of. This should be one of the fields in NOTIFICATION_FIELDS_V2
+            field (str): redis key we want to increment the value of. This should be one of the fields in
+                NOTIFICATION_FIELDS_V2 or BILLABLE_UNITS_FIELDS
             increment_value (int, optional): value to increment by Defaults to 1.
         """
         allowed_fields = NOTIFICATION_FIELDS_V2 + BILLABLE_UNITS_FIELDS
