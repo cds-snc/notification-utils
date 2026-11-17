@@ -1,7 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
+from html import unescape
 
 import pytest
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from markupsafe import Markup
 from notifications_utils.formatters import (
     EMAIL_P_CLOSE_TAG,
@@ -43,6 +44,7 @@ def test_escaping_backticks_preserves_quoted_html_attributes(quote):
     escaped = escape_backticks(content)
     assert escape_backticks(escaped) == escaped
     span = BeautifulSoup(notify_email_markdown(escaped), "html.parser").find("span")
+    assert isinstance(span, Tag)
     assert span["data-example"] == "a > b `test`"
     assert span.get_text() == "Use `thing`"
 
@@ -59,7 +61,8 @@ def test_escaping_backticks_preserves_quoted_html_attributes(quote):
     ],
 )
 def test_escape_backticks_preserves_html_attributes(tag):
-    assert escape_backticks(f"{tag}Use `thing`</span>") == f"{tag}Use \\`thing\\`</span>"
+    content = f"{tag}Use `thing`</span>"
+    assert unescape(escape_backticks(content)) == content
 
 
 @pytest.mark.parametrize(

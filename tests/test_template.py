@@ -1,7 +1,7 @@
 from html import unescape
 
 import pytest
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from notifications_utils.template import HTMLEmailTemplate, LetterPreviewTemplate, PlainTextEmailTemplate, get_html_email_body
 
 
@@ -53,6 +53,7 @@ def test_backticks_in_multiline_conditionals_not_double_escaped(values):
     soup = BeautifulSoup(html, "html.parser")
     if not values:
         conditional = soup.find(class_="placeholder-conditional")
+        assert isinstance(conditional, Tag)
         assert conditional.get_text() == "((show??Use `thing`next line))"
     elif values["show"]:
         assert soup.get_text() == "Use `thing`next line"
@@ -68,6 +69,7 @@ def test_backticks_with_passthrough_html(quote):
     content = f"<span data-example={quote}{attribute}{quote}>Use `thing`</span>"
     template = HTMLEmailTemplate({"content": content, "subject": ""}, allow_html=True)
     span = BeautifulSoup(str(template), "html.parser").find("span", attrs={"data-example": True})
+    assert isinstance(span, Tag)
     assert span["data-example"] == attribute
     assert span.get_text() == "Use `thing`"
 
