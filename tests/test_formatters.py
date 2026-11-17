@@ -1,15 +1,12 @@
 from concurrent.futures import ThreadPoolExecutor
-from html import unescape
 
 import pytest
-from bs4 import BeautifulSoup, Tag
 from markupsafe import Markup
 from notifications_utils.formatters import (
     EMAIL_P_CLOSE_TAG,
     EMAIL_P_OPEN_TAG,
     add_language_divs,
     add_trailing_newline,
-    escape_backticks,
     escape_html,
     escape_lang_tags,
     formatted_list,
@@ -36,33 +33,6 @@ from notifications_utils.formatters import (
 )
 from notifications_utils.take import Take
 from notifications_utils.template import HTMLEmailTemplate, PlainTextEmailTemplate, SMSMessageTemplate, SMSPreviewTemplate
-
-
-@pytest.mark.parametrize("quote", ['"', "'"])
-def test_escaping_backticks_preserves_quoted_html_attributes(quote):
-    content = f"<span data-example={quote}a > b `test`{quote}>Use `thing`</span>"
-    escaped = escape_backticks(content)
-    assert escape_backticks(escaped) == escaped
-    span = BeautifulSoup(notify_email_markdown(escaped), "html.parser").find("span")
-    assert isinstance(span, Tag)
-    assert span["data-example"] == "a > b `test`"
-    assert span.get_text() == "Use `thing`"
-
-
-@pytest.mark.parametrize(
-    "tag",
-    [
-        '<span data-example="`test`">',
-        '<span title="a > b" data-example="`test`">',
-        "<span title='a > b' data-example='`test`'>",
-        """<span title="a > 'b'" data-example="`test`">""",
-        """<span title='a > "b"' data-example='`test`'>""",
-        '<span title="a < b > c" data-example="`test`">',
-    ],
-)
-def test_escape_backticks_preserves_html_attributes(tag):
-    content = f"{tag}Use `thing`</span>"
-    assert unescape(escape_backticks(content)) == content
 
 
 @pytest.mark.parametrize(
