@@ -7,6 +7,7 @@ from notifications_utils.formatters import (
     EMAIL_P_OPEN_TAG,
     add_language_divs,
     add_trailing_newline,
+    escape_backticks,
     escape_html,
     escape_lang_tags,
     formatted_list,
@@ -33,6 +34,21 @@ from notifications_utils.formatters import (
 )
 from notifications_utils.take import Take
 from notifications_utils.template import HTMLEmailTemplate, PlainTextEmailTemplate, SMSMessageTemplate, SMSPreviewTemplate
+
+
+@pytest.mark.parametrize(
+    "tag",
+    [
+        '<span data-example="`test`">',
+        '<span title="a > b" data-example="`test`">',
+        "<span title='a > b' data-example='`test`'>",
+        """<span title="a > 'b'" data-example="`test`">""",
+        """<span title='a > "b"' data-example='`test`'>""",
+        '<span title="a < b > c" data-example="`test`">',
+    ],
+)
+def test_escape_backticks_preserves_html_attributes(tag):
+    assert escape_backticks(f"{tag}Use `thing`</span>") == f"{tag}Use \\`thing\\`</span>"
 
 
 @pytest.mark.parametrize(

@@ -62,18 +62,22 @@ def test_backticks_in_multiline_conditionals_not_double_escaped():
     assert "placeholder-conditional" in html
 
 
-def test_backticks_with_passthrough_html():
+@pytest.mark.parametrize("tag", ["span", "div"])
+def test_backticks_with_passthrough_html(mocker, tag):
     """
     Verify that backticks in passthrough HTML mode don't mutate HTML attributes.
     When allow_html=True, backticks in HTML attributes should not be escaped
     with backslashes that appear in the final output.
     """
-    # Create template with HTML passthrough enabled
-    template = HTMLEmailTemplate({"content": '<span data-example="`test`">Use `thing`</span>', "subject": ""}, allow_html=True)
+    mocker.patch("notifications_utils.template.check_if_string_contains_valid_html", return_value=[])
+    content = f'<{tag} data-example="`test`">Use `thing`</{tag}>'
+    template = HTMLEmailTemplate({"content": content, "subject": ""}, allow_html=True)
     html = str(template)
     # The HTML attributes should not contain visible backslashes
     # (If the bug exists, we'd see data-example="\`test\`" in the HTML)
-    assert 'data-example="`test`"' in html
+    element = BeautifulSoup(html, "html.parser").find(tag, attrs={"data-example": True})
+    assert element["data-example"] == "`test`"
+    assert element.get_text() == "Use `thing`"
     # Should not have escaped backslashes visible in HTML attributes
     assert 'data-example="\\`' not in html
 

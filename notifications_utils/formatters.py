@@ -688,9 +688,8 @@ def escape_backticks(content: str) -> str:
     if "`" not in content:
         return content
 
-    # Split on HTML tags to avoid modifying content inside them
-    # This regex splits on < and > to separate HTML tags from text content
-    parts = re.split(r"(<[^>]*>)", content)
+    # Keep quoted attribute values within HTML tags, even when they contain >.
+    parts = re.split(r"""(<(?:[^<>"']|"[^"]*"|'[^']*')*>)""", content)
 
     result = []
     for i, part in enumerate(parts):
