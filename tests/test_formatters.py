@@ -48,6 +48,21 @@ def test_escaping_backticks_preserves_quoted_html_attributes(quote):
 
 
 @pytest.mark.parametrize(
+    "tag",
+    [
+        '<span data-example="`test`">',
+        '<span title="a > b" data-example="`test`">',
+        "<span title='a > b' data-example='`test`'>",
+        """<span title="a > 'b'" data-example="`test`">""",
+        """<span title='a > "b"' data-example='`test`'>""",
+        '<span title="a < b > c" data-example="`test`">',
+    ],
+)
+def test_escape_backticks_preserves_html_attributes(tag):
+    assert escape_backticks(f"{tag}Use `thing`</span>") == f"{tag}Use \\`thing\\`</span>"
+
+
+@pytest.mark.parametrize(
     "markdown_function",
     [
         notify_email_markdown,
