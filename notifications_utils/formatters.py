@@ -685,22 +685,12 @@ def notify_letter_preview_markdown(text):
 
 
 def escape_backticks(content: str) -> str:
-    if "`" not in content:
-        return content
-
-    # Split on HTML tags to avoid modifying content inside them
-    # This regex splits on < and > to separate HTML tags from text content
-    parts = re.split(r"(<[^>]*>)", content)
-
-    result = []
-    for i, part in enumerate(parts):
-        # Even indices are text content, odd indices are HTML tags
-        if i % 2 == 0:  # Text content - apply escaping
-            part = re.sub(r"\\.|`", lambda match: match.group(0) if match.group(0).startswith("\\") else "\\`", part)
-        # Else: HTML tag - leave as is
-        result.append(part)
-
-    return "".join(result)
+    """Encode literal backticks without double-escaping entities or adding backslashes to HTML."""
+    return re.sub(
+        r"\\.|`",
+        lambda match: "&#96;" if match.group(0) in ("`", "\\`") else match.group(0),
+        content,
+    )
 
 
 def escape_lang_tags(_content: str) -> str:

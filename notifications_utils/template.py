@@ -340,7 +340,7 @@ class WithSubjectTemplate(Template):
 class PlainTextEmailTemplate(WithSubjectTemplate):
     def __str__(self):
         return (
-            Take(Field(self.content, self.values, html="passthrough", markdown_lists=True))
+            Take(Field(escape_backticks(self.content), self.values, html="passthrough", markdown_lists=True))
             .then(unlink_govuk_escaped)
             .then(strip_unsupported_characters)
             .then(remove_language_divs)
@@ -421,7 +421,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         return " ".join(
             Take(
                 Field(
-                    self.content,
+                    escape_backticks(self.content),
                     self.values,
                     html="strip" if self.allow_html else "escape",
                     markdown_lists=True,
@@ -435,6 +435,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             .then(remove_language_divs)
             .then(remove_rtl_divs)
             .then(do_nice_typography)
+            .then(str.replace, "&#96;", "`")
             .split()
         )[: self.PREHEADER_LENGTH_IN_CHARACTERS].strip()
 
@@ -730,7 +731,7 @@ class LetterPreviewTemplate(WithSubjectTemplate):
         return (
             Take(
                 Field(
-                    strip_dvla_markup(self.content),
+                    strip_dvla_markup(escape_backticks(self.content)),
                     self.values,
                     html="escape",
                     markdown_lists=True,
@@ -858,7 +859,7 @@ def get_html_email_body(template_content, template_values, redact_missing_person
     return (
         Take(
             Field(
-                template_content,
+                escape_backticks(template_content),
                 template_values,
                 html=html,
                 markdown_lists=True,
@@ -869,6 +870,7 @@ def get_html_email_body(template_content, template_values, redact_missing_person
         .then(unlink_govuk_escaped)
         .then(strip_unsupported_characters)
         .then(add_trailing_newline)
+        # Field can introduce backticks through personalisation; entities are safe to encode again.
         .then(escape_backticks)
         .then(escape_lang_tags)
         .then(escape_rtl_tags)
@@ -887,8 +889,7 @@ def _render_conditional_email_markdown(content):
     to ensure that language tags, RTL, lists, etc. that are inside conditionals are also pre-rendered
     else the main markdown rendering pass in get_html_email_body breaks them apart and mangles formatting.
     """
-    result = escape_backticks(content)
-    result = escape_lang_tags(result)
+    result = escape_lang_tags(content)
     result = escape_rtl_tags(result)
     result = notify_email_markdown(result)
     result = remove_nested_list_padding(result)

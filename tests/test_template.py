@@ -1,3 +1,5 @@
+from html import unescape
+
 import pytest
 from bs4 import BeautifulSoup
 from notifications_utils.template import HTMLEmailTemplate, LetterPreviewTemplate, PlainTextEmailTemplate, get_html_email_body
@@ -22,7 +24,7 @@ def test_lang_tags_in_templates():
 )
 def test_unescaped_backticks_are_literal_in_email_templates(content, expected_text):
     html = get_html_email_body(content, {})
-    assert expected_text in html
+    assert unescape(expected_text) in BeautifulSoup(html, "html.parser").get_text()
     assert "<code>" not in html
 
 
@@ -34,7 +36,7 @@ def test_unescaped_backticks_are_literal_in_plain_text_email_templates():
 def test_unescaped_backticks_are_literal_in_preheader_and_letter_preview():
     template = {"content": "Use `thing` here", "subject": ""}
     assert "`thing`" in HTMLEmailTemplate(template).preheader
-    assert "`thing`" in LetterPreviewTemplate(template)._message
+    assert "`thing`" in BeautifulSoup(LetterPreviewTemplate(template)._message, "html.parser").get_text()
 
 
 def test_backticks_do_not_break_language_tags():
@@ -42,40 +44,43 @@ def test_backticks_do_not_break_language_tags():
     html = get_html_email_body(content, {})
     assert '<div lang="en-ca">' in html
     assert '<div lang="fr-ca">' in html
-    assert "`thing`" in html
+    assert "`thing`" in BeautifulSoup(html, "html.parser").get_text()
 
 
-def test_backticks_in_multiline_conditionals_not_double_escaped():
-    """
-    Verify that backticks in multiline conditionals are not double-escaped.
-    When a conditional like ((show??Use `thing`\nnext)) is processed, the inner pass
-    in _render_conditional_email_markdown escapes the backticks, then the outer pass
-    should not re-escape them. Final output should not contain visible backslashes.
-    """
-    content = "((show??Use `thing`\nnext line))"
-    html = get_html_email_body(content, {})
-    # Backticks will be HTML-encoded as &#96; - that's correct
-    assert "&#96;thing&#96;" in html or "`thing`" in html
-    # Should NOT contain escaped backslashes visible in the output
-    assert "\\" not in html or "\\`" not in html
-    # The placeholder-conditional div should be in the HTML
-    assert "placeholder-conditional" in html
+@pytest.mark.parametrize("values", [{}, {"show": True}, {"show": False}])
+def test_backticks_in_multiline_conditionals_not_double_escaped(values):
+    html = get_html_email_body("((show??Use `thing`\nnext line))", values)
+    soup = BeautifulSoup(html, "html.parser")
+    if not values:
+        conditional = soup.find(class_="placeholder-conditional")
+        assert conditional.get_text() == "((show??Use `thing`next line))"
+    elif values["show"]:
+        assert soup.get_text() == "Use `thing`next line"
+    else:
+        assert soup.get_text() == ""
+    assert "\\`" not in soup.get_text()
+    assert soup.find("code") is None
 
 
-def test_backticks_with_passthrough_html():
-    """
-    Verify that backticks in passthrough HTML mode don't mutate HTML attributes.
-    When allow_html=True, backticks in HTML attributes should not be escaped
-    with backslashes that appear in the final output.
-    """
-    # Create template with HTML passthrough enabled
-    template = HTMLEmailTemplate({"content": '<span data-example="`test`">Use `thing`</span>', "subject": ""}, allow_html=True)
-    html = str(template)
-    # The HTML attributes should not contain visible backslashes
-    # (If the bug exists, we'd see data-example="\`test\`" in the HTML)
-    assert 'data-example="`test`"' in html
-    # Should not have escaped backslashes visible in HTML attributes
-    assert 'data-example="\\`' not in html
+@pytest.mark.parametrize("quote", ['"', "'"])
+def test_backticks_with_passthrough_html(quote):
+    attribute = "`test`"
+    content = f"<span data-example={quote}{attribute}{quote}>Use `thing`</span>"
+    template = HTMLEmailTemplate({"content": content, "subject": ""}, allow_html=True)
+    span = BeautifulSoup(str(template), "html.parser").find("span", attrs={"data-example": True})
+    assert span["data-example"] == attribute
+    assert span.get_text() == "Use `thing`"
+
+
+def test_backticks_in_personalisation_are_literal():
+    template = {"content": "Use ((thing))", "subject": ""}
+    values = {"thing": "`value`"}
+    html = get_html_email_body(template["content"], values)
+    assert BeautifulSoup(html, "html.parser").get_text() == "Use `value`"
+    assert "<code>" not in html
+    assert str(PlainTextEmailTemplate(template, values)) == "Use `value`\n"
+    assert HTMLEmailTemplate(template, values).preheader == "Use `value`"
+    assert BeautifulSoup(LetterPreviewTemplate(template, values)._message, "html.parser").get_text() == "Use `value`"
 
 
 @pytest.mark.parametrize(
