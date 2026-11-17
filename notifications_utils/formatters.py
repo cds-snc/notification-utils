@@ -684,6 +684,12 @@ def notify_letter_preview_markdown(text):
     return _get_thread_local_markdown("notify_letter_preview_markdown", _build_notify_letter_preview_markdown)(text)
 
 
+def escape_backticks(content: str) -> str:
+    if "`" not in content:
+        return content
+    return re.sub(r"\\.|`", lambda match: match.group(0) if match.group(0).startswith("\\") else "\\`", content)
+
+
 def escape_lang_tags(_content: str) -> str:
     """
     Escape language tags into code tags in the content so mistune doesn't put them inside p tags.  This makes it simple

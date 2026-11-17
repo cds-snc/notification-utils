@@ -17,6 +17,7 @@ from notifications_utils.formatters import (
     add_rtl_divs,
     add_trailing_newline,
     autolink_sms,
+    escape_backticks,
     escape_html,
     escape_lang_tags,
     escape_rtl_tags,
@@ -345,6 +346,7 @@ class PlainTextEmailTemplate(WithSubjectTemplate):
             .then(remove_language_divs)
             .then(remove_rtl_divs)
             .then(add_trailing_newline)
+            .then(escape_backticks)
             .then(notify_plain_text_email_markdown)
             .then(do_nice_typography)
             .then(unescape)
@@ -428,6 +430,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             .then(unlink_govuk_escaped)
             .then(strip_unsupported_characters)
             .then(add_trailing_newline)
+            .then(escape_backticks)
             .then(notify_email_preheader_markdown)
             .then(remove_language_divs)
             .then(remove_rtl_divs)
@@ -736,6 +739,7 @@ class LetterPreviewTemplate(WithSubjectTemplate):
             )
             .then(strip_pipes)
             .then(add_trailing_newline)
+            .then(escape_backticks)
             .then(notify_letter_preview_markdown)
             .then(do_nice_typography)
             .then(replace_hyphens_with_non_breaking_hyphens)
@@ -865,6 +869,7 @@ def get_html_email_body(template_content, template_values, redact_missing_person
         .then(unlink_govuk_escaped)
         .then(strip_unsupported_characters)
         .then(add_trailing_newline)
+        .then(escape_backticks)
         .then(escape_lang_tags)
         .then(escape_rtl_tags)
         .then(notify_email_markdown)
@@ -882,7 +887,8 @@ def _render_conditional_email_markdown(content):
     to ensure that language tags, RTL, lists, etc. that are inside conditionals are also pre-rendered
     else the main markdown rendering pass in get_html_email_body breaks them apart and mangles formatting.
     """
-    result = escape_lang_tags(content)
+    result = escape_backticks(content)
+    result = escape_lang_tags(result)
     result = escape_rtl_tags(result)
     result = notify_email_markdown(result)
     result = remove_nested_list_padding(result)

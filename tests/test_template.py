@@ -1,6 +1,6 @@
 import pytest
 from bs4 import BeautifulSoup
-from notifications_utils.template import get_html_email_body
+from notifications_utils.template import HTMLEmailTemplate, LetterPreviewTemplate, PlainTextEmailTemplate, get_html_email_body
 
 
 def test_lang_tags_in_templates():
@@ -9,6 +9,40 @@ def test_lang_tags_in_templates():
     assert '<div lang="en-ca">' in html
     assert '<div lang="fr-ca">' in html
     assert "h2" in html
+
+
+@pytest.mark.parametrize(
+    "content, expected_text",
+    [
+        ("Use `thing` here", "`thing`"),
+        ("Lone ` backtick", "` backtick"),
+        ("Escaped \\` backtick", "` backtick"),
+        ("```\n<b>bold</b>\n```", "&lt;b&gt;bold&lt;/b&gt;"),
+    ],
+)
+def test_unescaped_backticks_are_literal_in_email_templates(content, expected_text):
+    html = get_html_email_body(content, {})
+    assert expected_text in html
+    assert "<code>" not in html
+
+
+def test_unescaped_backticks_are_literal_in_plain_text_email_templates():
+    rendered = str(PlainTextEmailTemplate({"content": "Use `thing` here", "subject": ""}))
+    assert "`thing`" in rendered
+
+
+def test_unescaped_backticks_are_literal_in_preheader_and_letter_preview():
+    template = {"content": "Use `thing` here", "subject": ""}
+    assert "`thing`" in HTMLEmailTemplate(template).preheader
+    assert "`thing`" in LetterPreviewTemplate(template)._message
+
+
+def test_backticks_do_not_break_language_tags():
+    content = "[[en]]\nUse `thing` here\n[[/en]]\n[[fr]]\nBonjour\n[[/fr]]"
+    html = get_html_email_body(content, {})
+    assert '<div lang="en-ca">' in html
+    assert '<div lang="fr-ca">' in html
+    assert "`thing`" in html
 
 
 @pytest.mark.parametrize(
