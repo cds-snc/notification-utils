@@ -45,6 +45,39 @@ def test_backticks_do_not_break_language_tags():
     assert "`thing`" in html
 
 
+def test_backticks_in_multiline_conditionals_not_double_escaped():
+    """
+    Verify that backticks in multiline conditionals are not double-escaped.
+    When a conditional like ((show??Use `thing`\nnext)) is processed, the inner pass
+    in _render_conditional_email_markdown escapes the backticks, then the outer pass
+    should not re-escape them. Final output should not contain visible backslashes.
+    """
+    content = "((show??Use `thing`\nnext line))"
+    html = get_html_email_body(content, {})
+    # Backticks will be HTML-encoded as &#96; - that's correct
+    assert "&#96;thing&#96;" in html or "`thing`" in html
+    # Should NOT contain escaped backslashes visible in the output
+    assert "\\" not in html or "\\`" not in html
+    # The placeholder-conditional div should be in the HTML
+    assert "placeholder-conditional" in html
+
+
+def test_backticks_with_passthrough_html():
+    """
+    Verify that backticks in passthrough HTML mode don't mutate HTML attributes.
+    When allow_html=True, backticks in HTML attributes should not be escaped
+    with backslashes that appear in the final output.
+    """
+    # Create template with HTML passthrough enabled
+    template = HTMLEmailTemplate({"content": '<span data-example="`test`">Use `thing`</span>', "subject": ""}, allow_html=True)
+    html = str(template)
+    # The HTML attributes should not contain visible backslashes
+    # (If the bug exists, we'd see data-example="\`test\`" in the HTML)
+    assert 'data-example="`test`"' in html
+    # Should not have escaped backslashes visible in HTML attributes
+    assert 'data-example="\\`' not in html
+
+
 @pytest.mark.parametrize(
     "bad_content",
     [
