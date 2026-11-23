@@ -105,6 +105,66 @@ def test_fip_banner_french(renderer, show_banner):
         assert ASSET_URLS["canada-logo.png"] not in str(email)
 
 
+@pytest.mark.parametrize("renderer", [HTMLEmailTemplate, EmailPreviewTemplate])
+@pytest.mark.parametrize(
+    "header_options, expected_header",
+    [
+        ({"fip_banner_english": True}, ASSET_URLS["gc-logo-en.png"]),
+        ({"fip_banner_english": False, "fip_banner_french": True}, ASSET_URLS["gc-logo-fr.png"]),
+        ({"fip_banner_english": False, "brand_logo": "example-logo.png"}, "example-logo.png"),
+        ({"fip_banner_english": False, "show_header": False}, None),
+    ],
+)
+@pytest.mark.parametrize("show_footer", [True, False])
+def test_header_and_footer_are_independent(renderer, header_options, expected_header, show_footer):
+    email = str(
+        renderer(
+            {"content": "body marker", "subject": ""},
+            **header_options,
+            show_footer=show_footer,
+        )
+    )
+
+    if expected_header:
+        assert expected_header in email
+    else:
+        assert ASSET_URLS["gc-logo-en.png"] not in email
+        assert ASSET_URLS["gc-logo-fr.png"] not in email
+    assert (ASSET_URLS["canada-logo.png"] in email) is show_footer
+    assert "body marker" in email
+
+
+@pytest.mark.parametrize("renderer", [HTMLEmailTemplate, EmailPreviewTemplate])
+def test_no_header_suppresses_legacy_and_custom_branding(renderer):
+    email = str(
+        renderer(
+            {"content": "body marker", "subject": ""},
+            fip_banner_english=False,
+            fip_banner_french=True,
+            brand_name="canada.ca-fr",
+            brand_logo="example-logo.png",
+            brand_text="Example department",
+            show_header=False,
+            show_footer=False,
+        )
+    )
+
+    assert ASSET_URLS["gc-logo-en.png"] not in email
+    assert ASSET_URLS["gc-logo-fr.png"] not in email
+    assert ASSET_URLS["canada-logo.png"] not in email
+    assert "example-logo.png" not in email
+    assert "Example department" not in email
+    assert "body marker" in email
+
+
+@pytest.mark.parametrize("renderer", [HTMLEmailTemplate, EmailPreviewTemplate])
+def test_legacy_canada_ca_fr_branding_is_unchanged(renderer):
+    email = str(renderer({"content": "body marker", "subject": ""}, brand_name="canada.ca-fr"))
+
+    assert ASSET_URLS["gc-logo-fr.png"] in email
+    assert ASSET_URLS["canada-logo.png"] in email
+
+
 def test_logo_with_background_colour_shows():
     email = str(
         HTMLEmailTemplate(

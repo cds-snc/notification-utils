@@ -37,6 +37,7 @@
   <div class="email-message-body w-full relative break-words box-border px-doubleGutter border-gray-grey2 border">
 
     <div style="max-width: 580px; margin: 0 auto;">
+      {% if show_header is not sameas false %}
       {% if fip_banner_english %}
         <div style="margin: 20px auto 30px auto;">
           <img
@@ -74,12 +75,13 @@
           {% endif %}
         </p>
       {% endif %}
+      {% endif %}
 
       <div style="padding: 0 10px" dir="{{ 'rtl' if text_direction_rtl else 'ltr' }}">
         {{ body }}
       </div>
 
-      {% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
+      {% if show_footer %}
         <div style="margin: 10px 0 20px 0; float: right">
           <img
             src="{{ email_asset_urls['canada-logo.png'] }}"
