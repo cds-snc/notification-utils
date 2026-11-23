@@ -35,6 +35,7 @@
 <span style="display: none;font-size: 1px;color: #fff; max-height: 0;">{{ preheader }}…</span>
 
 <div style="height:20px">&nbsp;</div>
+{%- if show_header is not sameas false %}
 <!-- start primary template header EN + FR -->
 {% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
   {% include 'email/_fip_banner.jinja2' %}
@@ -47,6 +48,7 @@
 {% if brand_logo and not logo_with_background_colour %}
   {% include 'email/_custom_logo_no_background_colour.jinja2' %}
 {% endif %}
+{%- endif %}
 
 <!-- main content -->
 <table
@@ -62,7 +64,7 @@
 </table>
 <!-- end main content -->
 
-{% if fip_banner_english or fip_banner_french or brand_name == "canada.ca-fr" %}
+{% if show_footer %}
   {% include 'email/_footer.jinja2' %}
 {% endif %}
 
