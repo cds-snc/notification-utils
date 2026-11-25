@@ -40,11 +40,31 @@
   {% include 'email/_fip_banner.jinja2' %}
 {% endif %}
 
-{% if logo_with_background_colour %}
+{% if logo_with_background_colour and branding_type != "fip" %}
   {% include 'email/_custom_logo_with_background_colour.jinja2' %}
 {% endif %}
 
-{% if brand_logo and not logo_with_background_colour %}
+{% if branding_type == "fip" and brand_logo %}
+<table
+    role="presentation"
+    class="content"
+    style="border-collapse: collapse; width:100% !important; max-width: 580px; margin: 0 auto;"
+>
+  <tr>
+    <td style="padding: 15px 10px;">
+      <img
+        src="{{ brand_logo }}"
+        height="{{ fip_logo_height }}"
+        style="display: block; border: 0; width: auto; height: {{ fip_logo_height }}px; max-width: 100%;"
+        alt="{% if alt_text_en %}{{ alt_text_en }} / {{ alt_text_fr }}{% else -%}{{ brand_name }}{%- endif %}"
+      />
+    </td>
+  </tr>
+</table>
+<div style="height:30px">&nbsp;</div>
+{% endif %}
+
+{% if brand_logo and not logo_with_background_colour and branding_type != "fip" %}
   {% include 'email/_custom_logo_no_background_colour.jinja2' %}
 {% endif %}
 

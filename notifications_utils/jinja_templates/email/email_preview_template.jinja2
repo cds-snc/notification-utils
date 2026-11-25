@@ -59,7 +59,18 @@
         </div>
       {% endif %}
 
-      {% if brand_logo %}
+      {% if branding_type == "fip" and brand_logo %}
+        <div style="margin: 20px auto 30px auto; padding: 0 10px;">
+          <img
+            src="https://{{ asset_domain }}/{{ brand_logo }}"
+            height="{{ fip_logo_height }}"
+            style="display: block; border: 0; width: auto; height: {{ fip_logo_height }}px; max-width: 100%;"
+            alt="{% if alt_text_en %}{{ alt_text_en }} / {{ alt_text_fr }}{% else -%}{{ brand_name }}{%- endif %}"
+          />
+        </div>
+      {% endif %}
+
+      {% if brand_logo and branding_type != "fip" %}
         <div style="margin: 20px auto 30px auto; padding: 0 5px 0 {% if brand_colour %} 8px; border-left: solid 2px {{ brand_colour }}{% else %} 10px{% endif %}; display: inline-block">
         <img
           src="https://{{ asset_domain }}/{{ brand_logo }}"

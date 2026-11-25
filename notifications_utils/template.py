@@ -393,6 +393,8 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         alt_text_en=None,
         alt_text_fr=None,
         asset_domain=None,
+        branding_type=None,
+        fip_logo_height=54,
     ):
         super().__init__(template, values, jinja_path=jinja_path)
         self.fip_banner_english = fip_banner_english
@@ -407,6 +409,8 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.alt_text_en = alt_text_en
         self.alt_text_fr = alt_text_fr
         self.asset_domain = asset_domain or DEFAULT_ASSET_DOMAIN
+        self.branding_type = branding_type
+        self.fip_logo_height = fip_logo_height
         self.text_direction_rtl = template.get("text_direction_rtl", False)
 
         # set this again to make sure the correct either utils / downstream local jinja is used
@@ -451,6 +455,8 @@ class HTMLEmailTemplate(WithSubjectTemplate):
                 "brand_name": self.brand_name,
                 "alt_text_en": self.alt_text_en,
                 "alt_text_fr": self.alt_text_fr,
+                "branding_type": self.branding_type,
+                "fip_logo_height": self.fip_logo_height,
                 "text_direction_rtl": self.text_direction_rtl,
                 "email_asset_urls": email_asset_urls(self.asset_domain),
             }
@@ -499,6 +505,8 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         alt_text_en=None,
         alt_text_fr=None,
         user_language="en",
+        branding_type=None,
+        fip_logo_height=54,
     ):
         super().__init__(
             template,
@@ -521,6 +529,8 @@ class EmailPreviewTemplate(WithSubjectTemplate):
         self.allow_html = allow_html
         self.alt_text_en = alt_text_en
         self.alt_text_fr = alt_text_fr
+        self.branding_type = branding_type
+        self.fip_logo_height = fip_logo_height
         self.user_language = user_language
         self.text_direction_rtl = template.get("text_direction_rtl", False)
 
@@ -550,6 +560,8 @@ class EmailPreviewTemplate(WithSubjectTemplate):
                     "email_asset_urls": email_asset_urls(self.asset_domain),
                     "alt_text_en": self.alt_text_en,
                     "alt_text_fr": self.alt_text_fr,
+                    "branding_type": self.branding_type,
+                    "fip_logo_height": self.fip_logo_height,
                     "text_direction_rtl": self.text_direction_rtl,
                 }
             )

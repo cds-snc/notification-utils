@@ -151,6 +151,55 @@ def test_brand_data_shows(brand_logo, brand_text, brand_colour):
 
 
 @pytest.mark.parametrize("renderer", [HTMLEmailTemplate, EmailPreviewTemplate])
+@pytest.mark.parametrize("fip_logo_height", [54, 36])
+def test_fip_brand_logo_uses_intrinsic_width_and_configurable_height(renderer, fip_logo_height):
+    email = BeautifulSoup(
+        str(
+            renderer(
+                {"content": "hello world", "subject": ""},
+                fip_banner_english=False,
+                brand_logo="logo.png",
+                brand_name="Example",
+                branding_type="fip",
+                fip_logo_height=fip_logo_height,
+                logo_with_background_colour=True,
+            )
+        ),
+        features="html.parser",
+    )
+
+    logo = email.find("img", alt="Example")
+    assert logo is not None
+    assert logo["height"] == str(fip_logo_height)
+    assert "width" not in logo.attrs
+    assert "border-left" not in str(logo.parent)
+
+
+@pytest.mark.parametrize("renderer", [HTMLEmailTemplate, EmailPreviewTemplate])
+def test_non_fip_brand_ignores_fip_logo_height(renderer):
+    email = BeautifulSoup(
+        str(
+            renderer(
+                {"content": "hello world", "subject": ""},
+                fip_banner_english=False,
+                brand_logo="logo.png",
+                brand_name="Example",
+                branding_type="custom_logo",
+                fip_logo_height=36,
+            )
+        ),
+        features="html.parser",
+    )
+
+    logo = email.find("img", alt="Example")
+    assert logo is not None
+    if renderer is HTMLEmailTemplate:
+        assert logo["height"] == "108"
+    else:
+        assert "height:108px" in logo["style"]
+
+
+@pytest.mark.parametrize("renderer", [HTMLEmailTemplate, EmailPreviewTemplate])
 def test_alt_text_with_brand_text_and_fip_banner_english_shown(renderer):
     email = str(
         renderer(
