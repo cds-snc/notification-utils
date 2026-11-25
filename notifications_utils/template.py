@@ -371,6 +371,7 @@ class PlainTextEmailTemplate(WithSubjectTemplate):
 
 
 class HTMLEmailTemplate(WithSubjectTemplate):
+    supports_inline_images = True
     # Instantiate with regular jinja for test mocking (tests expect this to exist before init)
     jinja_template = template_env.get_template("email/email_template.jinja2")
 
@@ -395,6 +396,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         alt_text_en=None,
         alt_text_fr=None,
         asset_domain=None,
+        enable_inline_images=False,
     ):
         super().__init__(template, values, jinja_path=jinja_path)
         self.fip_banner_english = fip_banner_english
@@ -409,6 +411,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.alt_text_en = alt_text_en
         self.alt_text_fr = alt_text_fr
         self.asset_domain = asset_domain or DEFAULT_ASSET_DOMAIN
+        self.enable_inline_images = enable_inline_images
         self.text_direction_rtl = template.get("text_direction_rtl", False)
 
         # set this again to make sure the correct either utils / downstream local jinja is used
@@ -443,7 +446,12 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         return self.jinja_template.render(
             {
                 "subject": self.subject,
-                "body": get_html_email_body(self.content, self.values, html="passthrough" if self.allow_html else "escape"),
+                "body": get_html_email_body(
+                    self.content,
+                    self.values,
+                    html="passthrough" if self.allow_html else "escape",
+                    enable_inline_images=self.enable_inline_images,
+                ),
                 "preheader": self.preheader,
                 "fip_banner_english": self.fip_banner_english,
                 "fip_banner_french": self.fip_banner_french,
@@ -851,7 +859,9 @@ def count_sms_character_units(content):
     return sum(2 if c in _GSM_EXTENDED_CHARS else 1 for c in content)
 
 
-def get_html_email_body(template_content, template_values, redact_missing_personalisation=False, html="escape"):
+def get_html_email_body(
+    template_content, template_values, redact_missing_personalisation=False, html="escape", enable_inline_images=False
+):
     if html == "passthrough" and check_if_string_contains_valid_html(template_content) != []:
         # template_content contains invalid html, so escape it
         html = "escape"
@@ -865,6 +875,7 @@ def get_html_email_body(template_content, template_values, redact_missing_person
                 markdown_lists=True,
                 redact_missing_personalisation=redact_missing_personalisation,
                 markdown_renderer=_render_conditional_email_markdown,
+                render_inline_images=enable_inline_images,
             )
         )
         .then(unlink_govuk_escaped)
