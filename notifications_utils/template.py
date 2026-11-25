@@ -4,8 +4,8 @@ from datetime import datetime
 from html import unescape
 from os import path
 
-from flask import Markup
 from jinja2 import Environment, FileSystemLoader
+from markupsafe import Markup
 
 from notifications_utils import EMAIL_CHAR_COUNT_LIMIT, SMS_CHAR_COUNT_LIMIT, TEMPLATE_NAME_CHAR_COUNT_LIMIT
 from notifications_utils.columns import Columns
@@ -17,6 +17,7 @@ from notifications_utils.formatters import (
     add_rtl_divs,
     add_trailing_newline,
     autolink_sms,
+    escape_backticks,
     escape_html,
     escape_lang_tags,
     escape_rtl_tags,
@@ -339,12 +340,13 @@ class WithSubjectTemplate(Template):
 class PlainTextEmailTemplate(WithSubjectTemplate):
     def __str__(self):
         return (
-            Take(Field(self.content, self.values, html="passthrough", markdown_lists=True))
+            Take(Field(escape_backticks(self.content), self.values, html="passthrough", markdown_lists=True))
             .then(unlink_govuk_escaped)
             .then(strip_unsupported_characters)
             .then(remove_language_divs)
             .then(remove_rtl_divs)
             .then(add_trailing_newline)
+            .then(escape_backticks)
             .then(notify_plain_text_email_markdown)
             .then(do_nice_typography)
             .then(unescape)
@@ -422,7 +424,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         return " ".join(
             Take(
                 Field(
-                    self.content,
+                    escape_backticks(self.content),
                     self.values,
                     html="strip" if self.allow_html else "escape",
                     markdown_lists=True,
@@ -431,10 +433,12 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             .then(unlink_govuk_escaped)
             .then(strip_unsupported_characters)
             .then(add_trailing_newline)
+            .then(escape_backticks)
             .then(notify_email_preheader_markdown)
             .then(remove_language_divs)
             .then(remove_rtl_divs)
             .then(do_nice_typography)
+            .then(str.replace, "&#96;", "`")
             .split()
         )[: self.PREHEADER_LENGTH_IN_CHARACTERS].strip()
 
@@ -735,7 +739,7 @@ class LetterPreviewTemplate(WithSubjectTemplate):
         return (
             Take(
                 Field(
-                    strip_dvla_markup(self.content),
+                    strip_dvla_markup(escape_backticks(self.content)),
                     self.values,
                     html="escape",
                     markdown_lists=True,
@@ -744,6 +748,7 @@ class LetterPreviewTemplate(WithSubjectTemplate):
             )
             .then(strip_pipes)
             .then(add_trailing_newline)
+            .then(escape_backticks)
             .then(notify_letter_preview_markdown)
             .then(do_nice_typography)
             .then(replace_hyphens_with_non_breaking_hyphens)
@@ -864,7 +869,7 @@ def get_html_email_body(
     return (
         Take(
             Field(
-                template_content,
+                escape_backticks(template_content),
                 template_values,
                 html=html,
                 markdown_lists=True,
@@ -876,6 +881,8 @@ def get_html_email_body(
         .then(unlink_govuk_escaped)
         .then(strip_unsupported_characters)
         .then(add_trailing_newline)
+        # Field can introduce backticks through personalisation; entities are safe to encode again.
+        .then(escape_backticks)
         .then(escape_lang_tags)
         .then(escape_rtl_tags)
         .then(notify_email_markdown)

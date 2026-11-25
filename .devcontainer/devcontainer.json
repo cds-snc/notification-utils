@@ -4,6 +4,12 @@
 		"dockerfile": "Dockerfile",
 		"context": ".."
 	},
+	"features": {
+		// Node.js (npx) is needed by `make email-samples` for the email client compatibility check
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "lts"
+		}
+	},
 	"remoteEnv": {
 		"PATH": "/home/vscode/.local/bin:${containerEnv:PATH}" // give our installed Python modules precedence
 	},

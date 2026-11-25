@@ -2,14 +2,14 @@ import html
 import re
 import string
 import threading
-import urllib
+import urllib.parse
 from itertools import count
 from typing import Callable, List
 
 import bleach
 import mistune
 import smartypants
-from flask import Markup
+from markupsafe import Markup
 
 from notifications_utils.sanitise_text import SanitiseSMS
 
@@ -682,6 +682,15 @@ def notify_email_preheader_markdown(text):
 
 def notify_letter_preview_markdown(text):
     return _get_thread_local_markdown("notify_letter_preview_markdown", _build_notify_letter_preview_markdown)(text)
+
+
+def escape_backticks(content: str) -> str:
+    """Encode literal backticks without double-escaping entities or adding backslashes to HTML."""
+    return re.sub(
+        r"\\.|`",
+        lambda match: "&#96;" if match.group(0) in ("`", "\\`") else match.group(0),
+        content,
+    )
 
 
 def escape_lang_tags(_content: str) -> str:

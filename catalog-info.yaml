@@ -2,10 +2,14 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: notification-utils
+  title: Notification Utils
   description: Notification Utils
+  annotations:
+    github.com/project-slug: cds-snc/notification-utils
   labels:
     license: MIT
 spec:
-  type: website
-  lifecycle: experimental
-  owner: cds-snc
+  type: library
+  lifecycle: production
+  owner: group:cds-snc/notify-dev
+  system: gc-notification

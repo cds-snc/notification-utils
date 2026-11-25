@@ -76,3 +76,4 @@ images; horizontal scrolling is not guaranteed.
 Alternatively, `max_width` accepts a positive integer in pixels, applying a
 pixel-width ceiling without enlarging smaller images and preserving aspect
 ratio. It is mutually exclusive with `display_size`.
+* To check how emails look in different email clients, render sample emails with `make email-samples`. See [scripts/email_samples](./scripts/email_samples/README.md).

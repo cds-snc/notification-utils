@@ -2,6 +2,12 @@
 
 ## Email template
 
+### Literal backticks
+
+Backticks in email bodies and letter previews are displayed literally rather than
+interpreted as Markdown code delimiters. They are escaped before template processing;
+personalisation values are also escaped before Markdown rendering.
+
 ### Email branding
 
 The jinja template can render emails with 1 of 4 different brands. 

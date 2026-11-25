@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
-from flask import Markup
+from markupsafe import Markup
 from notifications_utils.formatters import (
     EMAIL_P_CLOSE_TAG,
     EMAIL_P_OPEN_TAG,
