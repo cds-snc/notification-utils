@@ -1,5 +1,5 @@
 import pytest
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from notifications_utils.field import Field
 from notifications_utils.template import HTMLEmailTemplate, PlainTextEmailTemplate, WithSubjectTemplate, get_html_email_body
 
@@ -21,7 +21,7 @@ def test_inline_image_is_opt_in(image_values):
     assert 'src="cid:' not in str(HTMLEmailTemplate(template, values=image_values))
     html = BeautifulSoup(str(HTMLEmailTemplate(template, values=image_values, enable_inline_images=True)), "html.parser")
     image = html.find("img", src="cid:chart-123")
-    assert image is not None
+    assert isinstance(image, Tag)
     assert image["alt"] == 'Usage <chart> & "description"'
     assert html.find("chart") is None
 
@@ -31,7 +31,9 @@ def test_inline_image_display_size(image_values, display_size):
     if display_size is not None:
         image_values["chart"]["document"]["inline_image"]["display_size"] = display_size
     html = BeautifulSoup(str(get_html_email_body("((chart))", image_values, enable_inline_images=True)), "html.parser")
-    style = html.find("img")["style"]
+    image = html.find("img")
+    assert isinstance(image, Tag)
+    style = image["style"]
     if display_size == "original":
         assert "max-width: none; width: auto;" in style
         assert "max-width: 100%" not in style
@@ -51,6 +53,7 @@ def test_inline_image_max_width(image_values, max_width):
     image_values["chart"]["document"]["inline_image"]["max_width"] = max_width
     html = BeautifulSoup(str(get_html_email_body("((chart))", image_values, enable_inline_images=True)), "html.parser")
     image = html.find("img")
+    assert isinstance(image, Tag)
     assert f"max-width: {max_width}px; width: auto;" in image["style"]
     assert "height: auto;" in image["style"]
     assert "width" not in image.attrs
@@ -90,7 +93,9 @@ def test_inline_image_does_not_enable_user_html(image_values):
     )
     soup = BeautifulSoup(html, "html.parser")
     assert len(soup.find_all("img")) == 1
-    assert soup.find("img")["src"] == "cid:chart-123"
+    image = soup.find("img")
+    assert isinstance(image, Tag)
+    assert image["src"] == "cid:chart-123"
     assert soup.find("script") is None
 
 
@@ -126,7 +131,9 @@ def test_rejects_invalid_alt_text(alt_text, image_values):
 def test_content_id_and_alt_text_cannot_inject_attributes(image_values):
     image_values["chart"]["document"]["inline_image"]["alt_text"] = 'a" onerror="alert(1)'
     html = BeautifulSoup(str(get_html_email_body("((chart))", image_values, enable_inline_images=True)), "html.parser")
-    assert html.find("img").get("onerror") is None
+    image = html.find("img")
+    assert isinstance(image, Tag)
+    assert image.get("onerror") is None
 
 
 def test_column_normalisation_and_multiple_images(image_values):
